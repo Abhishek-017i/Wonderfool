@@ -17,7 +17,11 @@ app.get('/', (req, res) => {
   res.send('Wonderfool API is running');
 });
 
+app.use('/api/auth', require('./routes/authRoutes'));
+//series route
+app.use('/api/persons', require('./routes/personRoutes'));
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-app.use('/api/auth', require('./routes/authRoutes'));
