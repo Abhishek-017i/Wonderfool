@@ -1,4 +1,5 @@
 const admin = require('../config/firebase');
+const User = require('../models/User');
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -11,6 +12,13 @@ const verifyToken = async (req, res, next) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
     req.firebaseUser = decodedToken;
+
+    const mongoUser = await User.findOne({ firebaseUid: decodedToken.uid });
+    if (!mongoUser) {
+      return res.status(404).json({ message: 'User not found. Please sync your account first.' });
+    }
+
+    req.mongoUser = mongoUser;
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Invalid or expired token' });
