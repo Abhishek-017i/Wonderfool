@@ -22,22 +22,22 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Explore</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Top Anime
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Top Manga
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   New Releases
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Genres
                 </Link>
               </li>
@@ -49,22 +49,22 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Community</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/community" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Forum
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Events
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/creators" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Creator Support
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Guidelines
                 </Link>
               </li>
@@ -76,22 +76,22 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Support</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Help Center
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Terms of Service
                 </Link>
               </li>
@@ -108,13 +108,13 @@ export default function Footer() {
             © {currentYear} Wonderfool. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+            <a href="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               Twitter
             </a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+            <a href="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               Discord
             </a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+            <a href="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               Instagram
             </a>
           </div>

@@ -1,6 +1,6 @@
 import Navbar from '@/components/Navbar'
 import HeroCarousel from '@/components/HeroCarousel'
-import HorizontalScrollRow from '@/components/HorizontalScrollRow'
+import SeriesGrid from '@/components/SeriesGrid'
 import StoriesSection from '@/components/StoriesSection'
 import Footer from '@/components/Footer'
 import { seriesData } from '@/data/series'
@@ -15,9 +15,9 @@ export default function Home() {
     <div className="w-full min-h-screen bg-background">
       <Navbar />
       <HeroCarousel />
-      <HorizontalScrollRow title="Top Anime" series={topAnime} />
-      <HorizontalScrollRow title="Top Manga & Light Novels" series={topMangaLightNovels} />
-      <HorizontalScrollRow title="New Releases" series={newReleases} />
+      <SeriesGrid title="Top Anime" series={topAnime} />
+      <SeriesGrid title="Top Manga & Light Novels" series={topMangaLightNovels} alternateBg={true} />
+      <SeriesGrid title="New Releases" series={newReleases} />
       <StoriesSection />
       <Footer />
     </div>

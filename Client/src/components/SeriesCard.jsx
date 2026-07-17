@@ -1,78 +1,63 @@
-import { useState } from 'react'
-import { Film, Calendar } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Film } from 'lucide-react'
 
-export default function SeriesCard({ series }) {
-  const [isHovered, setIsHovered] = useState(false)
-
+export default function SeriesCard({ series, index }) {
   return (
-    <div
-      className="relative flex-shrink-0 overflow-hidden rounded-lg transition-all duration-300"
-      style={{
-        width: isHovered ? '300px' : '200px',
-        height: isHovered ? '380px' : '300px',
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
+      className="group relative w-full aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer bg-card"
+      whileHover={{ y: -10, scale: 1.03 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
       {/* Poster Image */}
-      <img
+      <motion.img
         src={series.poster}
         alt={series.title}
-        className="absolute inset-0 w-full h-full object-cover rounded-lg"
+        className="absolute inset-0 w-full h-full object-cover origin-center"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        whileHover={{ scale: 1.05 }}
       />
+      
+      {/* 1px Golden Glow effect on hover */}
+      <div className="absolute inset-0 border border-primary/0 group-hover:border-primary/50 rounded-2xl transition-colors duration-500 z-20 pointer-events-none luxury-shadow" />
 
-      {/* Default State - Minimal Title Label */}
-      {!isHovered && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent p-3 rounded-lg">
-          <p className="text-sm font-semibold text-foreground line-clamp-2">
+      {/* Glass Overlay Gradient - Only bottom 3/4 to keep top vibrant */}
+      <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+
+      {/* Content */}
+      <div className="absolute inset-0 flex flex-col justify-end p-5 z-20">
+        <div className="translate-y-10 group-hover:translate-y-0 transition-transform duration-500 ease-out">
+          <div className="flex items-center gap-2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+            <span className="text-[10px] font-bold text-primary tracking-widest uppercase">
+              ⭐ {series.rating}
+            </span>
+            <span className="w-1 h-1 rounded-full bg-white/30" />
+            <span className="text-[10px] text-white/70 font-bold uppercase tracking-widest">{series.year}</span>
+          </div>
+
+          <h3 className="text-xl lg:text-2xl font-bold text-white mb-2 font-cinzel leading-tight line-clamp-2">
             {series.title}
-          </p>
-        </div>
-      )}
+          </h3>
 
-      {/* Hover State - Full Overlay */}
-      {isHovered && (
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent flex flex-col justify-between p-4 rounded-lg">
-          {/* Title and Rating */}
-          <div>
-            <h3 className="text-lg font-bold text-foreground mb-2">
-              {series.title}
-            </h3>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-semibold text-primary">
-                ⭐ {series.rating}
-              </span>
-              <span className="text-xs text-foreground/70">{series.year}</span>
-            </div>
+          <div className="flex items-center gap-2 text-[11px] font-medium tracking-wider uppercase text-white/60 mb-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-150">
+            <Film size={14} />
+            <span>{series.seasons} season{series.seasons !== 1 ? 's' : ''}</span>
           </div>
 
-          {/* Metadata and Overview */}
-          <div>
-            {/* Seasons/Episodes */}
-            <div className="flex items-center gap-2 mb-3 text-sm text-foreground/80">
-              <Film size={16} />
-              <span>{series.seasons} season{series.seasons !== 1 ? 's' : ''}</span>
-            </div>
-
-            {/* Overview */}
-            <p className="text-xs text-foreground/70 line-clamp-3 mb-3">
-              {series.overview}
-            </p>
-
-            {/* Genres */}
-            <div className="flex flex-wrap gap-1">
-              {series.genres.slice(0, 2).map((genre, idx) => (
-                <span
-                  key={idx}
-                  className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-md"
-                >
-                  {genre}
-                </span>
-              ))}
-            </div>
-          </div>
+          <motion.button 
+            className="w-full py-3 bg-gradient-to-r from-accent to-primary text-primary-foreground text-xs font-bold uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200 hover:shadow-[0_0_15px_rgba(244,216,69,0.3)] border border-white/20"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={(e) => e.preventDefault()}
+            title="Coming Soon"
+          >
+            View Details
+          </motion.button>
         </div>
-      )}
-    </div>
+      </div>
+    </motion.div>
   )
 }

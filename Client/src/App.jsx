@@ -123,9 +123,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Community from './pages/community';
 import Login from './pages/login';
-import Timeline from './pages/timeline';
+import Timeline from './pages/Timeline';
 import Creators from './pages/creator';
-
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -134,8 +134,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/community" element={<Community />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Login />} />
         <Route path="/timeline" element={<Timeline />} />
         <Route path="/creators" element={<Creators />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   );
