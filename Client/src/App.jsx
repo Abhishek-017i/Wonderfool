@@ -126,19 +126,41 @@ import Login from './pages/login';
 import Timeline from './pages/Timeline';
 import Creators from './pages/creator';
 import ProfilePage from './pages/ProfilePage';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import Wishlist from './pages/Wishlist';
+import NotFoundPage from './pages/NotFoundPage';
+import SeriesDetail from './pages/SeriesDetail';
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Login />} />
-        <Route path="/timeline" element={<Timeline />} />
-        <Route path="/creators" element={<Creators />} />
-        <Route path="/profile" element={<ProfilePage />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/series/:id" element={<SeriesDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Login />} />
+          <Route path="/creators" element={<Creators />} />
+          <Route path="/timeline" element={
+            <ProtectedRoute>
+              <Timeline />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/wishlist" element={
+            <ProtectedRoute>
+              <Wishlist />
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

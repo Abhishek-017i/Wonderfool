@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Navbar from '@/components/Navbar'
 import ProfileHeader from '../components/profile/ProfileHeader'
 import TabNavigation from '../components/profile/TabNavigation'
@@ -14,8 +15,17 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage(props: ProfilePageProps) {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [searchParams] = useSearchParams()
+  const initialTab = searchParams.get('tab') || 'overview'
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [localIsDark, setLocalIsDark] = useState(() => document.documentElement.classList.contains('dark'))
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {

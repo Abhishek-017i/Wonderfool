@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { Heart, Share2, ChevronDown, CheckCircle, MapPin, Calendar, Link as LinkIcon } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import type { UserProfile } from '../../data/mockData'
 import { formatNumber } from '../../lib/utils'
 import Toast from './Toast'
+import UsersModal from './UsersModal'
+import { useAuth } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
 
 interface ProfileHeaderProps {
@@ -13,8 +16,17 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
   const [isFollowing, setIsFollowing] = useState(user.isFollowing)
   const [showBioFull, setShowBioFull] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'followers' | 'following' }>({ isOpen: false, type: 'followers' })
+
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { isAuthenticated } = useAuth()
 
   const handleFollow = () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
     setIsFollowing(!isFollowing)
     setToast(isFollowing ? 'Unfollowed user' : 'Following user')
     setTimeout(() => setToast(null), 2000)
@@ -26,6 +38,12 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
   }
 
   const bioPreview = user.bio.length > 120 ? user.bio.substring(0, 120) + '...' : user.bio
+
+  const mockUsers = [
+    { id: '1', name: 'Alex Chen', handle: '@alexc', avatar: 'https://i.pravatar.cc/150?u=1', isFollowing: true },
+    { id: '2', name: 'Sarah Smith', handle: '@sarahs', avatar: 'https://i.pravatar.cc/150?u=2', isFollowing: false },
+    { id: '3', name: 'Mike Johnson', handle: '@mikej', avatar: 'https://i.pravatar.cc/150?u=3', isFollowing: true },
+  ]
 
   return (
     <>
@@ -130,14 +148,22 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <motion.div whileHover={{ y: -2 }} className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center luxury-shadow">
+          <motion.button 
+            whileHover={{ y: -2 }} 
+            onClick={() => setModalState({ isOpen: true, type: 'followers' })}
+            className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center luxury-shadow hover:border-primary/50 transition-colors w-full"
+          >
             <span className="text-2xl font-bold text-gradient mb-1">{formatNumber(user.followers)}</span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Followers</span>
-          </motion.div>
-          <motion.div whileHover={{ y: -2 }} className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center luxury-shadow">
+          </motion.button>
+          <motion.button 
+            whileHover={{ y: -2 }} 
+            onClick={() => setModalState({ isOpen: true, type: 'following' })}
+            className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center luxury-shadow hover:border-primary/50 transition-colors w-full"
+          >
             <span className="text-2xl font-bold text-gradient mb-1">{formatNumber(user.following)}</span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Following</span>
-          </motion.div>
+          </motion.button>
           <motion.div whileHover={{ y: -2 }} className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center luxury-shadow">
             <span className="text-2xl font-bold text-gradient mb-1">{formatNumber(user.reviews)}</span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reviews</span>
@@ -148,6 +174,13 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
           </motion.div>
         </div>
       </div>
+
+      <UsersModal 
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        title={modalState.type === 'followers' ? 'Followers' : 'Following'}
+        users={mockUsers}
+      />
 
       {toast && <Toast message={toast} />}
     </>

@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 interface SignUpFormProps {
   sharedEmail: string
   onSharedEmailChange: (email: string) => void
+  onSuccess?: () => void
 }
 
 interface SignUpErrors {
@@ -19,7 +20,7 @@ interface SignUpErrors {
   agreeToTerms?: string
 }
 
-export default function SignUpForm({ sharedEmail, onSharedEmailChange }: SignUpFormProps) {
+export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess }: SignUpFormProps) {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState(sharedEmail)
   const [password, setPassword] = useState('')
@@ -125,7 +126,9 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange }: SignUpF
 
     // Show success or reset form
     console.log('Account created successfully')
-    // Could show a toast here or reset the form
+    if (onSuccess) {
+      onSuccess()
+    }
   }
 
   return (

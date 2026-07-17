@@ -20,25 +20,25 @@ export default function Footer() {
           {/* Links */}
           <div>
             <h4 className="font-semibold text-foreground mb-4">Explore</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/#top-anime" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Top Anime
                 </Link>
               </li>
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Top Manga
+                <Link to="/#top-anime" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                  Manga & Novels
                 </Link>
               </li>
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/timeline" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   New Releases
                 </Link>
               </li>
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Genres
+                <Link to="/timeline" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                  Trending
                 </Link>
               </li>
             </ul>
@@ -64,7 +64,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/community" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Guidelines
                 </Link>
               </li>

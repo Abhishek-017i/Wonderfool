@@ -6,9 +6,11 @@ import SignUpForm from '@/components/auth/SignUpForm'
 import BrandingPanel from '@/components/auth/BrandingPanel'
 import MobileHeader from '@/components/auth/MobileHeader'
 import SuccessToast from '@/components/auth/SuccessToast'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function AuthPage() {
   const location = useLocation()
+  const { login } = useAuth()
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>(
     location.pathname === '/signup' ? 'signup' : 'login'
   )
@@ -30,7 +32,8 @@ export default function AuthPage() {
     setShowSuccess(true)
     setTimeout(() => {
       setShowSuccess(false)
-      navigate('/timeline')
+      const from = location.state?.from?.pathname || location.state?.from || '/timeline'
+      login(from)
     }, 1500)
   }
 
@@ -84,6 +87,7 @@ export default function AuthPage() {
                 <SignUpForm
                   sharedEmail={sharedEmail}
                   onSharedEmailChange={setSharedEmail}
+                  onSuccess={handleLoginSuccess}
                 />
               </TabsContent>
             </Tabs>

@@ -211,39 +211,102 @@ export const groupActivitiesByDate = (activities: ActivityEntry[]) => {
   
   return groups
 }
-export const mockUser = {
+export type UserProfile = {
+  name: string;
+  handle: string;
+  bio: string;
+  location: string;
+  joined: string;
+  joinDate: string;
+  avatar: string;
+  banner: string;
+  verified: boolean;
+  rank: string;
+  website: string;
+  followers: number;
+  following: number;
+  reviews: number;
+  articles: number;
+  isFollowing: boolean;
+};
+
+export const mockUser: UserProfile = {
   name: "Aoi Tanaka",
   handle: "@aoi_reads",
   bio: "Chronicling every arc, panel, and page. Perpetual wanderer between fiction and reality.",
   location: "Kyoto, Japan",
   joined: "Joined March 2023",
-  avatar: "/media/poster-5.png"
+  joinDate: "March 2023",
+  avatar: "/media/poster-5.png",
+  banner: "/media/banner.png",
+  verified: true,
+  rank: "Elite Reader",
+  website: "wonderfool.com/aoi",
+  followers: 15400,
+  following: 243,
+  reviews: 42,
+  articles: 12,
+  isFollowing: false
 };
 
-export const mockReviews = [
+export type Review = {
+  id: number;
+  title: string;
+  animeTitle: string;
+  rating: number;
+  content: string;
+  date: string;
+  posterUrl: string;
+  likes: number;
+  comments: number;
+  readTime: string;
+};
+
+export const mockReviews: Review[] = [
   {
     id: 1,
     title: "Blade of the Fallen Petal",
+    animeTitle: "Samurai Champloo",
     rating: 5,
-    text: "A breathtaking finale. The final duel under the sakura tree will stay with me.",
-    date: "May 18, 2026"
+    content: "A breathtaking finale. The final duel under the sakura tree will stay with me.",
+    date: "May 18, 2026",
+    posterUrl: "/media/poster-1.png",
+    likes: 120,
+    comments: 15,
+    readTime: "5 min read"
   }
 ];
 
-export const mockArticles = [
+export type Article = {
+  id: number;
+  title: string;
+  excerpt: string;
+  date: string;
+  readTime: string;
+};
+
+export const mockArticles: Article[] = [
   {
     id: 1,
     title: "Top 10 Anime of 2025",
     excerpt: "A look back at the best anime of the past year.",
-    date: "Dec 31, 2025"
+    date: "Dec 31, 2025",
+    readTime: "10 min read"
   }
 ];
 
-export const mockWishlist = [
+export type WishlistItem = {
+  id: number;
+  name: string;
+  category: string;
+  addedDate: string;
+};
+
+export const mockWishlist: WishlistItem[] = [
   {
     id: 1,
-    title: "The Cursed Sorcerer Vol. 1",
-    format: "Manga",
-    image: "/media/poster-2.png"
+    name: "The Cursed Sorcerer Vol. 1",
+    category: "Manga",
+    addedDate: "Added May 10, 2026"
   }
 ];

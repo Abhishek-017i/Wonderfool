@@ -15,7 +15,9 @@ export default function Home() {
     <div className="w-full min-h-screen bg-background">
       <Navbar />
       <HeroCarousel />
-      <SeriesGrid title="Top Anime" series={topAnime} />
+      <div id="top-anime">
+        <SeriesGrid title="Top Anime" series={topAnime} />
+      </div>
       <SeriesGrid title="Top Manga & Light Novels" series={topMangaLightNovels} alternateBg={true} />
       <SeriesGrid title="New Releases" series={newReleases} />
       <StoriesSection />

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Film } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export default function SeriesCard({ series, index }) {
   return (
@@ -47,15 +48,15 @@ export default function SeriesCard({ series, index }) {
             <span>{series.seasons} season{series.seasons !== 1 ? 's' : ''}</span>
           </div>
 
-          <motion.button 
-            className="w-full py-3 bg-gradient-to-r from-accent to-primary text-primary-foreground text-xs font-bold uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200 hover:shadow-[0_0_15px_rgba(244,216,69,0.3)] border border-white/20"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={(e) => e.preventDefault()}
-            title="Coming Soon"
-          >
-            View Details
-          </motion.button>
+          <Link to={`/series/${series.id || 1}`} className="w-full mt-2 block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200">
+            <motion.button 
+              className="w-full py-3 bg-gradient-to-r from-accent to-primary text-primary-foreground text-xs font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_15px_rgba(244,216,69,0.3)] border border-white/20"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              View Details
+            </motion.button>
+          </Link>
         </div>
       </div>
     </motion.div>

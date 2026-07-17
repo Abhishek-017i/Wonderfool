@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import ActivitySummary from '../components/timeline/ActivitySummary'
 import FilterBar from '../components/timeline/FilterBar'
@@ -10,6 +11,7 @@ import { ACTIVITY, getActivityStats, groupActivitiesByDate } from '../data/mockD
 import { ActivityEntry, FilterState } from '../types/activity'
 
 export default function Timeline() {
+  const navigate = useNavigate()
   const [activities, setActivities] = useState<ActivityEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -107,9 +109,19 @@ export default function Timeline() {
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-        <div className="px-4 md:px-8 py-6">
-          <h1 className="text-3xl font-bold">Your Timeline</h1>
-          <p className="text-muted-foreground mt-1">Track your anime, manga, and light novel journey</p>
+        <div className="px-4 md:px-8 py-6 flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="rounded-full hover:bg-muted"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Your Timeline</h1>
+            <p className="text-muted-foreground mt-1">Track your anime, manga, and light novel journey</p>
+          </div>
         </div>
       </header>
 

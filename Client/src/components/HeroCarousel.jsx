@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronRight, Play } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
 
 const carouselItems = [
   {
@@ -226,15 +227,15 @@ export default function HeroCarousel() {
                   >
                     <Play size={18} fill="currentColor" /> Watch Now
                   </motion.button>
-                  <motion.button 
-                    className="flex items-center gap-2 px-10 py-4 bg-white/5 text-white border border-white/20 backdrop-blur-md rounded-full font-bold uppercase tracking-[0.1em] text-sm"
-                    whileHover={{ scale: 1.05, y: -2, backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.4)' }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => e.preventDefault()}
-                    title="Coming Soon"
-                  >
-                    More Details <ChevronRight size={18} />
-                  </motion.button>
+                  <Link to={`/series/${carouselItems[currentSlide].id || 1}`}>
+                    <motion.button 
+                      className="flex items-center gap-2 px-10 py-4 bg-white/5 text-white border border-white/20 backdrop-blur-md rounded-full font-bold uppercase tracking-[0.1em] text-sm"
+                      whileHover={{ scale: 1.05, y: -2, backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.4)' }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      More Details <ChevronRight size={18} />
+                    </motion.button>
+                  </Link>
                 </div>
               </motion.div>
             </div>
