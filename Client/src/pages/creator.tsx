@@ -213,18 +213,18 @@ function CreatorCard({ creator }: { creator: Creator }) {
   const RoleIcon = ROLE_ICON[creator.role]
 
   return (
-    <article className="group flex flex-col rounded-[18px] border border-border/70 bg-card p-6 shadow-[0_12px_32px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/25 hover:shadow-[0_20px_44px_rgba(0,0,0,0.09)]">
+    <Link to={`/creator/${creator.id}`} className="group flex flex-col rounded-[18px] border border-border/70 bg-card p-6 shadow-[0_12px_32px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/25 hover:shadow-[0_20px_44px_rgba(0,0,0,0.09)]">
       {/* Avatar */}
-      <div className="relative size-32 rounded-full ring-1 ring-border">
+      <div className="relative size-32 mx-auto rounded-full ring-1 ring-border">
         <img
           src={creator.image || '/placeholder.svg'}
           alt={`Portrait of ${creator.name}`}
-          className="w-full h-full object-cover grayscale transition duration-500 group-hover:grayscale-0"
+          className="w-full h-full rounded-full object-cover grayscale transition duration-500 group-hover:grayscale-0"
         />
       </div>
       {/* Name + role */}
       <div className="mt-5 text-center">
-        <h2 className="font-display text-xl font-semibold text-foreground">
+        <h2 className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
           {creator.name}
         </h2>
         <div className="mt-1.5 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
@@ -254,6 +254,6 @@ function CreatorCard({ creator }: { creator: Creator }) {
           {creator.award}
         </span>
       </div>
-    </article>
+    </Link>
   )
 }

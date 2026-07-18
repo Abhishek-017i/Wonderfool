@@ -121,10 +121,12 @@
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
+import Browse from './pages/Browse';
 import Community from './pages/community';
 import Login from './pages/login';
 import Timeline from './pages/Timeline';
 import Creators from './pages/creator';
+import CreatorProfile from './pages/CreatorProfile';
 import ProfilePage from './pages/ProfilePage';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -138,11 +140,13 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/browse" element={<Browse />} />
           <Route path="/community" element={<Community />} />
           <Route path="/series/:id" element={<SeriesDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Login />} />
           <Route path="/creators" element={<Creators />} />
+          <Route path="/creator/:id" element={<CreatorProfile />} />
           <Route path="/timeline" element={
             <ProtectedRoute>
               <Timeline />

@@ -50,6 +50,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Home', path: '/' },
+    { name: 'Browse', path: '/browse' },
     { name: 'Community', path: '/community' },
     { name: 'Genre', path: '#' },
     { name: 'Timeline', path: '/timeline' },
@@ -153,6 +154,19 @@ export default function Navbar() {
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold truncate">Alex Chen</span>
                       <span className="text-xs text-muted-foreground">@alexc</span>
+                    </div>
+                  </Link>
+                  <div className="h-px bg-border my-1 mx-2" />
+                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Creators</div>
+                  <Link 
+                    to="/creator/1" 
+                    onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
+                    className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
+                  >
+                    <img src="/blog/avatar-3.png" className="w-8 h-8 rounded-full object-cover" alt="Creator" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold truncate">Akira Toriyama</span>
+                      <span className="text-xs text-muted-foreground text-accent">Character Designer</span>
                     </div>
                   </Link>
                 </motion.div>

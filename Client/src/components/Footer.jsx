@@ -22,13 +22,18 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Explore</h4>
             <ul className="space-y-4">
               <li>
+                <Link to="/browse" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                  Browse All Series
+                </Link>
+              </li>
+              <li>
                 <Link to="/#top-anime" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Top Anime
                 </Link>
               </li>
               <li>
                 <Link to="/#top-anime" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Manga & Novels
+                  Manga &amp; Novels
                 </Link>
               </li>
               <li>

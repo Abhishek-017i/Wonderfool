@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { Bookmark, Star, CheckCircle } from 'lucide-react'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
+import { Bookmark, Star, CheckCircle, PenTool } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -111,6 +111,23 @@ export default function SeriesDetail() {
                 <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">Action</Badge>
                 <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">Fantasy</Badge>
                 <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">Adventure</Badge>
+              </div>
+
+              <div className="mb-8">
+                <Link to="/creator/1" className="inline-flex items-center gap-3 p-3 pr-6 rounded-full bg-card/40 border border-border/50 hover:border-primary/50 hover:bg-card/60 transition-all group">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors">
+                    <img src="/blog/avatar-3.png" alt="Creator" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      <PenTool size={12} className="text-accent" />
+                      Created By
+                    </div>
+                    <div className="text-sm font-bold font-cinzel text-foreground group-hover:text-primary transition-colors">
+                      Akira Toriyama
+                    </div>
+                  </div>
+                </Link>
               </div>
 
               <div className="bg-card/50 backdrop-blur-sm border border-border p-6 rounded-2xl text-left">
