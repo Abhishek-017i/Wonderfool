@@ -82,10 +82,36 @@ const deletePerson = async (req, res) => {
   }
 };
 
+const searchPersons = async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    if (!name) {
+      return res.status(400).json({
+        message: "Please provide a search name",
+      });
+    }
+
+    const persons = await Person.find({
+      $or: [
+        { "name.full": { $regex: name, $options: "i" } },
+        { "name.native": { $regex: name, $options: "i" } },
+      ],
+    });
+
+    res.status(200).json(persons);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllPersons,
   getPersonById,
   createPerson,
   updatePerson,
   deletePerson,
+  searchPersons,
 };

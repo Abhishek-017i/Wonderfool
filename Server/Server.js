@@ -30,6 +30,8 @@ app.use('/api/series', require('./routes/seriesRoutes'));
 app.use("/api/persons", require("./routes/personRoutes"));
 app.use("/api/articles", require("./routes/articleRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/comments", require("./routes/commentRoutes"));
+app.use("/api/wishlists", require("./routes/wishlistRoutes"));
 
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 

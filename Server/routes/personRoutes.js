@@ -7,9 +7,11 @@ const {
   createPerson,
   updatePerson,
   deletePerson,
+  searchPersons,
 } = require("../controllers/personController");
 
 router.get("/", getAllPersons);
+router.get("/search", searchPersons);
 router.get("/:id", getPersonById);
 router.post("/", createPerson);
 router.put("/:id", updatePerson);

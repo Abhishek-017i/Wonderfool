@@ -84,10 +84,37 @@ const deleteSeries = async (req, res) => {
   }
 };
 
+const searchSeries = async (req, res) => {
+  try {
+    const { title } = req.query;
+
+    if (!title) {
+      return res.status(400).json({
+        message: "Please provide a search title",
+      });
+    }
+
+    const series = await Series.find({
+      $or: [
+        { "title.romaji": { $regex: title, $options: "i" } },
+        { "title.english": { $regex: title, $options: "i" } },
+        { "title.native": { $regex: title, $options: "i" } },
+      ],
+    });
+
+    res.status(200).json(series);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllSeries,
   getSeriesById,
   createSeries,
   updateSeries,
   deleteSeries,
+  searchSeries,
 };

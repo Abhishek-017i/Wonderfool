@@ -7,9 +7,11 @@ const {
   createSeries,
   updateSeries,
   deleteSeries,
+  searchSeries,
 } = require("../controllers/seriesController");
 
 router.get("/", getAllSeries);
+router.get("/search", searchSeries);
 router.get("/:id", getSeriesById);
 router.post("/", createSeries);
 router.put("/:id", updateSeries);

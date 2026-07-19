@@ -91,10 +91,30 @@ const deleteArticle = async (req, res) => {
   }
 };
 
+const getArticlesByCreator = async (req, res) => {
+  try {
+    const articles = await Article.find({
+      taggedCreators: req.params.personId,
+      status: "published",
+    })
+      .populate("authorId")
+      .populate("taggedCreators")
+      .populate("taggedSeries")
+      .populate("likes");
+
+    res.status(200).json(articles);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllArticles,
   getArticleById,
   createArticle,
   updateArticle,
   deleteArticle,
+  getArticlesByCreator,
 };
