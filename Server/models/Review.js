@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const verifyToken = require('../middleware/verifyToken');
 
 const reviewSchema = new mongoose.Schema({
   seriesId: { type: mongoose.Schema.Types.ObjectId, ref: 'Series', required: true },

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const verifyToken = require('../middleware/verifyToken');
 
 const articleSchema = new mongoose.Schema({
   title: { type: String, required: true },

@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const verifyToken = require('../middleware/verifyToken');
+require('./Series');
 
 const personSchema = new mongoose.Schema({
   name: {

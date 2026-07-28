@@ -1,24 +1,30 @@
 const express = require("express");
 const router = express.Router();
+const verifyToken = require('../middleware/verifyToken');
 
 const {
-  getAllWishlists,
+
   getWishlistById,
   createWishlist,
   updateWishlist,
   deleteWishlist,
-  getWishlistsByUser,
-  getWishlistsByUserAndStatus,
-  updateWishlistStatus, 
+  getUserWishlist,
+  getWishlistByStatus,
+  updateWishlistStatus,
+   
 } = require("../controllers/wishlistController");
-
-router.get("/", getAllWishlists);
-router.get("/user/:userId/status/:status", getWishlistsByUserAndStatus);
-router.get("/user/:userId", getWishlistsByUser);
-router.get("/:id", getWishlistById);
-router.post("/", createWishlist);
-router.patch("/status/:id", updateWishlistStatus);
-router.put("/:id", updateWishlist);
-router.delete("/:id", deleteWishlist);
+router.get("/", verifyToken, getUserWishlist);
+router.get("/:id",verifyToken ,getWishlistById);
+router.post("/", verifyToken, createWishlist);
+router.patch("/status/:id", verifyToken, updateWishlistStatus);
+router.put("/:id", verifyToken, updateWishlist);
+router.delete("/:id", verifyToken, deleteWishlist);
+router.get("/status/:status", verifyToken, getWishlistByStatus);
 
 module.exports = router;
+
+  //getWishlistsByUserAndStatus,
+
+//router.get("/", getAllWishlists);
+//router.get("/user/:userId/status/:status", getWishlistsByUserAndStatus);
+//router.get("/user/:userId", getWishlistsByUser);

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const verifyToken = require('../middleware/verifyToken');
 
 const commentSchema = new mongoose.Schema({
   parentType: { type: String, enum: ['Review', 'Article'], required: true },

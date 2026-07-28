@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const verifyToken = require('../middleware/verifyToken');
 
 const {
   getAllSeries,
@@ -13,8 +14,8 @@ const {
 router.get("/", getAllSeries);
 router.get("/search", searchSeries);
 router.get("/:id", getSeriesById);
-router.post("/", createSeries);
-router.put("/:id", updateSeries);
-router.delete("/:id", deleteSeries);
+router.post("/", verifyToken, createSeries);
+router.put("/:id", verifyToken, updateSeries);
+router.delete("/:id", verifyToken, deleteSeries);
 
 module.exports = router;
