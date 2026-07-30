@@ -5,19 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Label } from '@/components/ui/label'
-
-interface Filters {
-  mediaType: string[]
-  status: string[]
-  genres: string[]
-  demographic: string[]
-  yearRange: [number, number]
-  minRating: number
-  episodeRange: [number, number]
-  authors: string[]
-  artists: string[]
-  publishers: string[]
-}
+import type { Filters } from '@/pages/Browse'
 
 interface FilterSidebarProps {
   filters: Filters
@@ -28,12 +16,18 @@ interface FilterSidebarProps {
 }
 
 const MEDIA_TYPES = ['Anime', 'Manga', 'Light Novel']
-const STATUSES = ['Airing', 'Finished', 'Upcoming', 'Hiatus', 'Cancelled']
+const STATUSES = ['Airing', 'Finished', 'Hiatus', 'Cancelled']
 const GENRES = [
   'Action', 'Adventure', 'Comedy', 'Drama', 'School',
   'Supernatural', 'Mystery', 'Psychological', 'Fantasy', 'Sci-Fi', 'Mecha', 'Dark',
 ]
 const DEMOGRAPHICS = ['Shounen', 'Seinen', 'Shojo', 'Josei', 'Kids']
+const COUNTRIES = [
+  { code: 'JP', label: 'Japan' },
+  { code: 'KR', label: 'Korea' },
+  { code: 'CN', label: 'China' },
+  { code: 'TW', label: 'Taiwan' },
+]
 
 function FilterCheckbox({
   id,
@@ -70,9 +64,6 @@ export default function FilterSidebar({
   onReset,
   hasSearched,
 }: FilterSidebarProps) {
-  const toggle = <T extends string>(arr: T[], val: T): T[] =>
-    arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]
-
   return (
     <div className="space-y-2">
       <Accordion type="multiple" defaultValue={['media-type', 'status']} className="w-full">
@@ -126,7 +117,7 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        {/* Genres — shown always, not just after search */}
+        {/* Genres */}
         <AccordionItem value="genres">
           <AccordionTrigger>Genres</AccordionTrigger>
           <AccordionContent>
@@ -143,6 +134,31 @@ export default function FilterSidebar({
                       genres: checked
                         ? [...filters.genres, genre]
                         : filters.genres.filter((g) => g !== genre),
+                    })
+                  }
+                />
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Country of Origin */}
+        <AccordionItem value="country">
+          <AccordionTrigger>Country</AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2.5">
+              {COUNTRIES.map(({ code, label }) => (
+                <FilterCheckbox
+                  key={code}
+                  id={`country-${code}`}
+                  label={label}
+                  checked={filters.country.includes(code)}
+                  onCheckedChange={(checked) =>
+                    onFiltersChange({
+                      ...filters,
+                      country: checked
+                        ? [...filters.country, code]
+                        : filters.country.filter((c) => c !== code),
                     })
                   }
                 />

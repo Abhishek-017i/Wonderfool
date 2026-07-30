@@ -3,11 +3,84 @@ const Person = require("../models/Person");
 
 const getAllSeries = async (req, res) => {
   try {
-    const series = await Series.find()
-      .populate("staff.personId")
-      .populate("adaptations.seriesId");
+    const {
+      type,
+      status,
+      genres,
+      country,
+      yearStart,
+      yearEnd,
+      search,
+      page = 1,
+      limit = 20,
+    } = req.query;
 
-    res.status(200).json(series);
+    const filter = {};
+
+    // Type filter (ANIME, MANGA, NOVEL)
+    if (type) {
+      const types = type.split(",").map((t) => t.trim());
+      filter.type = { $in: types };
+    }
+
+    // Status filter (ongoing, finished, hiatus, cancelled)
+    if (status) {
+      const statuses = status.split(",").map((s) => s.trim());
+      filter.status = { $in: statuses };
+    }
+
+    // Genre filter (match any of the provided genres)
+    if (genres) {
+      const genreList = genres.split(",").map((g) => g.trim());
+      filter.genres = { $in: genreList };
+    }
+
+    // Country filter (JP, KR, CN, TW)
+    if (country) {
+      const countries = country.split(",").map((c) => c.trim());
+      filter.countryOfOrigin = { $in: countries };
+    }
+
+    // Year range filter
+    if (yearStart || yearEnd) {
+      filter.startDate = {};
+      if (yearStart) {
+        filter.startDate.$gte = new Date(`${yearStart}-01-01`);
+      }
+      if (yearEnd) {
+        filter.startDate.$lte = new Date(`${yearEnd}-12-31`);
+      }
+    }
+
+    // Search filter (title fields)
+    if (search) {
+      filter.$or = [
+        { "title.romaji": { $regex: search, $options: "i" } },
+        { "title.english": { $regex: search, $options: "i" } },
+        { "title.native": { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [series, total] = await Promise.all([
+      Series.find(filter)
+        .populate("staff.personId")
+        .populate("adaptations.seriesId")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Series.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      series,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
-import { SlidersHorizontal } from 'lucide-react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -13,8 +13,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import { generateExtendedSeriesData } from '@/data/browseSeries'
-import type { Series } from '@/data/browseSeries'
 import SearchBar from '@/components/browse/SearchBar'
 import QuickFilterBar from '@/components/browse/QuickFilterBar'
 import ActiveFilterChips from '@/components/browse/ActiveFilterChips'
@@ -27,12 +25,15 @@ import EmptyState from '@/components/browse/EmptyState'
 import ErrorState from '@/components/browse/ErrorState'
 import BackToTopButton from '@/components/browse/BackToTopButton'
 import { cn } from '@/lib/utils'
+import type { Series, PaginatedSeriesResponse } from '@/types/series'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 type SortBy = 'Popular' | 'Trending' | 'Highest Rated' | 'Newest' | 'Oldest' | 'Alphabetical' | 'Recently Updated'
 type ViewMode = 'grid' | 'compact' | 'list'
 type QuickFilterType = 'Popular' | 'Trending' | 'Completed' | 'Recently Added' | null
 
-interface Filters {
+export interface Filters {
   mediaType: string[]
   status: string[]
   genres: string[]
@@ -40,6 +41,7 @@ interface Filters {
   yearRange: [number, number]
   minRating: number
   episodeRange: [number, number]
+  country: string[]
   authors: string[]
   artists: string[]
   publishers: string[]
@@ -53,14 +55,27 @@ const DEFAULT_FILTERS: Filters = {
   yearRange: [1970, 2026],
   minRating: 0,
   episodeRange: [0, 0],
+  country: [],
   authors: [],
   artists: [],
   publishers: [],
 }
 
-export default function Browse() {
-  const allSeries = useMemo(() => generateExtendedSeriesData(), [])
+// Map display values to DB enum values
+const MEDIA_TYPE_MAP: Record<string, string> = {
+  'Anime': 'ANIME',
+  'Manga': 'MANGA',
+  'Light Novel': 'NOVEL',
+}
 
+const STATUS_MAP: Record<string, string> = {
+  'Airing': 'ongoing',
+  'Finished': 'finished',
+  'Hiatus': 'hiatus',
+  'Cancelled': 'cancelled',
+}
+
+export default function Browse() {
   // Search state
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
@@ -74,10 +89,14 @@ export default function Browse() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
 
   // Pagination state
-  const [visibleCount, setVisibleCount] = useState(20)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 20
 
-  // Loading/Error state
-  const [isLoading, setIsLoading] = useState(false)
+  // API state
+  const [seriesData, setSeriesData] = useState<Series[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
 
   // Debounce search
@@ -87,92 +106,103 @@ export default function Browse() {
         setDebouncedQuery(query)
         if (query.length > 0) setHasSearched(true)
       }
-    }, 250)
+    }, 300)
     return () => clearTimeout(timer)
   }, [query, debouncedQuery])
 
-  // Reset visible count on filter/sort change
+  // Reset page on filter/sort/search change
   useEffect(() => {
-    setVisibleCount(20)
-  }, [debouncedQuery, filters, activeQuickFilter, sortBy])
+    setCurrentPage(1)
+  }, [debouncedQuery, filters, activeQuickFilter])
 
-  // Search results for dropdown
+  // Build query params and fetch from API
+  const fetchSeries = useCallback(async () => {
+    setIsLoading(true)
+    setError(false)
+
+    try {
+      const params = new URLSearchParams()
+
+      // Media type filter → DB enum values
+      if (filters.mediaType.length > 0) {
+        const dbTypes = filters.mediaType.map(t => MEDIA_TYPE_MAP[t] || t)
+        params.set('type', dbTypes.join(','))
+      }
+
+      // Status filter → DB enum values
+      if (filters.status.length > 0) {
+        const dbStatuses = filters.status.map(s => STATUS_MAP[s] || s)
+        params.set('status', dbStatuses.join(','))
+      }
+
+      // Genre filter
+      if (filters.genres.length > 0) {
+        params.set('genres', filters.genres.join(','))
+      }
+
+      // Country filter
+      if (filters.country.length > 0) {
+        params.set('country', filters.country.join(','))
+      }
+
+      // Year range filter
+      if (filters.yearRange[0] > 1970) {
+        params.set('yearStart', String(filters.yearRange[0]))
+      }
+      if (filters.yearRange[1] < 2026) {
+        params.set('yearEnd', String(filters.yearRange[1]))
+      }
+
+      // Search
+      if (debouncedQuery) {
+        params.set('search', debouncedQuery)
+      }
+
+      // Quick filter overrides
+      if (activeQuickFilter === 'Completed') {
+        params.set('status', 'finished')
+      }
+
+      // Pagination
+      params.set('page', String(currentPage))
+      params.set('limit', String(ITEMS_PER_PAGE))
+
+      const response = await fetch(`${API_URL}/series?${params.toString()}`)
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
+
+      const data: PaginatedSeriesResponse = await response.json()
+      setSeriesData(data.series)
+      setTotalCount(data.total)
+      setTotalPages(data.totalPages)
+    } catch (err) {
+      console.error('Failed to fetch series:', err)
+      setError(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [filters, debouncedQuery, activeQuickFilter, currentPage])
+
+  useEffect(() => {
+    fetchSeries()
+  }, [fetchSeries])
+
+  // Search results for the dropdown (uses already-fetched data for fast typeahead)
   const searchResults = useMemo(() => {
     if (!debouncedQuery) return []
-    return allSeries.filter((series) => {
+    return seriesData.filter((series) => {
       const q = debouncedQuery.toLowerCase()
+      const title = series.title
       const matchesQuery =
-        series.title.toLowerCase().includes(q) ||
-        series.altTitle?.toLowerCase().includes(q) ||
-        series.nativeTitle?.toLowerCase().includes(q) ||
-        series.romanizedTitle?.toLowerCase().includes(q)
-      const matchesMediaType = mediaTypeScope === 'All' || series.type === mediaTypeScope
+        (title.romaji?.toLowerCase().includes(q)) ||
+        (title.english?.toLowerCase().includes(q)) ||
+        (title.native?.toLowerCase().includes(q))
+      const matchesMediaType = mediaTypeScope === 'All' || series.type === MEDIA_TYPE_MAP[mediaTypeScope]
       return matchesQuery && matchesMediaType
     })
-  }, [debouncedQuery, allSeries, mediaTypeScope])
-
-  // Apply all filters + sort
-  const filteredResults = useMemo(() => {
-    let results: Series[] = debouncedQuery ? [...searchResults] : [...allSeries]
-
-    // Quick filter
-    if (activeQuickFilter === 'Popular') {
-      results = results.sort((a, b) => b.popularity - a.popularity).slice(0, 100)
-    } else if (activeQuickFilter === 'Trending') {
-      results = results.filter((s) => s.trending)
-    } else if (activeQuickFilter === 'Completed') {
-      results = results.filter((s) => s.status === 'Finished')
-    } else if (activeQuickFilter === 'Recently Added') {
-      results = results.sort((a, b) => b.addedDate.getTime() - a.addedDate.getTime()).slice(0, 100)
-    }
-
-    // Filter panel
-    results = results.filter((series) => {
-      if (filters.mediaType.length > 0 && !filters.mediaType.includes(series.type)) return false
-      if (filters.status.length > 0 && !filters.status.includes(series.status)) return false
-      if (filters.genres.length > 0 && !series.genres.some((g) => filters.genres.includes(g))) return false
-      if (filters.demographic.length > 0 && series.demographic && !filters.demographic.includes(series.demographic)) return false
-      if (series.year < filters.yearRange[0] || series.year > filters.yearRange[1]) return false
-      if (series.rating < filters.minRating) return false
-      if (filters.episodeRange[0] > 0 && series.episodes && series.episodes < filters.episodeRange[0]) return false
-      if (filters.episodeRange[1] > 0 && series.episodes && series.episodes > filters.episodeRange[1]) return false
-      return true
-    })
-
-    // Sort
-    switch (sortBy) {
-      case 'Popular':
-        results.sort((a, b) => b.popularity - a.popularity)
-        break
-      case 'Trending':
-        results.sort((a, b) => (b.trending ? 1 : 0) - (a.trending ? 1 : 0))
-        break
-      case 'Highest Rated':
-        results.sort((a, b) => b.rating - a.rating)
-        break
-      case 'Newest':
-        results.sort((a, b) => b.year - a.year)
-        break
-      case 'Oldest':
-        results.sort((a, b) => a.year - b.year)
-        break
-      case 'Alphabetical':
-        results.sort((a, b) => a.title.localeCompare(b.title))
-        break
-      case 'Recently Updated':
-        results.sort((a, b) => b.addedDate.getTime() - a.addedDate.getTime())
-        break
-    }
-
-    return results
-  }, [searchResults, allSeries, debouncedQuery, activeQuickFilter, filters, sortBy])
-
-  // Simulate loading on filter changes
-  useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => setIsLoading(false), 400)
-    return () => clearTimeout(timer)
-  }, [debouncedQuery, filters, activeQuickFilter, sortBy])
+  }, [debouncedQuery, seriesData, mediaTypeScope])
 
   // Build filter chips
   const activeFilterChips: FilterChip[] = useMemo(() => {
@@ -206,6 +236,13 @@ export default function Browse() {
         onRemove: () => setFilters((f) => ({ ...f, demographic: f.demographic.filter((d) => d !== demo) })),
       })
     )
+    filters.country.forEach((c) =>
+      chips.push({
+        id: `country-${c}`,
+        label: c === 'JP' ? 'Japan' : c === 'KR' ? 'Korea' : c === 'CN' ? 'China' : c === 'TW' ? 'Taiwan' : c,
+        onRemove: () => setFilters((f) => ({ ...f, country: f.country.filter((x) => x !== c) })),
+      })
+    )
     if (filters.minRating > 0)
       chips.push({
         id: 'rating',
@@ -230,16 +267,14 @@ export default function Browse() {
     setActiveQuickFilter(null)
     setSortBy('Popular')
     setViewMode('grid')
-    setVisibleCount(20)
+    setCurrentPage(1)
     setError(false)
   }
 
-  const handleSearchResultClick = (series: Series) => {
-    console.log('Selected:', series.title)
+  const handleSearchResultClick = (series: { _id?: string; id?: string }) => {
+    // Navigate handled by Link in SearchBar, but can be used for analytics
+    console.log('Selected:', series)
   }
-
-  const visibleResults = filteredResults.slice(0, visibleCount)
-  const hasMoreResults = visibleCount < filteredResults.length
 
   const skeletonCount = viewMode === 'list' ? 5 : viewMode === 'compact' ? 20 : 15
 
@@ -267,7 +302,7 @@ export default function Browse() {
               </h1>
             </div>
             <p className="text-sm text-muted-foreground font-serif italic">
-              {allSeries.length.toLocaleString()} series in the library
+              {totalCount.toLocaleString()} series in the library
             </p>
           </motion.div>
 
@@ -368,7 +403,7 @@ export default function Browse() {
                   onSortChange={setSortBy}
                   viewMode={viewMode}
                   onViewModeChange={setViewMode}
-                  totalResults={filteredResults.length}
+                  totalResults={totalCount}
                 />
               </div>
 
@@ -393,15 +428,15 @@ export default function Browse() {
               )}
 
               {/* ── Error State ── */}
-              {error && !isLoading && <ErrorState onRetry={() => setError(false)} />}
+              {error && !isLoading && <ErrorState onRetry={fetchSeries} />}
 
               {/* ── Empty State ── */}
-              {!isLoading && !error && filteredResults.length === 0 && (
+              {!isLoading && !error && seriesData.length === 0 && (
                 <EmptyState onReset={handleReset} />
               )}
 
               {/* ── Results Grid ── */}
-              {!isLoading && !error && filteredResults.length > 0 && (
+              {!isLoading && !error && seriesData.length > 0 && (
                 <>
                   <div
                     className={cn(
@@ -410,9 +445,9 @@ export default function Browse() {
                       viewMode === 'compact' && 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
                     )}
                   >
-                    {visibleResults.map((series, i) => (
+                    {seriesData.map((series, i) => (
                       <SeriesCard
-                        key={series.id}
+                        key={series._id}
                         series={series}
                         variant={viewMode === 'list' ? 'list' : viewMode}
                         index={i}
@@ -420,22 +455,44 @@ export default function Browse() {
                     ))}
                   </div>
 
-                  {/* Load More */}
-                  {hasMoreResults && (
+                  {/* ── Pagination Controls ── */}
+                  {totalPages > 1 && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="flex justify-center mt-10"
+                      className="flex items-center justify-center gap-4 mt-10"
                     >
                       <Button
                         variant="outline"
-                        onClick={() => setVisibleCount((prev) => prev + 20)}
-                        className="px-8 border-primary/30 hover:border-primary/60 hover:bg-primary/5 font-semibold"
+                        size="sm"
+                        disabled={currentPage <= 1}
+                        onClick={() => {
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                          window.scrollTo({ top: 0, behavior: 'smooth' })
+                        }}
+                        className="gap-1.5 border-primary/30 hover:border-primary/60 hover:bg-primary/5 font-semibold disabled:opacity-40"
                       >
-                        Load More
-                        <span className="ml-2 text-muted-foreground text-xs">
-                          ({filteredResults.length - visibleCount} remaining)
-                        </span>
+                        <ChevronLeft className="w-4 h-4" />
+                        Prev
+                      </Button>
+
+                      <span className="text-sm font-serif text-muted-foreground">
+                        Page <span className="font-bold text-foreground">{currentPage}</span> of{' '}
+                        <span className="font-bold text-foreground">{totalPages}</span>
+                      </span>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage >= totalPages}
+                        onClick={() => {
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                          window.scrollTo({ top: 0, behavior: 'smooth' })
+                        }}
+                        className="gap-1.5 border-primary/30 hover:border-primary/60 hover:bg-primary/5 font-semibold disabled:opacity-40"
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
                       </Button>
                     </motion.div>
                   )}

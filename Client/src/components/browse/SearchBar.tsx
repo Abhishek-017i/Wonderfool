@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import type { Series } from '@/data/browseSeries'
+import type { Series } from '@/types/series'
 
 const RECENT_SEARCHES = ['Chainsaw Man', 'Frieren', 'Vinland Saga']
 
@@ -54,8 +54,12 @@ export default function SearchBar({
     setIsOpen(true)
   }
 
-  const displayItems = showRecent
-    ? (RECENT_SEARCHES.map((s) => ({ id: s, title: s, cover: '', type: 'Anime' as const, year: 0 })) as unknown as Series[])
+  const getDisplayTitle = (s: Series) => s.title?.english || s.title?.romaji || s.title?.native || 'Untitled'
+  const getDisplayYear = (s: Series) => { if (!s.startDate) return 0; const d = new Date(s.startDate); return isNaN(d.getTime()) ? 0 : d.getFullYear() }
+  const typeLabels: Record<string, string> = { ANIME: 'Anime', MANGA: 'Manga', NOVEL: 'Light Novel' }
+
+  const displayItems: Series[] = showRecent
+    ? (RECENT_SEARCHES.map((s) => ({ _id: s, title: { english: s }, coverImage: '', type: 'ANIME' as const, genres: [], characters: [], staff: [], adaptations: [] })) as unknown as Series[])
     : results.slice(0, 6)
 
   return (
@@ -122,9 +126,12 @@ export default function SearchBar({
                   </div>
                 )}
                 <div className="divide-y divide-border/50">
-                  {displayItems.map((item) => (
+                  {displayItems.map((item) => {
+                    const itemTitle = getDisplayTitle(item)
+                    const itemYear = getDisplayYear(item)
+                    return (
                     <button
-                      key={item.id}
+                      key={item._id}
                       onClick={() => {
                         if (onResultClick) onResultClick(item)
                         setIsOpen(false)
@@ -133,10 +140,10 @@ export default function SearchBar({
                         'w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/60 transition-colors text-left group'
                       )}
                     >
-                      {item.cover ? (
+                      {item.coverImage ? (
                         <img
-                          src={item.cover}
-                          alt={item.title}
+                          src={item.coverImage}
+                          alt={itemTitle}
                           className="w-8 h-12 object-cover rounded-md shrink-0 border border-border"
                         />
                       ) : (
@@ -146,19 +153,20 @@ export default function SearchBar({
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors">
-                          {item.title}
+                          {itemTitle}
                         </p>
-                        {item.year > 0 && (
-                          <p className="text-xs text-muted-foreground mt-0.5">{item.year}</p>
+                        {itemYear > 0 && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{itemYear}</p>
                         )}
                       </div>
                       {item.type && (
                         <Badge variant="outline" className="shrink-0 text-[10px] border-primary/30 text-primary/80">
-                          {item.type}
+                          {typeLabels[item.type] || item.type}
                         </Badge>
                       )}
                     </button>
-                  ))}
+                    )}
+                  )}
                 </div>
                 {results.length > 6 && (
                   <button
