@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import { SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
@@ -81,6 +82,31 @@ export default function Browse() {
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [hasSearched, setHasSearched] = useState(false)
   const [mediaTypeScope, setMediaTypeScope] = useState('All')
+
+  const location = useLocation()
+  
+  // Parse filters from URL on mount or URL change
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const typeParam = params.get('type')
+    const sortParam = params.get('sortBy')
+    
+    if (typeParam) {
+      const types = typeParam.split(',')
+      const displayTypes = types.map(t => {
+        if (t === 'ANIME') return 'Anime'
+        if (t === 'MANGA') return 'Manga'
+        if (t === 'NOVEL') return 'Light Novel'
+        return t
+      })
+      setFilters(prev => ({ ...prev, mediaType: displayTypes }))
+    }
+    
+    if (sortParam) {
+      // e.g. sortBy=Newest
+      setSortBy(sortParam as SortBy)
+    }
+  }, [location.search])
 
   // Filter state
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)

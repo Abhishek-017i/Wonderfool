@@ -11,6 +11,7 @@ const getAllSeries = async (req, res) => {
       yearStart,
       yearEnd,
       search,
+      sortBy,
       page = 1,
       limit = 20,
     } = req.query;
@@ -65,11 +66,20 @@ const getAllSeries = async (req, res) => {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
     const skip = (pageNum - 1) * limitNum;
 
+    let sortOptions = { createdAt: -1 };
+    if (sortBy === 'averageScore') {
+      sortOptions = { averageScore: -1, popularity: -1 };
+    } else if (sortBy === 'startDate') {
+      sortOptions = { startDate: -1, createdAt: -1 };
+    } else if (sortBy === 'popularity') {
+      sortOptions = { popularity: -1 };
+    }
+
     const [series, total] = await Promise.all([
       Series.find(filter)
         .populate("staff.personId")
         .populate("adaptations.seriesId")
-        .sort({ createdAt: -1 })
+        .sort(sortOptions)
         .skip(skip)
         .limit(limitNum),
       Series.countDocuments(filter),

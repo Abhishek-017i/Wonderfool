@@ -11,6 +11,12 @@ import type { Series } from '@/types/series'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
+const renderName = (name: any): string => {
+  if (!name) return 'Unknown';
+  if (typeof name === 'string') return name;
+  return name.full || name.userPreferred || name.native || 'Unknown';
+};
+
 const STATUS_LABELS: Record<string, string> = {
   ongoing: 'Airing',
   finished: 'Finished',
@@ -250,7 +256,7 @@ export default function SeriesDetail() {
                     >
                       <div className="w-10 h-10 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors bg-muted flex items-center justify-center">
                         {staffMember.personId?.photo ? (
-                          <img src={staffMember.personId.photo} alt={staffMember.personId.name || ''} className="w-full h-full object-cover" />
+                          <img src={staffMember.personId.photo} alt={renderName(staffMember.personId.name)} className="w-full h-full object-cover" />
                         ) : (
                           <PenTool size={16} className="text-muted-foreground" />
                         )}
@@ -261,7 +267,7 @@ export default function SeriesDetail() {
                           {staffMember.designation || 'Staff'}
                         </div>
                         <div className="text-sm font-bold font-cinzel text-foreground group-hover:text-primary transition-colors">
-                          {staffMember.personId?.name || 'Unknown'}
+                          {renderName(staffMember.personId?.name)}
                         </div>
                       </div>
                     </Link>
@@ -288,15 +294,15 @@ export default function SeriesDetail() {
                       <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-card/50 border border-border">
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-muted shrink-0">
                           {char.photo ? (
-                            <img src={char.photo} alt={char.name} className="w-full h-full object-cover" />
+                            <img src={char.photo} alt={renderName(char.name)} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs font-bold">
-                              {char.name?.charAt(0) || '?'}
+                              {renderName(char.name).charAt(0)}
                             </div>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold truncate">{char.name}</p>
+                          <p className="text-sm font-semibold truncate">{renderName(char.name)}</p>
                           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                             {char.role}
                           </p>
