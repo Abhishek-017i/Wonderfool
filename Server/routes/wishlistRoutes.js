@@ -22,9 +22,3 @@ router.delete("/:id", verifyToken, deleteWishlist);
 router.get("/status/:status", verifyToken, getWishlistByStatus);
 
 module.exports = router;
-
-  //getWishlistsByUserAndStatus,
-
-//router.get("/", getAllWishlists);
-//router.get("/user/:userId/status/:status", getWishlistsByUserAndStatus);
-//router.get("/user/:userId", getWishlistsByUser);

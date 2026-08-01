@@ -5,11 +5,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import { auth } from '../../firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import api from '../../lib/api';
+import useAuthStore from '../../store/authStore';
 
 interface SignUpFormProps {
   sharedEmail: string
   onSharedEmailChange: (email: string) => void
-  onSuccess?: () => void
+  onSuccess: () => void
 }
 
 interface SignUpErrors {
@@ -30,6 +34,8 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<SignUpErrors>({})
+  const setUser = useAuthStore((state) => state.setUser);
+  const [emailOrUsername, setEmailOrUsername] = useState(sharedEmail)
 
   const validateEmail = (value: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -104,32 +110,27 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    console.log('1. Form submitted');
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('2. Firebase login succeeded', userCredential.user.email);
 
-    const validationErrors = validateSignUp({
-      username,
-      email,
-      password,
-      confirmPassword,
-      agreeToTerms,
-    })
+      const token = await userCredential.user.getIdToken();
+      console.log('3. Got token', token.substring(0, 20));
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
+      const res = await api.post('/auth/sync', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('4. Sync succeeded', res.data);
+
+      setUser(res.data, token);
+      onSuccess();
+      console.log('5. onSuccess called');
+    } catch (err) {
+      console.error('LOGIN ERROR:', err);
     }
-
-    setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-    setIsSubmitting(false)
-
-    // Show success or reset form
-    console.log('Account created successfully')
-    if (onSuccess) {
-      onSuccess()
-    }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -332,3 +333,5 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
     </form>
   )
 }
+
+

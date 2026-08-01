@@ -19,8 +19,6 @@ const seriesSchema = new mongoose.Schema({
   volumeCount: Number,
   coverImage: String,
   bannerImage: String,
-  averageScore: Number,
-  popularity: Number,
   characters: [{
     name: String,
     photo: String,

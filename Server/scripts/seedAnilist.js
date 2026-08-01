@@ -6,7 +6,7 @@ const Series = require('../models/Series');
 const Person = require('../models/Person');
 
 const ANILIST_URL = 'https://graphql.anilist.co';
-const TARGET_COUNT = 100; 
+const TARGET_COUNT = 1000; 
 const PER_PAGE = 50;
 
 //Helper functions
@@ -65,7 +65,6 @@ async function fetchAnimePage(page, perPage = 50) {
           chapters
           volumes
           averageScore
-          popularity
           coverImage { large }
           bannerImage
           staff(perPage: 5) {
@@ -114,7 +113,6 @@ async function fetchMangaPage(page, perPage = 50) {
           chapters
           volumes
           averageScore
-          popularity
           coverImage { large }
           bannerImage
           staff(perPage: 5) {
@@ -169,7 +167,6 @@ function transformToSeries(media) {
     coverImage: media.coverImage.large,
     bannerImage: media.bannerImage,
     averageScore: media.averageScore,
-    popularity: media.popularity,
     _rawStaff: relevantStaff,
   };
 }
@@ -236,24 +233,23 @@ async function seedMedia(mediaType, targetCount) {
       : await fetchMangaPage(page, PER_PAGE);
 
     for (const media of result.media) {
+      const existing = await Series.findOne({ aniListId: media.id });
+      if (existing) {
+        console.log(`Skipping "${media.title.romaji}" — already seeded`);
+        continue;
+      }
+
       const seriesData = transformToSeries(media);
       const rawStaff = seriesData._rawStaff;
       delete seriesData._rawStaff;
 
-      let savedSeries = await Series.findOne({ aniListId: media.id });
-      if (savedSeries) {
-        // Update in-place to backfill averageScore and popularity
-        savedSeries.averageScore = seriesData.averageScore;
-        savedSeries.popularity = seriesData.popularity;
-        await savedSeries.save();
-        console.log(`Updated in-place: ${media.title.romaji}`);
-      } else {
-        savedSeries = await Series.create(seriesData);
-        const staffArray = await linkStaffToSeries(rawStaff, savedSeries._id);
-        savedSeries.staff = staffArray;
-        await savedSeries.save();
-        console.log(`Seeded: ${media.title.romaji}`);
-      }
+      const savedSeries = await Series.create(seriesData);
+      const staffArray = await linkStaffToSeries(rawStaff, savedSeries._id);
+
+      savedSeries.staff = staffArray;
+      await savedSeries.save();
+
+      console.log(`Seeded: ${media.title.romaji}`);
       totalSeeded++;
 
       if (totalSeeded >= targetCount) break;

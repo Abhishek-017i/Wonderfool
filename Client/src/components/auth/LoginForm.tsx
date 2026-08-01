@@ -5,6 +5,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import { auth } from '../../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import api from '../../lib/api';
+import useAuthStore from '../../store/authStore';
 
 interface LoginFormProps {
   sharedEmail: string
@@ -24,6 +28,7 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess 
   const [rememberMe, setRememberMe] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<LoginErrors>({})
+  const setUser = useAuthStore((state) => state.setUser);
 
   const validateLogin = (values: { emailOrUsername: string; password: string }): LoginErrors => {
     const newErrors: LoginErrors = {}
@@ -55,20 +60,27 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess 
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    console.log('1. Form submitted');
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, emailOrUsername, password);
+      console.log('2. Firebase login succeeded', userCredential.user.email);
 
-    const validationErrors = validateLogin({ emailOrUsername, password })
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
+      const token = await userCredential.user.getIdToken();
+      console.log('3. Got token', token.substring(0, 20));
+
+      const res = await api.post('/auth/sync', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('4. Sync succeeded', res.data);
+
+      setUser(res.data, token);
+      onSuccess();
+      console.log('5. onSuccess called');
+    } catch (err) {
+      console.error('LOGIN ERROR:', err);
     }
-
-    setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-    setIsSubmitting(false)
-    onSuccess()
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

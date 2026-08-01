@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import SeriesCard from './SeriesCard'
 
-export default function SeriesGrid({ title, series, alternateBg = false, linkTo = "/browse", linkText = "View All" }) {
+export default function SeriesGrid({ title, series, alternateBg = false }) {
   // Take exactly 5 for desktop to fit the grid perfectly
   const displaySeries = series.slice(0, 5)
 
@@ -19,17 +19,17 @@ export default function SeriesGrid({ title, series, alternateBg = false, linkTo 
             </h2>
           </div>
           <Link
-            to={linkTo}
+            to="/community"
             className="hidden md:inline-flex items-center gap-3 text-foreground font-semibold hover:text-primary transition-all group uppercase tracking-widest text-xs"
           >
-            {linkText}
+            View All
             <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
           </Link>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-8">
           {displaySeries.map((item, idx) => (
-            <SeriesCard key={item._id || item.id || idx} series={item} index={idx} />
+            <SeriesCard key={item.id} series={item} index={idx} />
           ))}
         </div>
       </div>
