@@ -119,6 +119,7 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
       const token = await userCredential.user.getIdToken();
       console.log('3. Got token', token.substring(0, 20));
 
+      console.log('4. About to call sync, URL will be:', api.defaults.baseURL + '/auth/sync');
       const res = await api.post('/auth/sync', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -127,8 +128,13 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
       setUser(res.data, token);
       onSuccess();
       console.log('5. onSuccess called');
-    } catch (err) {
-      console.error('LOGIN ERROR:', err);
+    } 
+    catch (err) {
+      console.error('LOGIN ERROR raw:', err);
+      console.error('LOGIN ERROR type:', typeof err);
+      console.error('LOGIN ERROR is Error instance:', err instanceof Error);
+      console.error('LOGIN ERROR keys:', err && typeof err === 'object' ? Object.keys(err) : 'not an object');
+      console.error('LOGIN ERROR JSON:', JSON.stringify(err, Object.getOwnPropertyNames(err || {})));
     }
   };
 
