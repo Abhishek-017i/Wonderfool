@@ -1,28 +1,22 @@
 import { useParams } from 'react-router-dom'
 import { useCreator } from '../hooks/useCreator'
+import { useEffect } from 'react'
+import { motion } from 'framer-motion'
 
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import CreatorHero from '../components/creator/CreatorHero'
 import CreatorHeroSkeleton from '../components/creator/CreatorHeroSkeleton'
 import Biography from '../components/creator/Biography'
-import CreatorInfo from '../components/creator/CreatorInfo'
 import KnownWorks from '../components/creator/KnownWorks'
-import Spotlight from '../components/creator/Spotlight'
-import Achievements from '../components/creator/Achievements'
-import CommunityStats from '../components/creator/CommunityStats'
-import RelatedCreators from '../components/creator/RelatedCreators'
-import CreatorCardSkeleton from '../components/creator/CreatorCardSkeleton'
-import ErrorState from '../components/browse/ErrorState'
 import SeriesCardSkeleton from '../components/browse/SeriesCardSkeleton'
-import { useEffect } from 'react'
-import { motion } from 'framer-motion'
+import ErrorState from '../components/browse/ErrorState'
+import { Globe, Link as LinkIcon } from 'lucide-react'
 
 export default function CreatorProfile() {
   const { id } = useParams<{ id: string }>()
   const { creator, isLoading, error, retry } = useCreator(id || '')
 
-  // Scroll to top when creator ID changes (e.g. clicking related creator)
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [id])
@@ -47,13 +41,9 @@ export default function CreatorProfile() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <main className="flex-1 w-full max-w-[1400px] mx-auto pb-12">
-          {/* Hero Skeleton */}
+        <main className="flex-1 w-full max-w-[1400px] mx-auto pb-12 pt-16">
           <CreatorHeroSkeleton />
-
-          {/* Content Skeleton */}
           <div className="mt-12 space-y-16 px-4 sm:px-8 lg:px-12 max-w-6xl mx-auto">
-            {/* Biography Skeleton */}
             <div className="space-y-4">
               <div className="h-10 w-40 bg-muted rounded animate-pulse" />
               <div className="space-y-3">
@@ -62,8 +52,6 @@ export default function CreatorProfile() {
                 <div className="h-5 bg-muted rounded animate-pulse w-3/4" />
               </div>
             </div>
-
-            {/* Known Works Skeleton */}
             <div className="space-y-6">
               <div className="h-10 w-48 bg-muted rounded animate-pulse" />
               <div className="flex gap-4 pb-4 overflow-hidden">
@@ -71,16 +59,6 @@ export default function CreatorProfile() {
                   <div key={i} className="w-[160px] sm:w-[200px] flex-shrink-0">
                     <SeriesCardSkeleton viewMode="grid" />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Related Creators Skeleton */}
-            <div className="space-y-6">
-              <div className="h-10 w-48 bg-muted rounded animate-pulse" />
-              <div className="flex gap-4 pb-4 overflow-hidden">
-                {[...Array(6)].map((_, i) => (
-                  <CreatorCardSkeleton key={i} />
                 ))}
               </div>
             </div>
@@ -107,85 +85,63 @@ export default function CreatorProfile() {
     )
   }
 
+  const renderSocialIcon = (platform: string) => {
+    const p = platform.toLowerCase()
+    if (p.includes('twitter') || p.includes('x')) return <Globe className="w-4 h-4" />
+    if (p.includes('instagram') || p.includes('ig')) return <Globe className="w-4 h-4" />
+    if (p.includes('website') || p.includes('blog')) return <Globe className="w-4 h-4" />
+    return <LinkIcon className="w-4 h-4" />
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <main className="flex-1 w-full pb-20">
+      <main className="flex-1 w-full pb-20 pt-16">
         <article className="max-w-[1400px] mx-auto bg-card/30 rounded-b-3xl shadow-2xl overflow-hidden border-x border-b border-border/50">
-          {/* Hero Section */}
+          
           <CreatorHero
             name={creator.name}
-            roles={creator.roles}
-            country={creator.country}
-            avatarUrl={creator.avatarUrl}
-            bannerUrl={creator.bannerUrl}
+            photo={creator.photo}
+            designation={creator.designation}
+            yearsActive={creator.yearsActive}
           />
 
-          {/* Main Content */}
-          <div className="px-4 sm:px-8 lg:px-12 py-16 space-y-20 max-w-6xl mx-auto">
-            {/* Top Row: Bio & Info */}
+          <div className="px-4 sm:px-8 lg:px-12 py-16 space-y-16 max-w-6xl mx-auto">
+            {/* Bio and Socials */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="space-y-12"
+              className="space-y-8"
             >
-              <Biography bio={creator.bio} />
-              
-              <CreatorInfo
-                activeYears={creator.activeYears}
-                studios={creator.studios}
-                roles={creator.roles}
-                socials={creator.socials}
-              />
+              {creator.socials && creator.socials.length > 0 && (
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {creator.socials.map((social, idx) => (
+                    <a
+                      key={idx}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all duration-300 font-semibold text-sm shadow-sm"
+                    >
+                      {renderSocialIcon(social.platform)}
+                      {social.platform}
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {creator.bio && <Biography bio={creator.bio} />}
             </motion.div>
 
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <CommunityStats
-                followers={creator.stats.followers}
-                avgRating={creator.stats.avgRating}
-                totalWorks={creator.stats.totalWorks}
-              />
-            </motion.div>
-
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
-
-            {/* Known Works */}
-            <KnownWorks works={creator.knownWorks} />
-
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
-
-            {/* Spotlight */}
-            <Spotlight
-              title={creator.spotlightWork.title}
-              coverUrl={creator.spotlightWork.coverUrl}
-              rating={creator.spotlightWork.rating}
-              year={creator.spotlightWork.year}
-              description={creator.spotlightWork.description}
-              role={creator.spotlightWork.role}
-            />
-
-            {/* Achievements */}
-            {creator.achievements.length > 0 && (
+            {creator.knownWorks && creator.knownWorks.length > 0 && (
               <>
                 <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
-                <Achievements achievements={creator.achievements} />
+                <KnownWorks works={creator.knownWorks} />
               </>
             )}
 
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
-
-            {/* Related Creators */}
-            <RelatedCreators creators={creator.relatedCreators} />
           </div>
         </article>
       </main>
