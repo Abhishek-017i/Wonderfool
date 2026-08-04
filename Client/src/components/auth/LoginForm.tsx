@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-import { auth } from '../../firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, googleProvider } from '../../firebase';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import api from '../../lib/api';
 import useAuthStore from '../../store/authStore';
 
@@ -34,7 +34,7 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess 
     const newErrors: LoginErrors = {}
 
     if (!values.emailOrUsername.trim()) {
-      newErrors.emailOrUsername = 'Please enter your email or username.'
+      newErrors.emailOrUsername = 'Please enter your email.'
     }
 
     if (!values.password) {
@@ -79,6 +79,25 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess 
       console.log('5. onSuccess called');
     } catch (err) {
       console.error('LOGIN ERROR:', err);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+  console.log('Google sign-in clicked');
+  try {
+    const userCredential = await signInWithPopup(auth, googleProvider);
+    console.log('Google login succeeded', userCredential.user.email);
+
+    const token = await userCredential.user.getIdToken();
+    const res = await api.post('/auth/sync', {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    console.log('Sync succeeded', res.data);
+
+    setUser(res.data, token);
+    onSuccess();
+  } catch (err) {
+    console.error('GOOGLE LOGIN ERROR:', err);
     }
   };
 
@@ -204,19 +223,10 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess 
           type="button"
           variant="outline"
           disabled={isSubmitting}
-          onClick={() => console.log('Continue with Google')}
+          onClick={handleGoogleSignIn}
           className="w-full h-11 font-medium text-base"
         >
           Continue with Google
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isSubmitting}
-          onClick={() => console.log('Continue with Discord')}
-          className="w-full h-11 font-medium text-base"
-        >
-          Continue with Discord
         </Button>
       </div>
     </form>
