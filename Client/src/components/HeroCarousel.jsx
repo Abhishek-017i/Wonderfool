@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/purity */
 import { useState, useEffect } from 'react'
 import { ChevronRight, ChevronLeft, Heart, Info } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'

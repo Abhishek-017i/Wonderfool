@@ -1,27 +1,33 @@
-import { MapPin, Heart } from 'lucide-react'
+import { Heart, Calendar } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 
 interface CreatorHeroProps {
-  name: string
-  roles: string[]
-  country: string | null
-  avatarUrl: string
-  bannerUrl: string
+  name: {
+    full?: string
+    native?: string
+  }
+  photo?: string
+  designation?: string[]
+  yearsActive?: string
 }
 
 export default function CreatorHero({
   name,
-  roles,
-  country,
-  avatarUrl,
-  bannerUrl,
+  photo,
+  designation,
+  yearsActive,
 }: CreatorHeroProps) {
   const [isFavorited, setIsFavorited] = useState(false)
 
+  const renderName = () => {
+    return name?.full || name?.native || 'Unknown Creator'
+  }
+
   const getInitials = (fullName: string) => {
+    if (!fullName) return '?'
     return fullName
       .split(' ')
       .map(part => part[0])
@@ -30,7 +36,7 @@ export default function CreatorHero({
       .slice(0, 2)
   }
 
-  const initials = getInitials(name)
+  const initials = getInitials(renderName())
 
   return (
     <div className="w-full">
@@ -41,15 +47,7 @@ export default function CreatorHero({
         transition={{ duration: 0.6 }}
         className="relative w-full h-64 sm:h-80 lg:h-96 bg-gradient-to-br from-card to-border overflow-hidden"
       >
-        {bannerUrl ? (
-          <img
-            src={bannerUrl}
-            alt={`${name} banner`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5" />
-        )}
+        <div className="w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
         {/* Gradient overlay bottom-to-top */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
       </motion.div>
@@ -64,11 +62,11 @@ export default function CreatorHero({
             transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 20 }}
             className="flex-shrink-0"
           >
-            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-accent to-primary border-4 border-background flex items-center justify-center overflow-hidden shadow-[0_0_20px_rgba(212,175,55,0.3)]">
-              {avatarUrl && avatarUrl.startsWith('http') ? (
+            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-accent to-primary border-4 border-background flex items-center justify-center overflow-hidden luxury-shadow">
+              {photo ? (
                 <img
-                  src={avatarUrl}
-                  alt={name}
+                  src={photo}
+                  alt={renderName()}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -87,22 +85,30 @@ export default function CreatorHero({
             className="flex-1 pb-4 sm:pb-2 space-y-3"
           >
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-cinzel font-bold text-foreground text-balance bg-clip-text text-transparent bg-gradient-to-r from-accent via-secondary to-primary">
-                {name}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-cinzel font-bold text-foreground text-balance drop-shadow-md">
+                {renderName()}
               </h1>
-              <div className="flex flex-wrap gap-2 mt-3">
-                {roles.map(role => (
-                  <Badge key={role} variant="secondary" className="border-accent/30 bg-accent/10 text-accent hover:bg-accent/20">
-                    {role}
-                  </Badge>
-                ))}
-              </div>
+              {name.native && name.full && (
+                <p className="text-sm text-muted-foreground font-serif italic mt-1">
+                  {name.native}
+                </p>
+              )}
+              
+              {designation && designation.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {designation.map((role, idx) => (
+                    <Badge key={idx} variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 text-xs">
+                      {role}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {country && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">{country}</span>
+            {yearsActive && (
+              <div className="flex items-center gap-2 text-muted-foreground mt-4">
+                <Calendar className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Active: {yearsActive}</span>
               </div>
             )}
           </motion.div>
@@ -125,7 +131,7 @@ export default function CreatorHero({
                 className={`w-5 h-5 transition-colors ${isFavorited ? 'fill-primary text-primary' : 'text-foreground'}`}
               />
             </Button>
-            <Button className="flex-1 sm:flex-none bg-gradient-to-r from-accent to-primary text-primary-foreground hover:shadow-lg hover:shadow-primary/20 transition-all border-0">
+            <Button className="flex-1 sm:flex-none bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(244,216,69,0.4)] transition-all border-0 font-semibold">
               Follow
             </Button>
           </motion.div>
