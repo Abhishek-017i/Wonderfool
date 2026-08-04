@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-import { auth } from '../../firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, googleProvider } from '../../firebase';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from 'firebase/auth';
 import api from '../../lib/api';
 import useAuthStore from '../../store/authStore';
 
@@ -115,8 +115,10 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('2. Firebase login succeeded', userCredential.user.email);
+      
+      await updateProfile(userCredential.user, { displayName: username });
 
-      const token = await userCredential.user.getIdToken();
+      const token = await userCredential.user.getIdToken(true);
       console.log('3. Got token', token.substring(0, 20));
 
       console.log('4. About to call sync, URL will be:', api.defaults.baseURL + '/auth/sync');
@@ -137,6 +139,28 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
       console.error('LOGIN ERROR JSON:', JSON.stringify(err, Object.getOwnPropertyNames(err || {})));
     }
   };
+
+  const handleGoogleSignIn = async () => {
+  console.log('1. Google sign-in clicked');
+  try {
+    const userCredential = await signInWithPopup(auth, googleProvider);
+    console.log('2. Google login succeeded', userCredential.user.email);
+
+    const token = await userCredential.user.getIdToken();
+    console.log('3. Got token', token.substring(0, 20));
+
+    const res = await api.post('/auth/sync', {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    console.log('4. Sync succeeded', res.data);
+
+    setUser(res.data, token);
+    onSuccess();
+    console.log('5. onSuccess called');
+  } catch (err: any) {
+    console.error('GOOGLE LOGIN ERROR:', err?.message || err);
+  }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -321,19 +345,10 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
           type="button"
           variant="outline"
           disabled={isSubmitting}
-          onClick={() => console.log('Continue with Google')}
+          onClick={handleGoogleSignIn}
           className="w-full h-11 font-medium text-base"
         >
           Continue with Google
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isSubmitting}
-          onClick={() => console.log('Continue with Discord')}
-          className="w-full h-11 font-medium text-base"
-        >
-          Continue with Discord
         </Button>
       </div>
     </form>

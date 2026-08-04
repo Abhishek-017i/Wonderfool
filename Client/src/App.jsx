@@ -124,7 +124,7 @@ import Home from './pages/Home';
 import Browse from './pages/Browse';
 import Community from './pages/community';
 import Login from './pages/login';
-import Timeline from './pages/Timeline';
+import Timeline from './pages/timeline';
 import Creators from './pages/creator';
 import CreatorProfile from './pages/CreatorProfile';
 import ProfilePage from './pages/ProfilePage';
