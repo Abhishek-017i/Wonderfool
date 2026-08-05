@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,20 +11,20 @@
   --card-foreground: #2A241C;
   --popover: #FFFFFF;
   --popover-foreground: #2A241C;
-  --primary: #C8AD39; /* Slightly darker gold for better contrast on light mode */
+  --primary: #987F23; /* Darker gold for better contrast on light mode */
   --primary-foreground: #FFFFFF;
   --secondary: #AB8E2C;
   --secondary-foreground: #FFFFFF;
   --muted: #E8E2CB;
-  --muted-foreground: #736340; /* Darker muted text */
+  --muted-foreground: #594B30; /* Darker muted text */
   --accent: #AB8E2C;
   --accent-foreground: #FFFFFF;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   --success: #4a9456;
-  --border: rgba(171, 142, 44, 0.25); /* More visible borders */
-  --input: rgba(171, 142, 44, 0.25);
-  --ring: rgba(200, 173, 57, 0.5);
+  --border: rgba(171, 142, 44, 0.45); /* More visible borders */
+  --input: rgba(171, 142, 44, 0.45);
+  --ring: rgba(171, 142, 44, 0.5);
   --radius: 1rem;
   --charcoal: #1A1A1A;
 }
@@ -131,13 +131,10 @@
 
 @layer utilities {
   .font-serif {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Cormorant Garamond', serif;
   }
   .font-sans {
     font-family: 'Inter', sans-serif;
-  }
-  .font-cinzel {
-    font-family: 'Cinzel', serif;
   }
   .glass-panel {
     background-color: rgba(255, 255, 255, 0.85);
