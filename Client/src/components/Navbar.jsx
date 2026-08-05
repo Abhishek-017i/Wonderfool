@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Search, Moon, Sun, User, Settings, LogOut, Bookmark } from 'lucide-react'
+import { Search, Moon, Sun, User, Settings, LogOut, Bookmark, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
@@ -11,6 +11,7 @@ export default function Navbar() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const searchRef = useRef(null)
   const dropdownRef = useRef(null)
   const location = useLocation()
@@ -52,13 +53,13 @@ export default function Navbar() {
     { name: 'Home', path: '/' },
     { name: 'Browse', path: '/browse' },
     { name: 'Community', path: '/community' },
-    { name: 'Genre', path: '#' },
+    // { name: 'Genre', path: '#' },
     { name: 'Timeline', path: '/timeline' },
     { name: 'Profile', path: '/profile' },
   ]
 
   return (
-    <motion.nav 
+    <motion.nav
       className={`fixed top-0 z-50 w-full transition-all duration-300 border-b ${isScrolled ? 'glass-panel py-3 border-border/50' : 'bg-transparent py-5 border-transparent'}`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -66,8 +67,14 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex-shrink-0">
-          <Link to="/" className="text-3xl font-cinzel font-bold text-gradient tracking-wider">
+        <div className="flex-shrink-0 flex items-center gap-3">
+          <button 
+            className="md:hidden text-foreground p-1" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          <Link to="/" className="text-3xl font-serif font-bold text-gradient tracking-wider">
             Wonderfool
           </Link>
         </div>
@@ -77,9 +84,9 @@ export default function Navbar() {
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path || location.hash === link.path
             return (
-              <Link 
-                key={link.name} 
-                to={link.path} 
+              <Link
+                key={link.name}
+                to={link.path}
                 title={link.path === '#' ? 'Coming Soon' : undefined}
                 onClick={link.path === '#' ? (e) => e.preventDefault() : undefined}
                 className="relative group text-sm font-semibold text-foreground hover:text-primary transition-colors uppercase tracking-widest"
@@ -102,12 +109,12 @@ export default function Navbar() {
         <div className="flex items-center gap-5">
           {/* Search */}
           <div className="relative flex items-center hidden sm:flex" ref={searchRef}>
-            <motion.div 
+            <motion.div
               className="flex items-center overflow-hidden bg-background/50 border border-border rounded-full backdrop-blur-sm relative z-50"
               animate={{ width: isSearchExpanded ? 260 : 42 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             >
-              <button 
+              <button
                 onClick={() => setIsSearchExpanded(!isSearchExpanded)}
                 className="p-2.5 text-foreground hover:text-primary transition-colors flex-shrink-0"
               >
@@ -121,7 +128,7 @@ export default function Navbar() {
                 className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-foreground/50 w-full pl-2 pr-4 font-serif italic"
               />
             </motion.div>
-            
+
             {/* Search Results Dropdown */}
             <AnimatePresence>
               {isSearchExpanded && searchQuery.length > 1 && (
@@ -132,8 +139,8 @@ export default function Navbar() {
                   className="absolute top-12 right-0 w-[260px] bg-card border border-border rounded-xl shadow-xl overflow-hidden py-2 z-50"
                 >
                   <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Series</div>
-                  <Link 
-                    to="/series/1" 
+                  <Link
+                    to="/series/1"
                     onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
                     className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
                   >
@@ -145,8 +152,8 @@ export default function Navbar() {
                   </Link>
                   <div className="h-px bg-border my-1 mx-2" />
                   <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Users</div>
-                  <Link 
-                    to="/profile" 
+                  <Link
+                    to="/profile"
                     onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
                     className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
                   >
@@ -158,8 +165,8 @@ export default function Navbar() {
                   </Link>
                   <div className="h-px bg-border my-1 mx-2" />
                   <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Creators</div>
-                  <Link 
-                    to="/creator/1" 
+                  <Link
+                    to="/creator/1"
                     onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
                     className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
                   >
@@ -186,13 +193,13 @@ export default function Navbar() {
           {/* Auth Section */}
           {isAuthenticated ? (
             <div className="relative" ref={dropdownRef}>
-              <button 
+              <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-colors focus:outline-none"
               >
                 <img src="/blog/avatar-3.png" alt="User avatar" className="w-full h-full object-cover" />
               </button>
-              
+
               <AnimatePresence>
                 {isDropdownOpen && (
                   <motion.div
@@ -202,29 +209,29 @@ export default function Navbar() {
                     transition={{ duration: 0.2 }}
                     className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg overflow-hidden py-1 z-50"
                   >
-                    <Link 
-                      to="/profile" 
+                    <Link
+                      to="/profile"
                       onClick={() => setIsDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
                     >
                       <User size={16} /> Profile
                     </Link>
-                    <Link 
-                      to="/profile?tab=settings" 
+                    <Link
+                      to="/profile?tab=settings"
                       onClick={() => setIsDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
                     >
                       <Settings size={16} /> Settings
                     </Link>
-                    <Link 
-                      to="/wishlist" 
+                    <Link
+                      to="/wishlist"
                       onClick={() => setIsDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
                     >
                       <Bookmark size={16} /> Wishlist
                     </Link>
                     <div className="h-px bg-border my-1" />
-                    <button 
+                    <button
                       onClick={() => {
                         setIsDropdownOpen(false)
                         logout()
@@ -238,8 +245,9 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
           ) : (
-            <Button 
-              className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground border border-white/20 hover:shadow-[0_0_20px_rgba(244,216,69,0.3)] transition-all font-bold px-7 uppercase tracking-wider text-xs" 
+            <Button
+              className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground border border-border hover:shadow-[0_0_20px_rgba(244,216,69,0.3)] transition-all font-bold px-7 uppercase tracking-wider text-xs"
+              size="sm"
               asChild
             >
               <Link to="/login">Login</Link>
@@ -247,6 +255,45 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-card border-b border-border overflow-hidden"
+          >
+            <div className="px-6 py-4 flex flex-col gap-4">
+              {navLinks.map((link) => {
+                const isActive = location.pathname === link.path || location.hash === link.path
+                return (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`text-sm font-semibold uppercase tracking-widest ${isActive ? 'text-primary' : 'text-foreground hover:text-primary'} transition-colors`}
+                  >
+                    {link.name}
+                  </Link>
+                )
+              })}
+              {!isAuthenticated && (
+                <div className="pt-4 border-t border-border">
+                  <Button
+                    className="w-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground border border-border hover:shadow-[0_0_20px_rgba(244,216,69,0.3)] transition-all font-bold uppercase tracking-wider text-xs"
+                    size="sm"
+                    asChild
+                  >
+                    <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   )
 }

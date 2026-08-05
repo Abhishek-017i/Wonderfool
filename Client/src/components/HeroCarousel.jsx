@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/purity */
 import { useState, useEffect } from 'react'
 import { ChevronRight, ChevronLeft, Heart, Info } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -15,7 +16,7 @@ export default function HeroCarousel({ series = [] }) {
 
   if (!series || series.length === 0) {
     return (
-      <div className="relative w-full overflow-hidden bg-black flex items-center justify-center" style={{ height: '75vh', minHeight: '600px', maxHeight: '800px' }}>
+      <div className="relative w-full overflow-hidden bg-background flex items-center justify-center" style={{ height: '75vh', minHeight: '600px', maxHeight: '800px' }}>
         <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
       </div>
     )
@@ -40,7 +41,7 @@ export default function HeroCarousel({ series = [] }) {
 
   return (
     <div 
-      className="relative w-full overflow-hidden bg-[#0a0a0a] group"
+      className="relative w-full overflow-hidden bg-background group"
       style={{ height: '80vh', minHeight: '600px', maxHeight: '850px' }}
     >
       <AnimatePresence initial={false} mode="sync">
@@ -67,8 +68,8 @@ export default function HeroCarousel({ series = [] }) {
           </motion.div>
 
           {/* Cool Gradients for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent z-0 h-full w-full" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent z-0 w-full lg:w-3/4" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-0 h-full w-full" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/50 to-transparent z-0 w-full lg:w-3/4" />
 
           {/* Content Layout */}
           <div className="absolute inset-0 flex flex-col justify-end z-10 pb-16 lg:pb-24">
@@ -85,45 +86,45 @@ export default function HeroCarousel({ series = [] }) {
                 <div className="max-w-[700px] flex-1">
                   {/* Metadata Tags */}
                   <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <span className="px-3 py-1 bg-white/10 backdrop-blur-md text-white rounded-full text-xs font-bold tracking-widest uppercase border border-white/20 shadow-sm">
+                    <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-xs font-bold tracking-widest uppercase border border-border shadow-sm">
                       {typeLabel}
                     </span>
                     {currentItem.episodeCount && (
-                      <span className="px-3 py-1 bg-white/10 backdrop-blur-md text-white rounded-full text-xs font-bold tracking-widest uppercase border border-white/20 shadow-sm flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 bg-white/60 rounded-full" /> CC {currentItem.episodeCount}
+                      <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-xs font-bold tracking-widest uppercase border border-border shadow-sm flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 bg-foreground/60 rounded-full" /> CC {currentItem.episodeCount}
                       </span>
                     )}
                     {score && (
-                      <span className="px-3 py-1 bg-white/10 backdrop-blur-md text-white rounded-full text-xs font-bold tracking-widest border border-white/20 shadow-sm flex items-center gap-1.5">
+                      <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-xs font-bold tracking-widest border border-border shadow-sm flex items-center gap-1.5">
                         ⭐ {score}
                       </span>
                     )}
                     {year && (
-                      <span className="px-3 py-1 bg-white/10 backdrop-blur-md text-white rounded-full text-xs font-bold tracking-widest border border-white/20 shadow-sm flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 bg-white/60 rounded-full" /> {year}
+                      <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-xs font-bold tracking-widest border border-border shadow-sm flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 bg-foreground/60 rounded-full" /> {year}
                       </span>
                     )}
                   </div>
                   
                   {/* Title */}
-                  <h1 className="text-4xl md:text-5xl lg:text-[64px] font-black text-white mb-4 leading-[1.1] drop-shadow-2xl line-clamp-2">
+                  <h1 className="text-4xl md:text-5xl lg:text-[64px] font-black text-foreground mb-4 leading-[1.1] drop-shadow-2xl line-clamp-2">
                     {title}
                   </h1>
 
                   {/* Genres and Studio */}
                   <div className="flex flex-wrap items-center gap-3 mb-6">
-                    <span className="text-white/90 text-sm md:text-base font-semibold drop-shadow-md">
+                    <span className="text-foreground/90 text-sm md:text-base font-semibold drop-shadow-md">
                       {currentItem.genres?.slice(0, 4).join(' · ')}
                     </span>
                     {currentItem.studios?.nodes?.[0] && (
-                      <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs text-white font-semibold tracking-wider border border-white/10">
+                      <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md rounded-full text-xs text-foreground font-semibold tracking-wider border border-border">
                         {currentItem.studios.nodes[0].name}
                       </span>
                     )}
                   </div>
 
                   {/* Synopsis */}
-                  <p className="text-base text-white/60 line-clamp-3 leading-relaxed max-w-[650px] drop-shadow-md font-medium mb-6 lg:mb-0">
+                  <p className="text-base text-muted-foreground line-clamp-3 leading-relaxed max-w-[650px] drop-shadow-md font-medium mb-6 lg:mb-0">
                     {cleanSynopsis}
                   </p>
                 </div>
@@ -132,7 +133,7 @@ export default function HeroCarousel({ series = [] }) {
                 <div className="flex flex-wrap items-center gap-4 shrink-0">
                   <Link to={`/series/${currentItem._id || currentItem.id}`}>
                     <motion.button 
-                      className="flex items-center gap-2.5 px-7 py-3.5 bg-black/40 hover:bg-black/60 text-white border border-white/20 backdrop-blur-lg rounded-full font-bold uppercase tracking-wider text-sm transition-all shadow-lg"
+                      className="flex items-center gap-2.5 px-7 py-3.5 bg-background/40 hover:bg-background/60 text-foreground border border-border backdrop-blur-lg rounded-full font-bold uppercase tracking-wider text-sm transition-all shadow-lg"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -140,7 +141,7 @@ export default function HeroCarousel({ series = [] }) {
                     </motion.button>
                   </Link>
                   <motion.button 
-                    className="flex items-center gap-2.5 px-7 py-3.5 bg-white text-black hover:bg-white/90 rounded-full font-bold uppercase tracking-wider text-sm shadow-xl transition-all"
+                    className="flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background hover:bg-foreground/90 rounded-full font-bold uppercase tracking-wider text-sm shadow-xl transition-all"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -158,17 +159,17 @@ export default function HeroCarousel({ series = [] }) {
       <div className="absolute bottom-8 right-6 lg:right-12 flex items-center gap-2 z-20">
         <button 
           onClick={handlePrev}
-          className="w-10 h-10 flex items-center justify-center rounded-md bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border border-white/10 transition-colors"
+          className="w-10 h-10 flex items-center justify-center rounded-md bg-background/40 hover:bg-background/60 text-foreground backdrop-blur-md border border-border transition-colors"
           aria-label="Previous slide"
         >
           <ChevronLeft size={20} />
         </button>
-        <div className="px-4 h-10 flex items-center justify-center rounded-md bg-black/40 text-white/90 text-sm font-bold backdrop-blur-md border border-white/10 tracking-widest">
-          {currentSlide + 1} <span className="text-white/40 mx-1.5">/</span> {series.length || 1}
+        <div className="px-4 h-10 flex items-center justify-center rounded-md bg-background/40 text-foreground/90 text-sm font-bold backdrop-blur-md border border-border tracking-widest">
+          {currentSlide + 1} <span className="text-muted-foreground mx-1.5">/</span> {series.length || 1}
         </div>
         <button 
           onClick={handleNext}
-          className="w-10 h-10 flex items-center justify-center rounded-md bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border border-white/10 transition-colors"
+          className="w-10 h-10 flex items-center justify-center rounded-md bg-background/40 hover:bg-background/60 text-foreground backdrop-blur-md border border-border transition-colors"
           aria-label="Next slide"
         >
           <ChevronRight size={20} />
@@ -178,3 +179,4 @@ export default function HeroCarousel({ series = [] }) {
     </div>
   )
 }
+
