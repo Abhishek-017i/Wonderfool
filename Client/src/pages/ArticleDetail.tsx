@@ -1,5 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { useRef } from 'react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useRef, useEffect } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { useArticle } from '../hooks/useArticle'
 import { useArticleComments } from '../hooks/useArticleComments'
 import { ArticleHero } from '../components/article/ArticleHero'
@@ -23,6 +24,10 @@ export default function ArticleDetail() {
   const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
   const commentSectionRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [id])
 
   if (!id) {
     return (
@@ -68,6 +73,17 @@ export default function ArticleDetail() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        {/* Back Navigation */}
+        <div className="mb-6">
+          <Link
+            to="/community"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" aria-hidden />
+            Back to Community
+          </Link>
+        </div>
+
         {/* Hero Section */}
         <div className="mb-12">
           {articleLoading ? (

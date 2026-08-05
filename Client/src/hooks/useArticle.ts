@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getCommunityArticleById } from '@/data/communityArticles'
 
 export interface Author {
   id: string
@@ -72,6 +73,14 @@ export function useArticle(id: string) {
     // Simulate API call delay
     const timer = setTimeout(() => {
       try {
+        const communityArticle = getCommunityArticleById(id)
+        if (communityArticle) {
+          setArticle(communityArticle)
+          setError(null)
+          setIsLoading(false)
+          return
+        }
+
         // Mock data
         const mockArticle: Article = {
           id,

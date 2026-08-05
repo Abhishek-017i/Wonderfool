@@ -39,12 +39,6 @@ export function ArticleFooter({
             <p className="text-card-foreground leading-relaxed">
               {author.bio}
             </p>
-            <Link to={`/creator/${author.id}`}>
-              <Button variant="outline" className="gap-2">
-                View Profile
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
           </div>
         </div>
       </Card>
@@ -57,7 +51,7 @@ export function ArticleFooter({
             {moreArticles.slice(0, 3).map((article) => (
               <li key={article.id}>
                 <Link
-                  to={`/article/${article.id}`}
+                  to={`/articles/${article.id}`}
                   className="text-primary hover:underline"
                 >
                   {article.title}

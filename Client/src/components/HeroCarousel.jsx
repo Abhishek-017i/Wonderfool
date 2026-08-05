@@ -27,20 +27,20 @@ export default function HeroCarousel({ series = [] }) {
   const year = currentItem.startDate ? new Date(currentItem.startDate).getFullYear() : ''
   const score = currentItem.averageScore ? (currentItem.averageScore / 10).toFixed(1) : ''
   const typeLabel = currentItem.type === 'ANIME' ? 'TV' : currentItem.type === 'MANGA' ? 'MANGA' : 'NOVEL'
-  
+
   // Clean synopsis (AniList returns HTML sometimes)
   const cleanSynopsis = (currentItem.synopsis || 'No synopsis available.').replace(/<[^>]*>?/gm, '')
-  
+
   const handlePrev = () => {
     setCurrentSlide((prev) => (prev - 1 + series.length) % (series.length || 1))
   }
-  
+
   const handleNext = () => {
     setCurrentSlide((prev) => (prev + 1) % (series.length || 1))
   }
 
   return (
-    <div 
+    <div
       className="relative w-full overflow-hidden bg-background group"
       style={{ height: '80vh', minHeight: '600px', maxHeight: '850px' }}
     >
@@ -74,14 +74,14 @@ export default function HeroCarousel({ series = [] }) {
           {/* Content Layout */}
           <div className="absolute inset-0 flex flex-col justify-end z-10 pb-16 lg:pb-24">
             <div className="container mx-auto px-6 lg:px-12 w-full">
-              
-              <motion.div 
+
+              <motion.div
                 className="w-full flex flex-col lg:flex-row lg:items-end justify-between gap-8"
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               >
-                
+
                 {/* Left Side Content */}
                 <div className="max-w-[700px] flex-1">
                   {/* Metadata Tags */}
@@ -105,9 +105,9 @@ export default function HeroCarousel({ series = [] }) {
                       </span>
                     )}
                   </div>
-                  
+
                   {/* Title */}
-                  <h1 className="text-4xl md:text-5xl lg:text-[64px] font-black text-foreground mb-4 leading-[1.1] drop-shadow-2xl line-clamp-2">
+                  <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-[64px] font-black text-white mb-4 leading-tight drop-shadow-2xl line-clamp-3 sm:line-clamp-2 break-words">
                     {title}
                   </h1>
 
@@ -132,7 +132,7 @@ export default function HeroCarousel({ series = [] }) {
                 {/* Right Side Buttons */}
                 <div className="flex flex-wrap items-center gap-4 shrink-0">
                   <Link to={`/series/${currentItem._id || currentItem.id}`}>
-                    <motion.button 
+                    <motion.button
                       className="flex items-center gap-2.5 px-7 py-3.5 bg-background/40 hover:bg-background/60 text-foreground border border-border backdrop-blur-lg rounded-full font-bold uppercase tracking-wider text-sm transition-all shadow-lg"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -140,7 +140,7 @@ export default function HeroCarousel({ series = [] }) {
                       <Info size={18} /> Details
                     </motion.button>
                   </Link>
-                  <motion.button 
+                  <motion.button
                     className="flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background hover:bg-foreground/90 rounded-full font-bold uppercase tracking-wider text-sm shadow-xl transition-all"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -157,7 +157,7 @@ export default function HeroCarousel({ series = [] }) {
 
       {/* Pagination Controls */}
       <div className="absolute bottom-8 right-6 lg:right-12 flex items-center gap-2 z-20">
-        <button 
+        <button
           onClick={handlePrev}
           className="w-10 h-10 flex items-center justify-center rounded-md bg-background/40 hover:bg-background/60 text-foreground backdrop-blur-md border border-border transition-colors"
           aria-label="Previous slide"
@@ -167,7 +167,7 @@ export default function HeroCarousel({ series = [] }) {
         <div className="px-4 h-10 flex items-center justify-center rounded-md bg-background/40 text-foreground/90 text-sm font-bold backdrop-blur-md border border-border tracking-widest">
           {currentSlide + 1} <span className="text-muted-foreground mx-1.5">/</span> {series.length || 1}
         </div>
-        <button 
+        <button
           onClick={handleNext}
           className="w-10 h-10 flex items-center justify-center rounded-md bg-background/40 hover:bg-background/60 text-foreground backdrop-blur-md border border-border transition-colors"
           aria-label="Next slide"

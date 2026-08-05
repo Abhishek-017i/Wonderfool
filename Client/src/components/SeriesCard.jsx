@@ -38,10 +38,16 @@ export default function SeriesCard({ series, index }) {
       {/* Glass Overlay Gradient - Only bottom 3/4 to keep top vibrant */}
       <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500 z-10" />
 
-      {/* Content */}
-      <div className="absolute inset-0 flex flex-col justify-end p-5 z-20">
-        <div className="translate-y-10 group-hover:translate-y-0 transition-transform duration-500 ease-out">
-          <div className="flex items-center gap-2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+      <Link
+        to={`/series/${series._id || series.id || 1}`}
+        className="absolute inset-0 z-30 md:hidden"
+        aria-label={`View ${title}`}
+      />
+
+      {/* Content — on touch devices content stays visible (no hover translate) */}
+      <div className="absolute inset-0 flex flex-col justify-end p-3 sm:p-5 z-20 pointer-events-none">
+        <div className="translate-y-0 md:translate-y-10 md:group-hover:translate-y-0 transition-transform duration-500 ease-out min-w-0 w-full">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 delay-100">
             <span className="text-[10px] font-bold text-primary tracking-widest uppercase">
               ⭐ {score}
             </span>
@@ -49,16 +55,19 @@ export default function SeriesCard({ series, index }) {
             <span className="text-[10px] text-white/70 font-bold uppercase tracking-widest">{year}</span>
           </div>
 
-          <h3 className="text-xl lg:text-2xl font-bold text-white mb-2 font-cinzel leading-tight line-clamp-2" title={title}>
+          <h3
+            className="text-xs sm:text-sm md:text-lg lg:text-2xl font-bold text-white mb-1.5 sm:mb-2 font-cinzel leading-snug line-clamp-3 sm:line-clamp-2 break-words"
+            title={title}
+          >
             {title}
           </h3>
 
-          <div className="flex items-center gap-2 text-[11px] font-medium tracking-wider uppercase text-white/60 mb-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-150">
-            <Film size={14} />
-            <span>{lengthText}</span>
+          <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-medium tracking-wider uppercase text-white/60 mb-3 sm:mb-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 delay-150">
+            <Film size={14} className="shrink-0" />
+            <span className="truncate">{lengthText}</span>
           </div>
 
-          <Link to={`/series/${series._id || series.id || 1}`} className="w-full mt-2 block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200">
+          <Link to={`/series/${series._id || series.id || 1}`} className="w-full mt-2 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200 pointer-events-auto">
             <motion.button 
               className="w-full py-3 bg-gradient-to-r from-accent to-primary text-primary-foreground text-xs font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_15px_rgba(244,216,69,0.3)] border border-white/20"
               whileHover={{ scale: 1.02 }}

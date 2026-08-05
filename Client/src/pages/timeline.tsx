@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ArrowUp, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 import { Button } from '../components/ui/button'
 import ActivitySummary from '../components/timeline/ActivitySummary'
 import FilterBar from '../components/timeline/FilterBar'
@@ -22,12 +24,17 @@ export default function Timeline() {
     dateRangeFilter: 'all',
   })
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   // Simulate loading
   useEffect(() => {
     const timer = setTimeout(() => {
       setActivities(ACTIVITY)
       setIsLoading(false)
-    }, 800)
+    }, 600)
     return () => clearTimeout(timer)
   }, [])
 
@@ -106,26 +113,35 @@ export default function Timeline() {
   const groupedActivities = groupActivitiesByDate(filteredActivities)
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-        <div className="px-4 md:px-8 py-6 flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="rounded-full hover:bg-muted"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Your Timeline</h1>
-            <p className="text-muted-foreground mt-1">Track your anime, manga, and light novel journey</p>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background text-foreground transition-colors flex flex-col">
+      <Navbar />
 
-      <main className="px-4 md:px-8 py-8">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 pt-28 md:pt-32 pb-16">
+        {/* Header Title */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-border/60">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-accent">
+              Personal Tracking
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mt-1 font-display">
+              Your Timeline
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+              Track your anime, manga, and light novel journey
+            </p>
+          </div>
+
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="w-fit gap-1.5 border-border hover:bg-muted"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        </div>
+
         {/* Activity Summary */}
         {!isLoading && <ActivitySummary stats={stats} />}
 
@@ -148,11 +164,13 @@ export default function Timeline() {
         </div>
       </main>
 
+      <Footer />
+
       {/* Back to Top Button */}
       {showBackToTop && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 rounded-full w-12 h-12 p-0 flex items-center justify-center"
+          className="fixed bottom-8 right-8 rounded-full w-12 h-12 p-0 flex items-center justify-center shadow-lg z-30"
           aria-label="Back to top"
         >
           <ArrowUp className="w-5 h-5" />

@@ -12,7 +12,7 @@ interface FeaturedArticleProps {
 
 export default function FeaturedArticle({ article }: FeaturedArticleProps) {
   return (
-    <Link to={`/article/${article.id}`} className="group block">
+    <Link to={`/articles/${article.id}`} className="group block">
       <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
         <div className="relative h-96 sm:h-[500px] overflow-hidden">
           <img
