@@ -133,6 +133,8 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Wishlist from './pages/Wishlist';
 import NotFoundPage from './pages/NotFoundPage';
 import SeriesDetail from './pages/SeriesDetail';
+import ArticleEditor from './pages/ArticleEditor';
+import ArticleDetail from './pages/ArticleDetail';
 
 
 function App() {
@@ -153,6 +155,11 @@ function App() {
               <Timeline />
             </ProtectedRoute>
           } />
+          <Route path="/articles/new" element={
+            <ProtectedRoute><ArticleEditor /></ProtectedRoute>
+          } />
+          <Route path="/articles/:id" element={<ArticleDetail />} />
+          
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />
