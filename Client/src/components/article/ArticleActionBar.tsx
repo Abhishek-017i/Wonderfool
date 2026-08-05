@@ -2,43 +2,30 @@ import { useState } from 'react'
 import { Button } from '../ui/button'
 import {
   Heart,
-  Bookmark,
   Share2,
   MessageCircle,
 } from 'lucide-react'
 
 interface ArticleActionBarProps {
   likeCount: number
-  bookmarkCount: number
   isLiked: boolean
-  isBookmarked: boolean
   onLike: () => void
-  onBookmark: () => void
   onShare: () => void
   onJumpToComments: () => void
 }
 
 export function ArticleActionBar({
   likeCount,
-  bookmarkCount,
   isLiked,
-  isBookmarked,
   onLike,
-  onBookmark,
   onShare,
   onJumpToComments,
 }: ArticleActionBarProps) {
   const [liked, setLiked] = useState(isLiked)
-  const [bookmarked, setBookmarked] = useState(isBookmarked)
 
   const handleLike = () => {
     setLiked(!liked)
     onLike()
-  }
-
-  const handleBookmark = () => {
-    setBookmarked(!bookmarked)
-    onBookmark()
   }
 
   return (
@@ -56,19 +43,6 @@ export function ArticleActionBar({
           color={liked ? '#d4a574' : 'currentColor'}
         />
         <span className="text-xs hidden md:inline">{likeCount}</span>
-      </Button>
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleBookmark}
-        aria-label="Save to bookmarks"
-      >
-        <Bookmark
-          className="w-5 h-5"
-          fill={bookmarked ? 'currentColor' : 'none'}
-          color={bookmarked ? '#d4a574' : 'currentColor'}
-        />
       </Button>
 
       <Button

@@ -106,7 +106,7 @@ export default function HeroCarousel({ series = [] }) {
                   </div>
                   
                   {/* Title */}
-                  <h1 className="text-4xl md:text-5xl lg:text-[64px] font-black text-white mb-4 leading-[1.1] drop-shadow-2xl line-clamp-2">
+                  <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-[64px] font-black text-white mb-4 leading-tight drop-shadow-2xl line-clamp-3 sm:line-clamp-2 break-words">
                     {title}
                   </h1>
 

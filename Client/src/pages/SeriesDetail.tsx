@@ -178,7 +178,7 @@ export default function SeriesDetail() {
 
             {/* Info Column */}
             <div className="flex-1 pt-4 md:pt-12 text-center md:text-left">
-              <h1 className="text-3xl md:text-5xl font-bold font-cinzel text-foreground mb-2 drop-shadow-md">
+              <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold font-cinzel text-foreground mb-2 drop-shadow-md leading-tight break-words px-1 sm:px-0">
                 {title}
               </h1>
 

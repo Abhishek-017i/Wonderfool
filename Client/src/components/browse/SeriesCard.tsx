@@ -154,8 +154,8 @@ export default function SeriesCard({ series, variant = 'grid', index = 0 }: Seri
       </button>
 
       {/* Card content */}
-      <div className="absolute inset-0 flex flex-col justify-end p-3 z-20">
-        <div className="translate-y-2 group-hover:translate-y-0 transition-transform duration-300 ease-out">
+      <div className="absolute inset-0 flex flex-col justify-end p-2.5 sm:p-3 z-20">
+        <div className="translate-y-0 sm:translate-y-2 sm:group-hover:translate-y-0 transition-transform duration-300 ease-out min-w-0 w-full">
           {/* Year — hidden until hover */}
           <div className="flex items-center gap-2 mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-75">
             {year && (
@@ -166,7 +166,7 @@ export default function SeriesCard({ series, variant = 'grid', index = 0 }: Seri
           </div>
 
           {/* Title */}
-          <h3 className="font-cinzel text-sm font-bold text-white leading-tight line-clamp-2 mb-1.5">
+          <h3 className="font-cinzel text-[11px] sm:text-sm font-bold text-white leading-snug line-clamp-3 sm:line-clamp-2 break-words mb-1.5">
             {title}
           </h3>
 

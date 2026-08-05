@@ -20,7 +20,7 @@ export function RelatedArticles({ articles }: RelatedArticlesProps) {
           {articles.map((article) => (
             <Link
               key={article.id}
-              to={`/article/${article.id}`}
+              to={`/articles/${article.id}`}
               className="hover:opacity-90 transition-opacity"
             >
               <ArticleCard

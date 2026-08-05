@@ -16,7 +16,7 @@ export default function ArticleCard({ article, view = 'grid' }: ArticleCardProps
 
   if (view === 'list') {
     return (
-      <Link to={`/article/${article.id}`} className="group block">
+      <Link to={`/articles/${article.id}`} className="group block">
         <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col sm:flex-row">
           <div className="relative w-full sm:w-48 h-40 sm:h-32 flex-shrink-0 overflow-hidden">
             <img
@@ -65,9 +65,9 @@ export default function ArticleCard({ article, view = 'grid' }: ArticleCardProps
               <div className="flex items-center gap-3">
                 <Avatar src={article.author.avatarUrl} alt={article.author.name} />
                 <div>
-                  <Link to={`/creator/${article.author.id}`} className="font-semibold text-sm hover:text-primary transition-colors">
+                  <span className="font-semibold text-sm">
                     {article.author.name}
-                  </Link>
+                  </span>
                   <p className="text-xs text-text/60">{formatDate(article.publishDate)}</p>
                 </div>
               </div>
@@ -95,7 +95,7 @@ export default function ArticleCard({ article, view = 'grid' }: ArticleCardProps
 
   // Grid view
   return (
-    <Link to={`/article/${article.id}`} className="group block h-full">
+    <Link to={`/articles/${article.id}`} className="group block h-full">
       <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
         <div className="relative w-full h-40 overflow-hidden">
           <img
@@ -140,9 +140,9 @@ export default function ArticleCard({ article, view = 'grid' }: ArticleCardProps
               <div className="flex items-center gap-2">
                 <Avatar src={article.author.avatarUrl} alt={article.author.name} className="h-8 w-8" />
                 <div className="flex-1 min-w-0">
-                  <Link to={`/creator/${article.author.id}`} className="font-medium text-xs hover:text-primary transition-colors block truncate">
+                  <span className="font-medium text-xs block truncate">
                     {article.author.name}
-                  </Link>
+                  </span>
                   <p className="text-xs text-text/60">{formatDate(article.publishDate)}</p>
                 </div>
               </div>
