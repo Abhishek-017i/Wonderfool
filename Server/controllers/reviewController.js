@@ -3,12 +3,23 @@ const Review = require('../models/Review');
 
 const getReviewsBySeries = async (req, res) => {
   try {
-    const reviews = await Review.find({ seriesId: req.params.seriesId })
-      .populate('userId', 'name avatar')
-      .sort({ createdAt: -1 });
+    const { sortBy = "mostRecent" } = req.query;
+
+    let sortOption = { createdAt: -1 }; 
+    if (sortBy === "highestRating") sortOption = { rating: -1 };
+    if (sortBy === "lowestRating") sortOption = { rating: 1 };
+
+    let reviews = await Review.find({ seriesId: req.params.seriesId })
+      .populate("userId", "name avatar")
+      .sort(sortOption);
+
+    if (sortBy === "mostLiked") {
+      reviews = reviews.sort((a, b) => b.likes.length - a.likes.length);
+    }
+
     res.status(200).json(reviews);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching reviews', error: err.message });
+    res.status(500).json({ message: "Error fetching reviews", error: err.message });
   }
 };
 

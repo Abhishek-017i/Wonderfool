@@ -18,31 +18,26 @@ const getAllSeries = async (req, res) => {
 
     const filter = {};
 
-    // Type filter (ANIME, MANGA, NOVEL)
     if (type) {
       const types = type.split(",").map((t) => t.trim());
       filter.type = { $in: types };
     }
 
-    // Status filter (ongoing, finished, hiatus, cancelled)
     if (status) {
       const statuses = status.split(",").map((s) => s.trim());
       filter.status = { $in: statuses };
     }
 
-    // Genre filter (match any of the provided genres)
     if (genres) {
       const genreList = genres.split(",").map((g) => g.trim());
       filter.genres = { $in: genreList };
     }
 
-    // Country filter (JP, KR, CN, TW)
     if (country) {
       const countries = country.split(",").map((c) => c.trim());
       filter.countryOfOrigin = { $in: countries };
     }
 
-    // Year range filter
     if (yearStart || yearEnd) {
       filter.startDate = {};
       if (yearStart) {
@@ -53,7 +48,6 @@ const getAllSeries = async (req, res) => {
       }
     }
 
-    // Search filter (title fields)
     if (search) {
       filter.$or = [
         { "title.romaji": { $regex: search, $options: "i" } },
