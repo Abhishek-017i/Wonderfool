@@ -55,7 +55,7 @@ export default function SortAndViewBar({
 
 
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-0.5 rounded-lg border border-border/60 p-0.5 bg-card">
+        <div className="flex items-center gap-0.5 rounded-full border border-border/60 p-0.5 bg-card">
           {VIEW_MODES.map(({ mode, icon: Icon, label }) => (
             <Button
               key={mode}

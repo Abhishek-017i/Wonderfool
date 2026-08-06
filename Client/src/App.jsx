@@ -119,7 +119,7 @@
 //   )
 // }
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
 import Community from './pages/community';
@@ -135,12 +135,23 @@ import NotFoundPage from './pages/NotFoundPage';
 import SeriesDetail from './pages/SeriesDetail';
 import ArticleEditor from './pages/ArticleEditor';
 import ArticleDetail from './pages/ArticleDetail';
+import SupportPage from './pages/SupportPage';
+import BackToTopButton from './components/browse/BackToTopButton';
 
+function NonNavbarScrollToTop() {
+  const location = useLocation()
+  const navbarPaths = ['/', '/browse', '/community', '/creators', '/timeline']
+  const isNonNavbarPage = !navbarPaths.includes(location.pathname)
+
+  if (!isNonNavbarPage) return null
+  return <BackToTopButton />
+}
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <NonNavbarScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/browse" element={<Browse />} />
@@ -151,6 +162,7 @@ function App() {
           <Route path="/creators" element={<Creators />} />
           <Route path="/creator/:id" element={<CreatorProfile />} />
           <Route path="/timeline" element={<Timeline />} />
+          <Route path="/support" element={<SupportPage />} />
           <Route path="/articles/new" element={
             <ProtectedRoute><ArticleEditor /></ProtectedRoute>
           } />

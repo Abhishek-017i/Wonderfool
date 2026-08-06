@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import { ChevronDown, Moon, Sun } from 'lucide-react'
+import { ChevronDown, Moon, Sun, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 import Toast from './Toast'
+import { cn } from '@/lib/utils'
 
 interface SettingsTabProps {
   isDark: boolean
@@ -11,12 +14,19 @@ export default function SettingsTab({ isDark, setIsDark }: SettingsTabProps) {
   const [email, setEmail] = useState('alex.rivera@example.com')
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [pushNotifications, setPushNotifications] = useState(false)
-  const [privateProfile, setPrivateProfile] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -43,112 +53,83 @@ export default function SettingsTab({ isDark, setIsDark }: SettingsTabProps) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="flex flex-col gap-6">
       {/* Account Info */}
-      <div style={{ backgroundColor: '#E8E0D0', borderRadius: '8px', padding: '20px', border: '1px solid #D4CCC0' }}>
-        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1A1A1A', marginBottom: '16px' }}>Account Information</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="text-xl font-bold font-serif text-foreground mb-4">Account Information</h3>
+        <div className="flex flex-col gap-4">
           <div>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1A1A1A', marginBottom: '8px' }}>Email Address</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Email Address
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', backgroundColor: '#F5F1E8', color: '#1A1A1A', border: '1px solid #D4CCC0', borderRadius: '6px', fontSize: '14px' }}
+              className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
-            <p style={{ fontSize: '12px', color: '#5A5A5A', marginTop: '4px' }}>We&apos;ll only use this for account recovery</p>
+            <p className="text-xs text-muted-foreground mt-1.5">We&apos;ll only use this for account recovery</p>
           </div>
           <button
             onClick={handleSaveSettings}
-            style={{
-              padding: '10px 16px',
-              backgroundColor: '#C4A76D',
-              color: '#1A1A1A',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'opacity 200ms'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            className="self-start px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs tracking-wider uppercase shadow-md hover:opacity-90 transition-all"
           >
             Save Changes
           </button>
         </div>
       </div>
 
-      {/* Password */}
-      <div style={{ backgroundColor: '#E8E0D0', borderRadius: '8px', padding: '20px', border: '1px solid #D4CCC0' }}>
+      {/* Change Password */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <button
           onClick={() => setPasswordOpen(!passwordOpen)}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-            transition: 'opacity 200ms'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          className="w-full flex items-center justify-between text-left focus:outline-none"
         >
-          <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1A1A1A' }}>Change Password</h3>
+          <h3 className="text-xl font-bold font-serif text-foreground">Change Password</h3>
           <ChevronDown
             size={20}
-            color="#1A1A1A"
-            style={{ transition: 'transform 200ms', transform: passwordOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            className={cn("text-muted-foreground transition-transform duration-200", passwordOpen && "rotate-180 text-primary")}
           />
         </button>
 
         {passwordOpen && (
-          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #D4CCC0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="mt-4 pt-4 border-t border-border flex flex-col gap-4">
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1A1A1A', marginBottom: '8px' }}>New Password</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                New Password
+              </label>
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
-                style={{ width: '100%', padding: '10px 12px', backgroundColor: '#F5F1E8', color: '#1A1A1A', border: '1px solid #D4CCC0', borderRadius: '6px', fontSize: '14px' }}
+                className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1A1A1A', marginBottom: '8px' }}>Confirm Password</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Confirm Password
+              </label>
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                style={{ width: '100%', padding: '10px 12px', backgroundColor: '#F5F1E8', color: '#1A1A1A', border: '1px solid #D4CCC0', borderRadius: '6px', fontSize: '14px' }}
+                className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer' }}>
+            <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground cursor-pointer">
               <input
                 type="checkbox"
                 checked={showPassword}
                 onChange={() => setShowPassword(!showPassword)}
-                style={{ borderRadius: '4px', width: '16px', height: '16px', cursor: 'pointer' }}
+                className="rounded border-border text-primary focus:ring-primary/20 w-4 h-4 cursor-pointer"
               />
               <span>Show password</span>
             </label>
             <button
               onClick={handleChangePassword}
-              style={{
-                padding: '10px 16px',
-                backgroundColor: '#C4A76D',
-                color: '#1A1A1A',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'opacity 200ms'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              className="self-start px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs tracking-wider uppercase shadow-md hover:opacity-90 transition-all"
             >
               Update Password
             </button>
@@ -157,96 +138,78 @@ export default function SettingsTab({ isDark, setIsDark }: SettingsTabProps) {
       </div>
 
       {/* Notifications */}
-      <div style={{ backgroundColor: '#E8E0D0', borderRadius: '8px', padding: '20px', border: '1px solid #D4CCC0' }}>
-        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1A1A1A', marginBottom: '16px' }}>Notifications</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="text-xl font-bold font-serif text-foreground mb-4">Notifications</h3>
+        <div className="flex flex-col gap-4">
+          <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={emailNotifications}
               onChange={() => setEmailNotifications(!emailNotifications)}
-              style={{ width: '16px', height: '16px', borderRadius: '4px', cursor: 'pointer' }}
+              className="rounded border-border text-primary focus:ring-primary/20 w-4 h-4 cursor-pointer"
             />
             <div>
-              <p style={{ fontSize: '14px', fontWeight: '500', color: '#1A1A1A', margin: 0 }}>Email Notifications</p>
-              <p style={{ fontSize: '12px', color: '#5A5A5A', margin: '2px 0 0 0' }}>Receive updates about your account activity</p>
+              <p className="text-sm font-semibold text-foreground">Email Notifications</p>
+              <p className="text-xs text-muted-foreground">Receive updates about your account activity</p>
             </div>
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+          <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={pushNotifications}
               onChange={() => setPushNotifications(!pushNotifications)}
-              style={{ width: '16px', height: '16px', borderRadius: '4px', cursor: 'pointer' }}
+              className="rounded border-border text-primary focus:ring-primary/20 w-4 h-4 cursor-pointer"
             />
             <div>
-              <p style={{ fontSize: '14px', fontWeight: '500', color: '#1A1A1A', margin: 0 }}>Push Notifications</p>
-              <p style={{ fontSize: '12px', color: '#5A5A5A', margin: '2px 0 0 0' }}>Get notified on your device</p>
+              <p className="text-sm font-semibold text-foreground">Push Notifications</p>
+              <p className="text-xs text-muted-foreground">Get notified on your device</p>
             </div>
           </label>
         </div>
       </div>
 
-      {/* Theme */}
-      <div style={{ backgroundColor: '#E8E0D0', borderRadius: '8px', padding: '20px', border: '1px solid #D4CCC0' }}>
-        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1A1A1A', marginBottom: '16px' }}>Theme Preference</h3>
-        <div style={{ display: 'flex', gap: '12px' }}>
+      {/* Theme Preference */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="text-xl font-bold font-serif text-foreground mb-4">Theme Preference</h3>
+        <div className="flex gap-3">
           <button
             onClick={() => setIsDark(false)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              borderRadius: '8px',
-              fontWeight: '500',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 200ms',
-              backgroundColor: !isDark ? '#C4A76D' : '#F5F1E8',
-              color: !isDark ? '#1A1A1A' : '#1A1A1A'
-            }}
+            className={cn(
+              "flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs uppercase tracking-wider border transition-all",
+              !isDark
+                ? "bg-primary text-primary-foreground border-primary shadow-md"
+                : "border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary/40"
+            )}
           >
-            <Sun size={18} color="#1A1A1A" />
+            <Sun size={16} />
             Light
           </button>
           <button
             onClick={() => setIsDark(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              borderRadius: '8px',
-              fontWeight: '500',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 200ms',
-              backgroundColor: isDark ? '#C4A76D' : '#F5F1E8',
-              color: isDark ? '#1A1A1A' : '#1A1A1A'
-            }}
+            className={cn(
+              "flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs uppercase tracking-wider border transition-all",
+              isDark
+                ? "bg-primary text-primary-foreground border-primary shadow-md"
+                : "border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary/40"
+            )}
           >
-            <Moon size={18} color="#1A1A1A" />
+            <Moon size={16} />
             Dark
           </button>
         </div>
       </div>
 
-      {/* Privacy */}
-      <div style={{ backgroundColor: '#E8E0D0', borderRadius: '8px', padding: '20px', border: '1px solid #D4CCC0' }}>
-        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1A1A1A', marginBottom: '16px' }}>Privacy</h3>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-          <input
-            type="checkbox"
-            checked={privateProfile}
-            onChange={() => setPrivateProfile(!privateProfile)}
-            style={{ width: '16px', height: '16px', borderRadius: '4px', cursor: 'pointer' }}
-          />
-          <div>
-            <p style={{ fontSize: '14px', fontWeight: '500', color: '#1A1A1A', margin: 0 }}>Private Profile</p>
-            <p style={{ fontSize: '12px', color: '#5A5A5A', margin: '2px 0 0 0' }}>Only followers can see your reviews and articles</p>
-          </div>
-        </label>
+      {/* Session & Logout */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="text-xl font-bold font-serif text-foreground mb-2">Session</h3>
+        <p className="text-xs text-muted-foreground mb-4">Sign out of your Wonderfool account on this device.</p>
+        <button
+          onClick={handleLogout}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-destructive text-destructive-foreground font-semibold text-xs uppercase tracking-wider shadow-md hover:opacity-90 transition-all"
+        >
+          <LogOut size={16} />
+          Log Out
+        </button>
       </div>
 
       {toast && <Toast message={toast} />}

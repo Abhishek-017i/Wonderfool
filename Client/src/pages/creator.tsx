@@ -10,6 +10,8 @@ import {
   Award,
   ArrowLeft,
 } from 'lucide-react'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { cn } from '@/lib/utils'
 
@@ -127,19 +129,10 @@ export default function CreatorsPage() {
   }, [query, activeRole])
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-        {/* Back link + theme toggle */}
-        <div className="mb-10 flex items-center justify-between">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to home
-          </Link>
-          <ThemeToggle />
-        </div>
+    <main className="min-h-screen bg-background text-foreground flex flex-col">
+      <Navbar />
+      <div className="mx-auto max-w-6xl px-6 pt-24 pb-16 md:pb-24 flex-1 w-full">
+        {/* Header */}
 
         {/* Header */}
         <header className="mx-auto max-w-2xl text-center">
@@ -201,6 +194,7 @@ export default function CreatorsPage() {
           </p>
         )}
       </div>
+      <Footer />
     </main>
   )
 }

@@ -1,11 +1,8 @@
 import { useState } from 'react'
-import { Heart, Share2, ChevronDown, CheckCircle, MapPin, Calendar, Link as LinkIcon } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { Share2, ChevronDown, CheckCircle, Calendar } from 'lucide-react'
 import type { UserProfile } from '../../data/mockData'
 import { formatNumber } from '../../lib/utils'
 import Toast from './Toast'
-import UsersModal from './UsersModal'
-import { useAuth } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
 
 interface ProfileHeaderProps {
@@ -13,24 +10,8 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ user }: ProfileHeaderProps) {
-  const [isFollowing, setIsFollowing] = useState(user.isFollowing)
   const [showBioFull, setShowBioFull] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
-  const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'followers' | 'following' }>({ isOpen: false, type: 'followers' })
-
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { isAuthenticated } = useAuth()
-
-  const handleFollow = () => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: location.pathname } })
-      return
-    }
-    setIsFollowing(!isFollowing)
-    setToast(isFollowing ? 'Unfollowed user' : 'Following user')
-    setTimeout(() => setToast(null), 2000)
-  }
 
   const handleShare = () => {
     setToast('Profile link copied')
@@ -38,12 +19,6 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
   }
 
   const bioPreview = user.bio.length > 120 ? user.bio.substring(0, 120) + '...' : user.bio
-
-  const mockUsers = [
-    { id: '1', name: 'Alex Chen', handle: '@alexc', avatar: 'https://i.pravatar.cc/150?u=1', isFollowing: true },
-    { id: '2', name: 'Sarah Smith', handle: '@sarahs', avatar: 'https://i.pravatar.cc/150?u=2', isFollowing: false },
-    { id: '3', name: 'Mike Johnson', handle: '@mikej', avatar: 'https://i.pravatar.cc/150?u=3', isFollowing: true },
-  ]
 
   return (
     <>
@@ -76,22 +51,10 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleShare}
-                  className="p-2 rounded-full bg-background/50 hover:bg-muted border border-border backdrop-blur-sm transition-colors text-foreground"
+                  className="p-2.5 rounded-full bg-background/50 hover:bg-muted border border-border backdrop-blur-sm transition-colors text-foreground"
                   title="Share Profile"
                 >
                   <Share2 size={18} />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleFollow}
-                  className={`px-6 py-2 rounded-full font-bold text-sm tracking-wide transition-all shadow-lg ${
-                    isFollowing 
-                      ? 'bg-muted text-foreground border border-border hover:bg-background' 
-                      : 'bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(200,173,57,0.4)] border border-primary/20'
-                  }`}
-                >
-                  {isFollowing ? 'Following' : 'Follow'}
                 </motion.button>
               </div>
             </div>
@@ -129,16 +92,6 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
             {/* Meta Details */}
             <div className="flex flex-wrap gap-y-3 gap-x-6 text-sm text-muted-foreground pt-4 border-t border-border/50">
               <div className="flex items-center gap-1.5">
-                <MapPin size={16} className="text-primary/70" />
-                <span>{user.location}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <LinkIcon size={16} className="text-primary/70" />
-                <a href={`https://${user.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-                  {user.website}
-                </a>
-              </div>
-              <div className="flex items-center gap-1.5">
                 <Calendar size={16} className="text-primary/70" />
                 <span>{user.joinDate}</span>
               </div>
@@ -148,22 +101,6 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <motion.button 
-            whileHover={{ y: -2 }} 
-            onClick={() => setModalState({ isOpen: true, type: 'followers' })}
-            className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center luxury-shadow hover:border-primary/50 transition-colors w-full"
-          >
-            <span className="text-2xl font-bold text-gradient mb-1">{formatNumber(user.followers)}</span>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Followers</span>
-          </motion.button>
-          <motion.button 
-            whileHover={{ y: -2 }} 
-            onClick={() => setModalState({ isOpen: true, type: 'following' })}
-            className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center luxury-shadow hover:border-primary/50 transition-colors w-full"
-          >
-            <span className="text-2xl font-bold text-gradient mb-1">{formatNumber(user.following)}</span>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Following</span>
-          </motion.button>
           <motion.div whileHover={{ y: -2 }} className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center luxury-shadow">
             <span className="text-2xl font-bold text-gradient mb-1">{formatNumber(user.reviews)}</span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reviews</span>
@@ -174,13 +111,6 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
           </motion.div>
         </div>
       </div>
-
-      <UsersModal 
-        isOpen={modalState.isOpen}
-        onClose={() => setModalState({ ...modalState, isOpen: false })}
-        title={modalState.type === 'followers' ? 'Followers' : 'Following'}
-        users={mockUsers}
-      />
 
       {toast && <Toast message={toast} />}
     </>

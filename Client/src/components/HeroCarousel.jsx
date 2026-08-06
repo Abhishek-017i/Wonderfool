@@ -72,11 +72,11 @@ export default function HeroCarousel({ series = [] }) {
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/50 to-transparent z-0 w-full lg:w-3/4" />
 
           {/* Content Layout */}
-          <div className="absolute inset-0 flex flex-col justify-end z-10 pb-16 lg:pb-24">
-            <div className="container mx-auto px-6 lg:px-12 w-full">
+          <div className="absolute inset-0 flex flex-col justify-end z-10 pb-16 sm:pb-20 lg:pb-24">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-12 w-full">
 
               <motion.div
-                className="w-full flex flex-col lg:flex-row lg:items-end justify-between gap-8"
+                className="w-full flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6 lg:gap-8"
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
@@ -85,67 +85,68 @@ export default function HeroCarousel({ series = [] }) {
                 {/* Left Side Content */}
                 <div className="max-w-[700px] flex-1">
                   {/* Metadata Tags */}
-                  <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-xs font-bold tracking-widest uppercase border border-border shadow-sm">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+                    <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-[10px] sm:text-xs font-bold tracking-widest uppercase border border-border shadow-sm">
                       {typeLabel}
                     </span>
                     {currentItem.episodeCount && (
-                      <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-xs font-bold tracking-widest uppercase border border-border shadow-sm flex items-center gap-1.5">
+                      <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-[10px] sm:text-xs font-bold tracking-widest uppercase border border-border shadow-sm flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 bg-foreground/60 rounded-full" /> CC {currentItem.episodeCount}
                       </span>
                     )}
                     {score && (
-                      <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-xs font-bold tracking-widest border border-border shadow-sm flex items-center gap-1.5">
+                      <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-[10px] sm:text-xs font-bold tracking-widest border border-border shadow-sm flex items-center gap-1.5">
                         ⭐ {score}
                       </span>
                     )}
                     {year && (
-                      <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-xs font-bold tracking-widest border border-border shadow-sm flex items-center gap-1.5">
+                      <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-foreground/5 backdrop-blur-md text-foreground rounded-full text-[10px] sm:text-xs font-bold tracking-widest border border-border shadow-sm flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 bg-foreground/60 rounded-full" /> {year}
                       </span>
                     )}
                   </div>
 
                   {/* Title */}
-                  <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-[64px] font-black text-white mb-4 leading-tight drop-shadow-2xl line-clamp-3 sm:line-clamp-2 break-words">
+                  <h1 className="text-xl sm:text-3xl md:text-5xl lg:text-[56px] font-black text-white mb-2 sm:mb-4 leading-tight drop-shadow-2xl line-clamp-2 break-words">
                     {title}
                   </h1>
 
                   {/* Genres and Studio */}
-                  <div className="flex flex-wrap items-center gap-3 mb-6">
-                    <span className="text-foreground/90 text-sm md:text-base font-semibold drop-shadow-md">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
+                    <span className="text-foreground/90 text-xs sm:text-sm md:text-base font-semibold drop-shadow-md">
                       {currentItem.genres?.slice(0, 4).join(' · ')}
                     </span>
                     {currentItem.studios?.nodes?.[0] && (
-                      <span className="px-3 py-1 bg-foreground/5 backdrop-blur-md rounded-full text-xs text-foreground font-semibold tracking-wider border border-border">
+                      <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-foreground/5 backdrop-blur-md rounded-full text-[10px] sm:text-xs text-foreground font-semibold tracking-wider border border-border">
                         {currentItem.studios.nodes[0].name}
                       </span>
                     )}
                   </div>
 
                   {/* Synopsis */}
-                  <p className="text-base text-muted-foreground line-clamp-3 leading-relaxed max-w-[650px] drop-shadow-md font-medium mb-6 lg:mb-0">
+                  <p className="text-xs sm:text-sm md:text-base text-muted-foreground line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-[650px] drop-shadow-md font-medium mb-4 lg:mb-0">
                     {cleanSynopsis}
                   </p>
                 </div>
 
                 {/* Right Side Buttons */}
-                <div className="flex flex-wrap items-center gap-4 shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                   <Link to={`/series/${currentItem._id || currentItem.id}`}>
                     <motion.button
-                      className="flex items-center gap-2.5 px-7 py-3.5 bg-background/40 hover:bg-background/60 text-foreground border border-border backdrop-blur-lg rounded-full font-bold uppercase tracking-wider text-sm transition-all shadow-lg"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-background/40 hover:bg-background/60 text-foreground border border-border backdrop-blur-lg rounded-full font-bold uppercase tracking-wider text-xs sm:text-sm transition-all shadow-md"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
                     >
-                      <Info size={18} /> Details
+                      <Info size={16} className="sm:w-[18px] sm:h-[18px]" /> Details
                     </motion.button>
                   </Link>
                   <motion.button
-                    className="flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background hover:bg-foreground/90 rounded-full font-bold uppercase tracking-wider text-sm shadow-xl transition-all"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-foreground text-background hover:bg-foreground/90 rounded-full font-bold uppercase tracking-wider text-xs sm:text-sm shadow-lg transition-all"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                   >
-                    <Heart size={18} className="fill-current" /> Add to Wishlist
+                    <Heart size={16} className="fill-current sm:w-[18px] sm:h-[18px]" />
+                    <span>Wishlist</span>
                   </motion.button>
                 </div>
 
@@ -156,23 +157,23 @@ export default function HeroCarousel({ series = [] }) {
       </AnimatePresence>
 
       {/* Pagination Controls */}
-      <div className="absolute bottom-8 right-6 lg:right-12 flex items-center gap-2 z-20">
+      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 lg:right-12 flex items-center gap-1.5 sm:gap-2 z-20">
         <button
           onClick={handlePrev}
-          className="w-10 h-10 flex items-center justify-center rounded-md bg-background/40 hover:bg-background/60 text-foreground backdrop-blur-md border border-border transition-colors"
+          className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-md bg-background/50 hover:bg-background/70 text-foreground backdrop-blur-md border border-border transition-colors"
           aria-label="Previous slide"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
         </button>
-        <div className="px-4 h-10 flex items-center justify-center rounded-md bg-background/40 text-foreground/90 text-sm font-bold backdrop-blur-md border border-border tracking-widest">
-          {currentSlide + 1} <span className="text-muted-foreground mx-1.5">/</span> {series.length || 1}
+        <div className="px-3 h-8 sm:h-9 flex items-center justify-center rounded-md bg-background/50 text-foreground/90 text-xs sm:text-sm font-bold backdrop-blur-md border border-border tracking-widest">
+          {currentSlide + 1} <span className="text-muted-foreground mx-1">/</span> {series.length || 1}
         </div>
         <button
           onClick={handleNext}
-          className="w-10 h-10 flex items-center justify-center rounded-md bg-background/40 hover:bg-background/60 text-foreground backdrop-blur-md border border-border transition-colors"
+          className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-md bg-background/50 hover:bg-background/70 text-foreground backdrop-blur-md border border-border transition-colors"
           aria-label="Next slide"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={16} className="sm:w-[18px] sm:h-[18px]" />
         </button>
       </div>
 

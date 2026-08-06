@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ChevronDown, Heart, MessageSquare, Star, Inbox } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
@@ -13,6 +13,7 @@ interface TimelineEntryProps {
 }
 
 export default function TimelineEntry({ entry, isExpanded, onToggle, isFirst = false }: TimelineEntryProps) {
+  const navigate = useNavigate()
   const getActionColor = (actionType: string) => {
     switch (actionType) {
       case 'completed':
@@ -165,16 +166,17 @@ export default function TimelineEntry({ entry, isExpanded, onToggle, isFirst = f
 
             {/* Action Buttons */}
             <div className="flex gap-2 pt-2">
-              <Link to={`/series/${entry.seriesId}`} className="flex-1">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full border-border hover:bg-background"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  View Details
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 border-border hover:bg-background"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  navigate(`/series/${entry.seriesId}`)
+                }}
+              >
+                View Details
+              </Button>
               <Button
                 size="sm"
                 variant="outline"

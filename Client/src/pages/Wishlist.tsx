@@ -596,13 +596,13 @@ export default function Wishlist() {
               <option>Release Date</option>
             </select>
 
-            <div className="inline-flex rounded-md border border-input overflow-hidden">
+            <div className="inline-flex rounded-full border border-border bg-card p-0.5 gap-0.5">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 transition-colors ${
+                className={`p-2 rounded-full transition-all ${
                   viewMode === 'grid'
-                    ? 'bg-muted text-foreground'
-                    : 'bg-background text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="Grid view"
               >
@@ -610,10 +610,10 @@ export default function Wishlist() {
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 transition-colors border-l border-input ${
+                className={`p-2 rounded-full transition-all ${
                   viewMode === 'list'
-                    ? 'bg-muted text-foreground'
-                    : 'bg-background text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="List view"
               >

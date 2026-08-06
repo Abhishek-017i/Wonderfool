@@ -84,13 +84,13 @@ export default function Browse() {
   const [mediaTypeScope, setMediaTypeScope] = useState('All')
 
   const location = useLocation()
-  
+
   // Parse filters from URL on mount or URL change
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const typeParam = params.get('type')
     const sortParam = params.get('sortBy')
-    
+
     if (typeParam) {
       const types = typeParam.split(',')
       const displayTypes = types.map(t => {
@@ -101,7 +101,7 @@ export default function Browse() {
       })
       setFilters(prev => ({ ...prev, mediaType: displayTypes }))
     }
-    
+
     if (sortParam) {
       // e.g. sortBy=Newest
       setSortBy(sortParam as SortBy)
@@ -405,7 +405,7 @@ export default function Browse() {
               onMediaTypeChange={setMediaTypeScope}
               results={searchResults}
               onResultClick={handleSearchResultClick}
-              onViewAll={() => {}}
+              onViewAll={() => { }}
             />
           </motion.div>
 
@@ -440,7 +440,7 @@ export default function Browse() {
                 <FilterSidebar
                   filters={filters}
                   onFiltersChange={setFilters}
-                  onApply={() => {}}
+                  onApply={() => { }}
                   onReset={() => setFilters(DEFAULT_FILTERS)}
                   hasSearched={hasSearched}
                 />
@@ -472,7 +472,7 @@ export default function Browse() {
                       <FilterSidebar
                         filters={filters}
                         onFiltersChange={setFilters}
-                        onApply={() => {}}
+                        onApply={() => { }}
                         onReset={() => setFilters(DEFAULT_FILTERS)}
                         hasSearched={hasSearched}
                       />

@@ -5,8 +5,17 @@ import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 
+const STORAGE_KEY = 'web-wonders-theme'
+
 export default function Navbar() {
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) return saved === 'dark'
+      return document.documentElement.classList.contains('dark') || true
+    }
+    return true
+  })
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -23,6 +32,19 @@ export default function Navbar() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    const shouldBeDark = saved ? saved === 'dark' : true
+    setIsDark(shouldBeDark)
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
+    } else {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+    }
   }, [])
 
   useEffect(() => {
@@ -44,8 +66,12 @@ export default function Navbar() {
     setIsDark(newDarkMode)
     if (newDarkMode) {
       document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
+      localStorage.setItem(STORAGE_KEY, 'dark')
     } else {
       document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+      localStorage.setItem(STORAGE_KEY, 'light')
     }
   }
 
@@ -53,10 +79,22 @@ export default function Navbar() {
     { name: 'Home', path: '/' },
     { name: 'Browse', path: '/browse' },
     { name: 'Community', path: '/community' },
-    // { name: 'Genre', path: '#' },
+    { name: 'Creators', path: '/creators' },
     { name: 'Timeline', path: '/timeline' },
-    { name: 'Profile', path: '/profile' },
   ]
+
+  const handleNavClick = (linkPath, e) => {
+    if (linkPath === '#') {
+      e.preventDefault()
+      return
+    }
+    if (location.pathname === linkPath) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false)
+    }
+  }
 
   return (
     <motion.nav
@@ -88,7 +126,7 @@ export default function Navbar() {
                 key={link.name}
                 to={link.path}
                 title={link.path === '#' ? 'Coming Soon' : undefined}
-                onClick={link.path === '#' ? (e) => e.preventDefault() : undefined}
+                onClick={(e) => handleNavClick(link.path, e)}
                 className="relative group text-sm font-semibold text-foreground hover:text-primary transition-colors uppercase tracking-widest"
               >
                 {link.name}
@@ -192,58 +230,13 @@ export default function Navbar() {
 
           {/* Auth Section */}
           {isAuthenticated ? (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-colors focus:outline-none"
-              >
-                <img src="/blog/avatar-3.png" alt="User avatar" className="w-full h-full object-cover" />
-              </button>
-
-              <AnimatePresence>
-                {isDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg overflow-hidden py-1 z-50"
-                  >
-                    <Link
-                      to="/profile"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                    >
-                      <User size={16} /> Profile
-                    </Link>
-                    <Link
-                      to="/profile?tab=settings"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                    >
-                      <Settings size={16} /> Settings
-                    </Link>
-                    <Link
-                      to="/wishlist"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                    >
-                      <Bookmark size={16} /> Wishlist
-                    </Link>
-                    <div className="h-px bg-border my-1" />
-                    <button
-                      onClick={() => {
-                        setIsDropdownOpen(false)
-                        logout()
-                      }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                    >
-                      <LogOut size={16} /> Logout
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <Link
+              to="/profile"
+              className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-all hover:scale-105 focus:outline-none flex-shrink-0"
+              title="Go to Profile"
+            >
+              <img src="/blog/avatar-3.png" alt="User avatar" className="w-full h-full object-cover" />
+            </Link>
           ) : (
             <Button
               className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground border border-border hover:shadow-[0_0_20px_rgba(244,216,69,0.3)] transition-all font-bold px-7 uppercase tracking-wider text-xs"
@@ -272,7 +265,7 @@ export default function Navbar() {
                   <Link
                     key={link.name}
                     to={link.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={(e) => handleNavClick(link.path, e)}
                     className={`text-sm font-semibold uppercase tracking-widest ${isActive ? 'text-primary' : 'text-foreground hover:text-primary'} transition-colors`}
                   >
                     {link.name}
