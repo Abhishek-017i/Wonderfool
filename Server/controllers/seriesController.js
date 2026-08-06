@@ -7,11 +7,15 @@ const getAllSeries = async (req, res) => {
       type,
       status,
       genres,
+      demographic,
       country,
       yearStart,
       yearEnd,
       search,
       sortBy,
+      minRating,
+      episodeMin,
+      episodeMax,
       page = 1,
       limit = 20,
     } = req.query;
@@ -30,10 +34,16 @@ const getAllSeries = async (req, res) => {
       filter.status = { $in: statuses };
     }
 
-    // Genre filter (match any of the provided genres)
+    // Genre and Demographic filter
+    let combinedGenres = [];
     if (genres) {
-      const genreList = genres.split(",").map((g) => g.trim());
-      filter.genres = { $in: genreList };
+      combinedGenres.push(...genres.split(",").map((g) => g.trim()));
+    }
+    if (demographic) {
+      combinedGenres.push(...demographic.split(",").map((d) => d.trim()));
+    }
+    if (combinedGenres.length > 0) {
+      filter.genres = { $in: combinedGenres };
     }
 
     // Country filter (JP, KR, CN, TW)
@@ -53,13 +63,39 @@ const getAllSeries = async (req, res) => {
       }
     }
 
+    // Min Rating filter
+    if (minRating) {
+      filter.averageScore = { $gte: Number(minRating) * 10 };
+    }
+
+    // Episode / Chapter Count filter
+    const andConditions = [];
+    
+    if (episodeMin || episodeMax) {
+      const countFilter = {};
+      if (episodeMin) countFilter.$gte = Number(episodeMin);
+      if (episodeMax) countFilter.$lte = Number(episodeMax);
+      andConditions.push({
+        $or: [
+          { episodeCount: countFilter },
+          { chapterCount: countFilter }
+        ]
+      });
+    }
+
     // Search filter (title fields)
     if (search) {
-      filter.$or = [
-        { "title.romaji": { $regex: search, $options: "i" } },
-        { "title.english": { $regex: search, $options: "i" } },
-        { "title.native": { $regex: search, $options: "i" } },
-      ];
+      andConditions.push({
+        $or: [
+          { "title.romaji": { $regex: search, $options: "i" } },
+          { "title.english": { $regex: search, $options: "i" } },
+          { "title.native": { $regex: search, $options: "i" } }
+        ]
+      });
+    }
+
+    if (andConditions.length > 0) {
+      filter.$and = andConditions;
     }
 
     const pageNum = Math.max(1, parseInt(page) || 1);
@@ -69,10 +105,16 @@ const getAllSeries = async (req, res) => {
     let sortOptions = { createdAt: -1 };
     if (sortBy === 'averageScore') {
       sortOptions = { averageScore: -1, popularity: -1 };
-    } else if (sortBy === 'startDate') {
+    } else if (sortBy === 'newest' || sortBy === 'startDate') {
       sortOptions = { startDate: -1, createdAt: -1 };
-    } else if (sortBy === 'popularity') {
+    } else if (sortBy === 'oldest') {
+      sortOptions = { startDate: 1, createdAt: 1 };
+    } else if (sortBy === 'popularity' || sortBy === 'trending') {
       sortOptions = { popularity: -1 };
+    } else if (sortBy === 'title') {
+      sortOptions = { 'title.romaji': 1 };
+    } else if (sortBy === 'updated') {
+      sortOptions = { updatedAt: -1 };
     }
 
     const [series, total] = await Promise.all([

@@ -139,7 +139,25 @@ export default function Browse() {
   // Reset page on filter/sort/search change
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedQuery, filters, activeQuickFilter])
+  }, [debouncedQuery, filters, activeQuickFilter, sortBy])
+
+  // Synchronize Quick Filters with Sort
+  useEffect(() => {
+    if (activeQuickFilter === 'Trending') {
+      setSortBy('Trending')
+    } else if (activeQuickFilter === 'Popular') {
+      setSortBy('Popular')
+    } else if (activeQuickFilter === 'Recently Added') {
+      setSortBy('Newest')
+    }
+  }, [activeQuickFilter])
+
+  const handleSortChange = (newSort: SortBy) => {
+    setSortBy(newSort)
+    if (activeQuickFilter && ['Trending', 'Popular', 'Recently Added'].includes(activeQuickFilter)) {
+      setActiveQuickFilter(null)
+    }
+  }
 
   // Build query params and fetch from API
   const fetchSeries = useCallback(async () => {
@@ -171,12 +189,30 @@ export default function Browse() {
         params.set('country', filters.country.join(','))
       }
 
+      // Demographic filter
+      if (filters.demographic.length > 0) {
+        params.set('demographic', filters.demographic.join(','))
+      }
+
       // Year range filter
       if (filters.yearRange[0] > 1970) {
         params.set('yearStart', String(filters.yearRange[0]))
       }
       if (filters.yearRange[1] < 2026) {
         params.set('yearEnd', String(filters.yearRange[1]))
+      }
+
+      // Min Rating
+      if (filters.minRating > 0) {
+        params.set('minRating', String(filters.minRating))
+      }
+
+      // Episode count
+      if (filters.episodeRange[0] > 0) {
+        params.set('episodeMin', String(filters.episodeRange[0]))
+      }
+      if (filters.episodeRange[1] > 0) {
+        params.set('episodeMax', String(filters.episodeRange[1]))
       }
 
       // Search
@@ -188,6 +224,17 @@ export default function Browse() {
       if (activeQuickFilter === 'Completed') {
         params.set('status', 'finished')
       }
+
+      const SORT_MAP: Record<string, string> = {
+        'Popular': 'popularity',
+        'Trending': 'trending',
+        'Highest Rated': 'averageScore',
+        'Newest': 'newest',
+        'Oldest': 'oldest',
+        'Alphabetical': 'title',
+        'Recently Updated': 'updated'
+      }
+      params.set('sortBy', SORT_MAP[sortBy] || 'popularity')
 
       // Pagination
       params.set('page', String(currentPage))
@@ -209,7 +256,7 @@ export default function Browse() {
     } finally {
       setIsLoading(false)
     }
-  }, [filters, debouncedQuery, activeQuickFilter, currentPage])
+  }, [filters, debouncedQuery, activeQuickFilter, sortBy, currentPage])
 
   useEffect(() => {
     fetchSeries()
@@ -281,6 +328,18 @@ export default function Browse() {
         label: `${filters.yearRange[0]}–${filters.yearRange[1]}`,
         onRemove: () => setFilters((f) => ({ ...f, yearRange: [1970, 2026] })),
       })
+    if (filters.episodeRange[0] > 0 || filters.episodeRange[1] > 0) {
+      let label = 'Episodes: '
+      if (filters.episodeRange[0] > 0 && filters.episodeRange[1] > 0) label += `${filters.episodeRange[0]} - ${filters.episodeRange[1]}`
+      else if (filters.episodeRange[0] > 0) label += `≥ ${filters.episodeRange[0]}`
+      else label += `≤ ${filters.episodeRange[1]}`
+      
+      chips.push({
+        id: 'episodes',
+        label,
+        onRemove: () => setFilters((f) => ({ ...f, episodeRange: [0, 0] })),
+      })
+    }
 
     return chips
   }, [filters])
@@ -426,7 +485,7 @@ export default function Browse() {
               <div className="mb-6">
                 <SortAndViewBar
                   sortBy={sortBy}
-                  onSortChange={setSortBy}
+                  onSortChange={handleSortChange}
                   viewMode={viewMode}
                   onViewModeChange={setViewMode}
                   totalResults={totalCount}
