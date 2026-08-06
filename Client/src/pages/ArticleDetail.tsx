@@ -1,6 +1,8 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useRef, useEffect } from 'react'
 import { ArrowLeft } from 'lucide-react'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 import { useArticle } from '../hooks/useArticle'
 import { useArticleComments } from '../hooks/useArticleComments'
 import { ArticleHero } from '../components/article/ArticleHero'
@@ -60,29 +62,22 @@ export default function ArticleDetail() {
   if (articleError) {
     return (
       <div className="min-h-screen bg-background text-text">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-12">
+        <Navbar />
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-24">
           <ErrorState
             message={articleError}
             onRetry={() => window.location.reload()}
           />
         </div>
+        <Footer />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        {/* Back Navigation */}
-        <div className="mb-6">
-          <Link
-            to="/community"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" aria-hidden />
-            Back to Community
-          </Link>
-        </div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Navbar />
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-24 pb-12 flex-1 w-full">
 
         {/* Hero Section */}
         <div className="mb-12">
@@ -202,6 +197,7 @@ export default function ArticleDetail() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

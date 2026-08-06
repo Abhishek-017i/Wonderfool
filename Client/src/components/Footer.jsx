@@ -1,7 +1,29 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleSectionClick = (e, sectionId) => {
+    e.preventDefault()
+    if (location.pathname === '/') {
+      const elem = document.getElementById(sectionId)
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    } else {
+      navigate('/')
+      setTimeout(() => {
+        const elem = document.getElementById(sectionId)
+        if (elem) {
+          elem.scrollIntoView({ behavior: 'smooth' })
+        }
+      }, 150)
+    }
+  }
 
   return (
     <footer className="w-full bg-card border-t py-12 px-4" style={{ borderTopColor: 'var(--border)' }}>
@@ -27,24 +49,27 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/#top-anime" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <a
+                  href="/#top-anime"
+                  onClick={(e) => handleSectionClick(e, 'top-anime')}
+                  className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer"
+                >
                   Top Anime
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/#top-anime" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/browse?type=MANGA" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Manga &amp; Novels
                 </Link>
               </li>
               <li>
-                <Link to="/timeline" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <a
+                  href="/#new-releases"
+                  onClick={(e) => handleSectionClick(e, 'new-releases')}
+                  className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer"
+                >
                   New Releases
-                </Link>
-              </li>
-              <li>
-                <Link to="/timeline" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Trending
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -54,23 +79,13 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Community</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/community" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Forum
-                </Link>
-              </li>
-              <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Events
-                </Link>
-              </li>
-              <li>
                 <Link to="/creators" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Creator Support
                 </Link>
               </li>
               <li>
                 <Link to="/community" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Guidelines
+                  Community Voices
                 </Link>
               </li>
             </ul>
@@ -81,22 +96,22 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Support</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Help Center
+                <Link to="/support?tab=faq" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                  FAQs
                 </Link>
               </li>
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/support?tab=contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/support?tab=privacy" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/support?tab=terms" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Terms of Service
                 </Link>
               </li>
@@ -112,17 +127,6 @@ export default function Footer() {
           <p className="text-muted-foreground text-sm mb-4 md:mb-0">
             © {currentYear} Wonderfool. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            <a href="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-              Twitter
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-              Discord
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()} title="Coming Soon" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-              Instagram
-            </a>
-          </div>
         </div>
       </div>
     </footer>

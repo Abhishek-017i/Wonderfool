@@ -64,7 +64,9 @@ export default function Home() {
       </div>
       <SeriesGrid title="Top Manga" series={topManga} alternateBg={true} linkTo="/browse?type=MANGA" linkText="View All Manga" />
       <SeriesGrid title="Top Light Novels" series={topNovel} linkTo="/browse?type=NOVEL" linkText="View All Novels" />
-      <SeriesGrid title="New Releases" series={newReleases} alternateBg={true} linkTo="/browse?sortBy=Newest" linkText="View New Releases" />
+      <div id="new-releases">
+        <SeriesGrid title="New Releases" series={newReleases} alternateBg={true} linkTo="/browse?sortBy=Newest" linkText="View New Releases" />
+      </div>
       <StoriesSection />
       <Footer />
     </div>

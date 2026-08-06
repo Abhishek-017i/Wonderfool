@@ -22,6 +22,7 @@ interface SignUpErrors {
   password?: string
   confirmPassword?: string
   agreeToTerms?: string
+  general?: string
 }
 
 export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess }: SignUpFormProps) {
@@ -83,87 +84,98 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
   const handleEmailChange = (value: string) => {
     setEmail(value)
     onSharedEmailChange(value)
-    if (errors.email) {
-      setErrors((prev) => ({ ...prev, email: undefined }))
+    if (errors.email || errors.general) {
+      setErrors((prev) => ({ ...prev, email: undefined, general: undefined }))
     }
   }
 
   const handlePasswordChange = (value: string) => {
     setPassword(value)
-    if (errors.password) {
-      setErrors((prev) => ({ ...prev, password: undefined }))
+    if (errors.password || errors.general) {
+      setErrors((prev) => ({ ...prev, password: undefined, general: undefined }))
     }
   }
 
   const handleConfirmPasswordChange = (value: string) => {
     setConfirmPassword(value)
-    if (errors.confirmPassword) {
-      setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+    if (errors.confirmPassword || errors.general) {
+      setErrors((prev) => ({ ...prev, confirmPassword: undefined, general: undefined }))
     }
   }
 
   const handleUsernameChange = (value: string) => {
     setUsername(value)
-    if (errors.username) {
-      setErrors((prev) => ({ ...prev, username: undefined }))
+    if (errors.username || errors.general) {
+      setErrors((prev) => ({ ...prev, username: undefined, general: undefined }))
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('1. Form submitted');
+    const validationErrors = validateSignUp({ username, email, password, confirmPassword, agreeToTerms })
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors)
+      return
+    }
+
+    setErrors({})
+    setIsSubmitting(true)
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('2. Firebase login succeeded', userCredential.user.email);
-      
       await updateProfile(userCredential.user, { displayName: username });
 
       const token = await userCredential.user.getIdToken(true);
-      console.log('3. Got token', token.substring(0, 20));
-
-      console.log('4. About to call sync, URL will be:', api.defaults.baseURL + '/auth/sync');
       const res = await api.post('/auth/sync', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('4. Sync succeeded', res.data);
 
       setUser(res.data, token);
       onSuccess();
-      console.log('5. onSuccess called');
-    } 
-    catch (err) {
-      console.error('LOGIN ERROR raw:', err);
-      console.error('LOGIN ERROR type:', typeof err);
-      console.error('LOGIN ERROR is Error instance:', err instanceof Error);
-      console.error('LOGIN ERROR keys:', err && typeof err === 'object' ? Object.keys(err) : 'not an object');
-      console.error('LOGIN ERROR JSON:', JSON.stringify(err, Object.getOwnPropertyNames(err || {})));
+    } catch (err: any) {
+      console.error('SIGNUP ERROR:', err);
+      let message = 'Failed to create account. Please try again.'
+      if (err?.code === 'auth/email-already-in-use') {
+        message = 'This email address is already in use.'
+      } else if (err?.code === 'auth/weak-password') {
+        message = 'Password should be at least 8 characters.'
+      } else if (err?.code === 'auth/invalid-email') {
+        message = 'Please enter a valid email address.'
+      }
+      setErrors({ general: message })
+    } finally {
+      setIsSubmitting(false)
     }
   };
 
   const handleGoogleSignIn = async () => {
-  console.log('1. Google sign-in clicked');
-  try {
-    const userCredential = await signInWithPopup(auth, googleProvider);
-    console.log('2. Google login succeeded', userCredential.user.email);
+    setIsSubmitting(true)
+    setErrors({})
+    try {
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const token = await userCredential.user.getIdToken();
+      const res = await api.post('/auth/sync', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    const token = await userCredential.user.getIdToken();
-    console.log('3. Got token', token.substring(0, 20));
-
-    const res = await api.post('/auth/sync', {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    console.log('4. Sync succeeded', res.data);
-
-    setUser(res.data, token);
-    onSuccess();
-    console.log('5. onSuccess called');
-  } catch (err: any) {
-    console.error('GOOGLE LOGIN ERROR:', err?.message || err);
-  }
-};
+      setUser(res.data, token);
+      onSuccess();
+    } catch (err: any) {
+      console.error('GOOGLE LOGIN ERROR:', err?.message || err);
+      setErrors({ general: 'Google Sign-In failed. Please try again.' })
+    } finally {
+      setIsSubmitting(false)
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {errors.general && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{errors.general}</span>
+        </div>
+      )}
       {/* Username */}
       <div className="space-y-2.5">
         <Label htmlFor="username" className="text-foreground font-semibold text-sm">

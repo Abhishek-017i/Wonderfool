@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   Sparkles,
 } from 'lucide-react'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { cn } from '@/lib/utils'
@@ -50,19 +52,8 @@ function Header({
   onOpenComposer: () => void
 }) {
   return (
-    <header className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          Back to Web Wonders
-        </Link>
-        <ThemeToggle />
-      </div>
-
-      <div className="mt-6 flex flex-col items-start justify-between gap-6 border-b border-border/70 pb-8 sm:flex-row sm:items-end">
+    <header className="mx-auto max-w-7xl px-4 pt-24 sm:px-6 lg:px-8">
+      <div className="flex flex-col items-start justify-between gap-6 border-b border-border/70 pb-8 sm:flex-row sm:items-end">
         <div>
           <span className="text-sm font-semibold tracking-wide text-accent uppercase">
             The Community Journal
@@ -327,7 +318,8 @@ export default function CommunityPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background flex flex-col">
+      <Navbar />
       <Header onOpenComposer={() => setComposerOpen(true)} />
       <TrendingTags activeTag={activeTag} onSelectTag={setActiveTag} />
 
@@ -409,6 +401,7 @@ export default function CommunityPage() {
       ) : null}
 
       <Feed articles={filteredArticles} />
+      <Footer />
     </main>
   )
 }
