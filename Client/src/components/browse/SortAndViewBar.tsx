@@ -52,22 +52,7 @@ export default function SortAndViewBar({
       </p>
 
       <div className="flex items-center gap-3">
-        {/* Sort */}
-        <div className="flex items-center gap-2">
-          <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-          <Select value={sortBy} onValueChange={(v) => onSortChange(v as SortBy)}>
-            <SelectTrigger className="h-8 w-44 bg-card border-border/60 text-sm focus:ring-primary/20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SORT_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+
 
         {/* View Mode Toggle */}
         <div className="flex items-center gap-0.5 rounded-lg border border-border/60 p-0.5 bg-card">
@@ -79,7 +64,7 @@ export default function SortAndViewBar({
               variant={viewMode === mode ? 'default' : 'ghost'}
               aria-label={label}
               className={cn(
-                'transition-all',
+                'transition-all rounded-md',
                 viewMode === mode
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
