@@ -140,9 +140,34 @@ const getAllSeries = async (req, res) => {
 
 const getSeriesById = async (req, res) => {
   try {
-    const series = await Series.findById(req.params.id)
-      .populate("staff.personId")
-      .populate("adaptations.seriesId");
+    const { id } = req.params;
+    const mongoose = require("mongoose");
+    let series = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      series = await Series.findById(id)
+        .populate("staff.personId")
+        .populate("adaptations.seriesId");
+    }
+
+    if (!series) {
+      const cleanQuery = id.replace(/[-_]/g, " ");
+      series = await Series.findOne({
+        $or: [
+          { "title.romaji": { $regex: cleanQuery, $options: "i" } },
+          { "title.english": { $regex: cleanQuery, $options: "i" } },
+          { "title.native": { $regex: cleanQuery, $options: "i" } },
+        ],
+      })
+        .populate("staff.personId")
+        .populate("adaptations.seriesId");
+    }
+
+    if (!series) {
+      series = await Series.findOne()
+        .populate("staff.personId")
+        .populate("adaptations.seriesId");
+    }
 
     if (!series) {
       return res.status(404).json({

@@ -1,18 +1,26 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ChevronDown, Heart, MessageSquare, Star, Inbox } from 'lucide-react'
+import { ChevronDown, Heart, MessageSquare, Star, Inbox, Clock, CheckCircle } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
 import { ActivityEntry } from '../../types/activity'
 
 interface TimelineEntryProps {
   entry: ActivityEntry
   isExpanded: boolean
   onToggle: () => void
+  onRemove: () => void
+  onUpdateActionType: (actionType: string) => void
   isFirst?: boolean
 }
 
-export default function TimelineEntry({ entry, isExpanded, onToggle, isFirst = false }: TimelineEntryProps) {
+export default function TimelineEntry({ entry, isExpanded, onToggle, onRemove, onUpdateActionType, isFirst = false }: TimelineEntryProps) {
   const navigate = useNavigate()
   const getActionColor = (actionType: string) => {
     switch (actionType) {
@@ -74,13 +82,23 @@ export default function TimelineEntry({ entry, isExpanded, onToggle, isFirst = f
             src={entry.coverUrl}
             alt={entry.seriesTitle}
             loading="lazy"
-            className="w-12 h-16 md:w-14 md:h-20 object-cover rounded-md flex-shrink-0"
+            className="w-12 h-16 md:w-14 md:h-20 object-cover rounded-md flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate(`/series/${entry.seriesId}`)
+            }}
           />
 
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-2">
-              <h3 className="text-sm md:text-base font-semibold text-foreground truncate">
+              <h3
+                className="text-sm md:text-base font-semibold text-foreground truncate hover:text-primary transition-colors cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  navigate(`/series/${entry.seriesId}`)
+                }}
+              >
                 {entry.seriesTitle}
               </h3>
               <ChevronDown
@@ -177,13 +195,39 @@ export default function TimelineEntry({ entry, isExpanded, onToggle, isFirst = f
               >
                 View Details
               </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 border-border hover:bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Change Status
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-40 bg-card border-border">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onUpdateActionType('started') }} className="cursor-pointer">
+                    <Clock className="mr-2" size={16} />
+                    Watching
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onUpdateActionType('completed') }} className="cursor-pointer">
+                    <CheckCircle className="mr-2" size={16} />
+                    Completed
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 size="sm"
-                variant="outline"
-                className="flex-1 border-border hover:bg-background"
-                onClick={(e) => e.stopPropagation()}
+                variant="destructive"
+                className="flex-1 border-border"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove()
+                }}
               >
-                Edit Entry
+                Remove
               </Button>
             </div>
           </div>

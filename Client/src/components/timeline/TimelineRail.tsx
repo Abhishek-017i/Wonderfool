@@ -5,12 +5,16 @@ interface TimelineRailProps {
   groupedActivities: Record<string, ActivityEntry[]>
   expandedIds: Set<string>
   onToggleExpand: (id: string) => void
+  onRemove: (id: string) => void
+  onUpdateActionType: (id: string, actionType: string) => void
 }
 
 export default function TimelineRail({
   groupedActivities,
   expandedIds,
   onToggleExpand,
+  onRemove,
+  onUpdateActionType,
 }: TimelineRailProps) {
   const dateGroups = Object.entries(groupedActivities)
 
@@ -44,6 +48,8 @@ export default function TimelineRail({
                   entry={entry}
                   isExpanded={expandedIds.has(entry.id)}
                   onToggle={() => onToggleExpand(entry.id)}
+                  onRemove={() => onRemove(entry.id)}
+                  onUpdateActionType={(actionType) => onUpdateActionType(entry.id, actionType)}
                   isFirst={groupIdx === 0 && entryIdx === 0}
                 />
               ))}

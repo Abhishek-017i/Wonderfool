@@ -10,6 +10,7 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
     { id: 'overview', label: 'Overview' },
     { id: 'reviews', label: 'My Reviews' },
     { id: 'articles', label: 'My Articles' },
+    { id: 'timeline', label: 'My Timeline' },
     { id: 'wishlist', label: 'My Wishlist' },
     { id: 'settings', label: 'Settings' },
   ]

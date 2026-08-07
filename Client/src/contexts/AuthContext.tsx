@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (redirectUrl?: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,7 +32,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("Firebase signout error", err);
+    }
+    useAuthStore.getState().logout();
     localStorage.removeItem('isAuthenticated');
     setIsAuthenticated(false);
     navigate('/login', { replace: true });

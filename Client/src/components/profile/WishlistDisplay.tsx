@@ -4,9 +4,10 @@ import { motion } from 'framer-motion'
 
 interface WishlistDisplayProps {
   items: WishlistItem[]
+  onRemove?: (id: string) => void
 }
 
-export default function WishlistDisplay({ items }: WishlistDisplayProps) {
+export default function WishlistDisplay({ items, onRemove }: WishlistDisplayProps) {
   if (items.length === 0) {
     return (
       <div className="glass-panel rounded-xl p-12 text-center">
@@ -36,7 +37,10 @@ export default function WishlistDisplay({ items }: WishlistDisplayProps) {
                 <span className="uppercase tracking-wider">{item.category}</span>
               </div>
             </div>
-            <button className="text-muted-foreground hover:text-destructive transition-colors p-1 absolute top-4 right-4 opacity-0 group-hover:opacity-100">
+            <button 
+              className="text-muted-foreground hover:text-destructive transition-colors p-1 absolute top-4 right-4 opacity-0 group-hover:opacity-100"
+              onClick={() => onRemove && onRemove(item.id)}
+            >
               <Trash2 size={16} />
             </button>
           </div>

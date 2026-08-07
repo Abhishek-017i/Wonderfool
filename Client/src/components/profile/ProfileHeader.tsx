@@ -70,7 +70,12 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
                   {user.rank}
                 </span>
               </div>
-              <p className="text-muted-foreground font-medium text-sm">{user.handle}</p>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-muted-foreground font-medium text-sm">{user.handle}</p>
+                {user.email && (
+                  <p className="text-muted-foreground/80 font-medium text-xs">{user.email}</p>
+                )}
+              </div>
             </div>
 
             {/* Bio */}

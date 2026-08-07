@@ -3,7 +3,7 @@ import type { Review } from '../../data/mockData'
 import { motion } from 'framer-motion'
 
 interface ReviewsListProps {
-  reviews: Review[]
+  reviews: any[]
 }
 
 export default function ReviewsList({ reviews }: ReviewsListProps) {
@@ -20,7 +20,7 @@ export default function ReviewsList({ reviews }: ReviewsListProps) {
     <div className="flex flex-col gap-6">
       {reviews.map((review, idx) => (
         <motion.div 
-          key={review.id} 
+          key={review._id || review.id} 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.1 }}
@@ -31,8 +31,8 @@ export default function ReviewsList({ reviews }: ReviewsListProps) {
             {/* Poster Thumbnail */}
             <div className="w-full sm:w-32 sm:min-w-[128px] h-48 sm:h-auto overflow-hidden relative">
               <img 
-                src={review.posterUrl} 
-                alt={review.animeTitle} 
+                src={review.seriesId?.coverImage || review.seriesId?.posterImage || review.posterUrl || '/media/poster-1.png'} 
+                alt={review.seriesId?.english || review.seriesId?.title || review.animeTitle || 'Series Poster'} 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
@@ -42,8 +42,12 @@ export default function ReviewsList({ reviews }: ReviewsListProps) {
               <div>
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-xl font-bold font-serif text-foreground mb-1 group-hover:text-primary transition-colors">{review.title}</h3>
-                    <p className="text-sm font-semibold text-primary/80 mb-2">{review.animeTitle}</p>
+                    <h3 className="text-xl font-bold font-serif text-foreground mb-1 group-hover:text-primary transition-colors">
+                      {review.title || 'Review'}
+                    </h3>
+                    <p className="text-sm font-semibold text-primary/80 mb-2">
+                      {review.seriesId?.english || review.seriesId?.title || review.animeTitle || 'Unknown Series'}
+                    </p>
                   </div>
                   <button className="text-muted-foreground hover:text-destructive transition-colors p-1">
                     <Trash2 size={18} />
@@ -60,11 +64,13 @@ export default function ReviewsList({ reviews }: ReviewsListProps) {
                       />
                     ))}
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{review.date}</span>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : review.date}
+                  </span>
                 </div>
 
                 <p className="text-foreground/90 leading-relaxed text-sm mb-4 line-clamp-3">
-                  {review.content}
+                  {review.text || review.content}
                 </p>
               </div>
 
@@ -72,15 +78,15 @@ export default function ReviewsList({ reviews }: ReviewsListProps) {
               <div className="flex items-center gap-6 pt-4 border-t border-border/50 text-xs font-semibold text-muted-foreground">
                 <div className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer">
                   <Heart size={14} className="group-hover:text-red-500 transition-colors" />
-                  <span>{review.likes}</span>
+                  <span>{review.likes?.length || review.likes || 0}</span>
                 </div>
                 <div className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer">
                   <MessageSquare size={14} className="group-hover:text-blue-500 transition-colors" />
-                  <span>{review.comments}</span>
+                  <span>{review.comments || 0}</span>
                 </div>
                 <div className="flex items-center gap-1.5 ml-auto">
                   <Clock size={14} />
-                  <span>{review.readTime}</span>
+                  <span>{review.readTime || `${Math.max(1, Math.ceil((review.text || review.content || '').length / 500))} min read`}</span>
                 </div>
               </div>
             </div>

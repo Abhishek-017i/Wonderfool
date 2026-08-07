@@ -3,7 +3,7 @@ import type { Article } from '../../data/mockData'
 import { motion } from 'framer-motion'
 
 interface ArticlesListProps {
-  articles: Article[]
+  articles: any[]
 }
 
 export default function ArticlesList({ articles }: ArticlesListProps) {
@@ -20,7 +20,7 @@ export default function ArticlesList({ articles }: ArticlesListProps) {
     <div className="flex flex-col gap-4">
       {articles.map((article, idx) => (
         <motion.div 
-          key={article.id}
+          key={article._id || article.id}
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: idx * 0.1 }}
@@ -37,14 +37,14 @@ export default function ArticlesList({ articles }: ArticlesListProps) {
           </div>
 
           <p className="text-foreground/80 text-sm mb-4 line-clamp-2">
-            {article.excerpt}
+            {article.body || article.excerpt || ''}
           </p>
 
           <div className="flex justify-between items-center mt-auto">
             <div className="flex gap-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              <span>{article.date}</span>
+              <span>{article.createdAt ? new Date(article.createdAt).toLocaleDateString() : article.date}</span>
               <span>•</span>
-              <span>{article.readTime}</span>
+              <span>{article.readTime || `${Math.max(1, Math.ceil((article.body || article.excerpt || '').length / 500))} min read`}</span>
             </div>
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
               <ArrowRight size={16} className="text-primary group-hover:text-primary-foreground transition-colors" />

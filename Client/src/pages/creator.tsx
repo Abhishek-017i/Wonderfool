@@ -9,11 +9,13 @@ import {
   Clapperboard,
   Award,
   ArrowLeft,
+  Loader2,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { cn } from '@/lib/utils'
+import { useCreators } from '@/hooks/useCreators'
 
 /* -------------------------------------------------------------------------- */
 /*                                    Data                                     */
@@ -24,9 +26,10 @@ type Role =
   | 'Director'
   | 'Character Designer'
   | 'Animator'
+  | string
 
 type Creator = {
-  id: number
+  id: string | number
   name: string
   role: Role
   image: string
@@ -35,7 +38,7 @@ type Creator = {
   award: string
 }
 
-const ROLE_ICON: Record<Role, typeof PenTool> = {
+const ROLE_ICON: Record<string, any> = {
   Mangaka: PenTool,
   Director: Film,
   'Character Designer': Palette,
@@ -50,63 +53,6 @@ const FILTERS: (Role | 'All')[] = [
   'Animator',
 ]
 
-const CREATORS: Creator[] = [
-  {
-    id: 1,
-    name: 'Takehiko Inoue',
-    role: 'Mangaka',
-    image: '/creators/creator-1.png',
-    knownFor: ['Vagabond', 'Slam Dunk', 'Real'],
-    era: 'Active: 1988–Present',
-    award: 'Tezuka Osamu Cultural Prize',
-  },
-  {
-    id: 2,
-    name: 'Makoto Shinkai',
-    role: 'Director',
-    image: '/creators/creator-2.png',
-    knownFor: ['Your Name', 'Weathering With You', 'Suzume'],
-    era: 'Active: 2002–Present',
-    award: 'Japan Academy Prize',
-  },
-  {
-    id: 3,
-    name: 'Kentaro Miura',
-    role: 'Mangaka',
-    image: '/creators/creator-3.png',
-    knownFor: ['Berserk', 'Duranki', 'Japan'],
-    era: 'Active: 1985–2021',
-    award: 'Harvey Award Nominee',
-  },
-  {
-    id: 4,
-    name: 'Naoko Yamada',
-    role: 'Director',
-    image: '/creators/creator-4.png',
-    knownFor: ['A Silent Voice', 'K-On!', 'Liz and the Blue Bird'],
-    era: 'Active: 2009–Present',
-    award: 'Tokyo Anime Award',
-  },
-  {
-    id: 5,
-    name: 'Yoshiaki Kawajiri',
-    role: 'Animator',
-    image: '/creators/creator-5.png',
-    knownFor: ['Ninja Scroll', 'Vampire Hunter D', 'X'],
-    era: 'Active: 1972–Present',
-    award: 'Fantasia Lifetime Honor',
-  },
-  {
-    id: 6,
-    name: 'Yoshitoshi ABe',
-    role: 'Character Designer',
-    image: '/creators/creator-6.png',
-    knownFor: ['Serial Experiments Lain', 'Haibane Renmei', 'Texhnolyze'],
-    era: 'Active: 1998–Present',
-    award: 'Seiun Award Finalist',
-  },
-]
-
 /* -------------------------------------------------------------------------- */
 /*                                    Page                                     */
 /* -------------------------------------------------------------------------- */
@@ -115,18 +61,32 @@ export default function CreatorsPage() {
   const [query, setQuery] = useState('')
   const [activeRole, setActiveRole] = useState<Role | 'All'>('All')
 
+  const { creators: apiCreators, isLoading, error } = useCreators()
+
+  const mappedCreators: Creator[] = useMemo(() => {
+    return (apiCreators || []).map((c) => ({
+      id: c._id,
+      name: c.name?.full || c.name?.native || 'Unknown',
+      role: c.designation?.[0] || 'Mangaka',
+      image: c.photo || '/placeholder.svg',
+      knownFor: c.knownWorks?.map(w => w.seriesId?.title?.english || w.seriesId?.title?.romaji || 'Unknown Work') || [],
+      era: c.yearsActive || 'Unknown',
+      award: 'Notable Creator',
+    }))
+  }, [apiCreators])
+
   const filtered = useMemo(() => {
-    return CREATORS.filter((c) => {
+    return mappedCreators.filter((c) => {
       const matchesRole = activeRole === 'All' || c.role === activeRole
       const q = query.trim().toLowerCase()
       const matchesQuery =
         q === '' ||
         c.name.toLowerCase().includes(q) ||
-        c.role.toLowerCase().includes(q) ||
+        (c.role && c.role.toLowerCase().includes(q)) ||
         c.knownFor.some((w) => w.toLowerCase().includes(q))
       return matchesRole && matchesQuery
     })
-  }, [query, activeRole])
+  }, [query, activeRole, mappedCreators])
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
@@ -182,7 +142,16 @@ export default function CreatorsPage() {
         </div>
 
         {/* Gallery grid */}
-        {filtered.length > 0 ? (
+        {isLoading ? (
+          <div className="mt-20 flex flex-col items-center justify-center text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4">Loading creators...</p>
+          </div>
+        ) : error ? (
+          <p className="mt-20 text-center text-red-500">
+            Failed to load creators. Please try again later.
+          </p>
+        ) : filtered.length > 0 ? (
           <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((creator) => (
               <CreatorCard key={creator.id} creator={creator} />
@@ -204,7 +173,7 @@ export default function CreatorsPage() {
 /* -------------------------------------------------------------------------- */
 
 function CreatorCard({ creator }: { creator: Creator }) {
-  const RoleIcon = ROLE_ICON[creator.role]
+  const RoleIcon = ROLE_ICON[creator.role] || PenTool
 
   return (
     <Link to={`/creator/${creator.id}`} className="group flex flex-col rounded-[18px] border border-border/70 bg-card p-6 shadow-[0_12px_32px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/25 hover:shadow-[0_20px_44px_rgba(0,0,0,0.09)]">

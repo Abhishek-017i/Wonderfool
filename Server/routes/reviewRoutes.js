@@ -4,6 +4,7 @@ const verifyToken = require('../middleware/verifyToken');
 
 const {
   getReviewsBySeries,
+  getReviewsByUser,
   createReview,
   updateReview,
   deleteReview,
@@ -11,6 +12,7 @@ const {
 } = require('../controllers/reviewController');
 
 router.get('/series/:seriesId', getReviewsBySeries);
+router.get('/user/:userId', getReviewsByUser);
 
 router.post('/', verifyToken, createReview);
 router.put('/:id', verifyToken, updateReview);

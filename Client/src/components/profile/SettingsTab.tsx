@@ -23,9 +23,8 @@ export default function SettingsTab({ isDark, setIsDark }: SettingsTabProps) {
   const { logout } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
+  const handleLogout = async () => {
+    await logout()
   }
 
   const showToast = (msg: string) => {
