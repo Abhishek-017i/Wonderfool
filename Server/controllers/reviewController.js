@@ -12,6 +12,19 @@ const getReviewsBySeries = async (req, res) => {
   }
 };
 
+const getReviewsByUser = async (req, res) => {
+  try {
+    const reviews = await Review.find({ userId: req.params.userId })
+      .populate('userId', 'name avatar')
+      .populate('seriesId', 'title coverImage posterImage english romaji native')
+      .sort({ createdAt: -1 });
+      
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 const createReview = async (req, res) => {
   try {
@@ -89,6 +102,7 @@ const toggleLikeReview = async (req, res) => {
 
 module.exports = {
   getReviewsBySeries,
+  getReviewsByUser,
   createReview,
   updateReview,
   deleteReview,

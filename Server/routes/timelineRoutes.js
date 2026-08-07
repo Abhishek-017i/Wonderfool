@@ -50,6 +50,26 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
+// GET /api/timeline/user/:userId
+// Get a specific user's timeline
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const timelineEvents = await Timeline.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'seriesId',
+        select: 'title coverImage type status episodeCount chapterCount'
+      });
+
+    res.status(200).json(timelineEvents);
+  } catch (error) {
+    console.error('Error fetching timeline for user:', error);
+    res.status(500).json({ message: 'Failed to fetch user timeline' });
+  }
+});
+
 // DELETE /api/timeline/:id
 // Remove a timeline entry
 router.delete('/:id', verifyToken, async (req, res) => {

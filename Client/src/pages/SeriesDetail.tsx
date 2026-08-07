@@ -82,11 +82,11 @@ export default function SeriesDetail() {
       navigate('/login', { state: { from: location.pathname } })
       return
     }
-    
+
     try {
-      await api.post('/timeline', { 
+      await api.post('/timeline', {
         seriesId: series?._id,
-        actionType 
+        actionType
       }, {
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -95,16 +95,29 @@ export default function SeriesDetail() {
       console.error('Failed to add to timeline', err)
       setToast('Failed to add to timeline')
     }
-    
+
     setTimeout(() => setToast(null), 2000)
   }
 
-  const handleWishlistAction = () => {
+  const handleWishlistAction = async () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: location.pathname } })
       return
     }
-    setToast('Added to Wishlist')
+
+    try {
+      await api.post('/wishlists', {
+        seriesId: series?._id,
+        status: 'planning'
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setToast('Added to Wishlist')
+    } catch (err) {
+      console.error('Failed to add to wishlist', err)
+      setToast('Failed to add to wishlist')
+    }
+
     setTimeout(() => setToast(null), 2000)
   }
 
@@ -146,15 +159,15 @@ export default function SeriesDetail() {
   return (
     <div className="min-h-screen bg-background flex flex-col transition-all duration-200">
       <Navbar />
-      
+
       <main className="flex-1 w-full pt-20">
         {/* Banner area */}
         <div className="relative w-full h-[40vh] min-h-[300px] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10" />
           <div className="absolute inset-0 bg-black/40 z-[5]" />
-          <img 
-            src={series.bannerImage || series.coverImage || ''} 
-            alt={title} 
+          <img
+            src={series.bannerImage || series.coverImage || ''}
+            alt={title}
             className="w-full h-full object-cover blur-md scale-110"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
@@ -166,9 +179,9 @@ export default function SeriesDetail() {
             <div className="w-48 sm:w-64 flex-shrink-0 mx-auto md:mx-0">
               <div className="rounded-2xl overflow-hidden luxury-shadow border-4 border-background bg-card aspect-[2/3]">
                 {series.coverImage ? (
-                  <img 
-                    src={series.coverImage} 
-                    alt={title} 
+                  <img
+                    src={series.coverImage}
+                    alt={title}
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).src = '' }}
                   />
@@ -178,11 +191,11 @@ export default function SeriesDetail() {
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-6 flex flex-col gap-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
+                    <Button
                       className="w-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(244,216,69,0.4)]"
                     >
                       <CheckCircle className="mr-2" size={18} />
@@ -200,7 +213,7 @@ export default function SeriesDetail() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Button 
+                <Button
                   variant="outline"
                   onClick={handleWishlistAction}
                   className="w-full"
@@ -224,7 +237,7 @@ export default function SeriesDetail() {
                   {series.title?.native && ` · ${series.title.native}`}
                 </p>
               )}
-              
+
               {/* Meta badges row */}
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6 text-sm font-semibold">
                 {series.type && (
@@ -268,7 +281,7 @@ export default function SeriesDetail() {
                   </span>
                 )}
               </div>
-              
+
               {/* Genres */}
               {series.genres && series.genres.length > 0 && (
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-8">
@@ -284,9 +297,9 @@ export default function SeriesDetail() {
               {series.staff && series.staff.length > 0 && (
                 <div className="mb-8 flex flex-wrap gap-3 justify-center md:justify-start">
                   {series.staff.filter(s => s.personId).map((staffMember, idx) => (
-                    <Link 
+                    <Link
                       key={idx}
-                      to={`/creator/${staffMember.personId?._id}`} 
+                      to={`/creator/${staffMember.personId?._id}`}
                       className="inline-flex items-center gap-3 p-3 pr-6 rounded-full bg-card/40 border border-border/50 hover:border-primary/50 hover:bg-card/60 transition-all group"
                     >
                       <div className="w-10 h-10 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors bg-muted flex items-center justify-center">
@@ -381,7 +394,7 @@ export default function SeriesDetail() {
       </main>
 
       {toast && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}

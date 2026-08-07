@@ -4,6 +4,7 @@ import { Search, Moon, Sun, User, Settings, LogOut, Bookmark, Menu, X } from 'lu
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import useAuthStore from '@/store/authStore'
 
 const STORAGE_KEY = 'web-wonders-theme'
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
@@ -29,6 +30,7 @@ export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { isAuthenticated, logout } = useAuth()
+  const { user } = useAuthStore()
 
   useEffect(() => {
     if (!searchQuery || searchQuery.trim().length < 2) {
@@ -275,7 +277,7 @@ export default function Navbar() {
               className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-all hover:scale-105 focus:outline-none flex-shrink-0"
               title="Go to Profile"
             >
-              <img src="/blog/avatar-3.png" alt="User avatar" className="w-full h-full object-cover" />
+              <img src={user?.avatar || "/blog/avatar-3.png"} alt="User avatar" className="w-full h-full object-cover" />
             </Link>
           ) : (
             <Button

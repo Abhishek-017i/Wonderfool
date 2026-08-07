@@ -11,9 +11,10 @@ const {
   getUserWishlist,
   getWishlistByStatus,
   updateWishlistStatus,
-   
+  getWishlistByUser,
 } = require("../controllers/wishlistController");
 router.get("/", verifyToken, getUserWishlist);
+router.get("/user/:userId", getWishlistByUser);
 router.get("/:id",verifyToken ,getWishlistById);
 router.post("/", verifyToken, createWishlist);
 router.patch("/status/:id", verifyToken, updateWishlistStatus);
