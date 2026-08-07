@@ -15,7 +15,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { cn } from '@/lib/utils'
-import { useCreators } from '@/hooks/useCreators'
+import { useCreators } from '@/hooks/useCreator'
 
 /* -------------------------------------------------------------------------- */
 /*                                    Data                                     */
