@@ -15,7 +15,8 @@ export default function Toast({ message }: ToastProps) {
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
       animation: 'fadeIn 300ms ease-out',
       fontSize: '14px',
-      fontWeight: '500'
+      fontWeight: '500',
+      zIndex: 9999
     }}>
       {message}
     </div>

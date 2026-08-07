@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Search, Moon, Sun, User, Settings, LogOut, Bookmark, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import useAuthStore from '@/store/authStore'
 
 const STORAGE_KEY = 'web-wonders-theme'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 export default function Navbar() {
   const [isDark, setIsDark] = useState(() => {
@@ -19,12 +21,53 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const searchRef = useRef(null)
   const dropdownRef = useRef(null)
   const location = useLocation()
+  const navigate = useNavigate()
   const { isAuthenticated, logout } = useAuth()
+  const { user } = useAuthStore()
+
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setSearchResults([])
+      return
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const res = await fetch(`${API_URL}/series?search=${encodeURIComponent(searchQuery)}&limit=5`)
+        if (res.ok) {
+          const data = await res.json()
+          setSearchResults(data.series || [])
+        }
+      } catch (err) {
+        console.error('Navbar search error:', err)
+      } finally {
+        setIsSearching(false)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/browse?search=${encodeURIComponent(searchQuery.trim())}`)
+      setIsSearchExpanded(false)
+      setSearchQuery('')
+    }
+  }
+
+  const getSeriesTitle = (title) => {
+    if (!title) return 'Untitled'
+    if (typeof title === 'string') return title
+    return title.english || title.romaji || title.native || 'Untitled'
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -147,73 +190,72 @@ export default function Navbar() {
         <div className="flex items-center gap-5">
           {/* Search */}
           <div className="relative flex items-center hidden sm:flex" ref={searchRef}>
-            <motion.div
-              className="flex items-center overflow-hidden bg-background/50 border border-border rounded-full backdrop-blur-sm relative z-50"
-              animate={{ width: isSearchExpanded ? 260 : 42 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            >
-              <button
-                onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-                className="p-2.5 text-foreground hover:text-primary transition-colors flex-shrink-0"
+            <form onSubmit={handleSearchSubmit}>
+              <motion.div
+                className="flex items-center overflow-hidden bg-background/50 border border-border rounded-full backdrop-blur-sm relative z-50"
+                animate={{ width: isSearchExpanded ? 260 : 42 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
               >
-                <Search size={18} />
-              </button>
-              <input
-                type="text"
-                placeholder="Search series or users..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-foreground/50 w-full pl-2 pr-4 font-serif italic"
-              />
-            </motion.div>
+                <button
+                  type="submit"
+                  onClick={(e) => {
+                    if (!isSearchExpanded) {
+                      e.preventDefault()
+                      setIsSearchExpanded(true)
+                    }
+                  }}
+                  className="p-2.5 text-foreground hover:text-primary transition-colors flex-shrink-0"
+                >
+                  <Search size={18} />
+                </button>
+                <input
+                  type="text"
+                  placeholder="Search series..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchExpanded(true)}
+                  className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-foreground/50 w-full pl-2 pr-4 font-serif italic"
+                />
+              </motion.div>
+            </form>
 
             {/* Search Results Dropdown */}
             <AnimatePresence>
-              {isSearchExpanded && searchQuery.length > 1 && (
+              {isSearchExpanded && searchQuery.trim().length > 1 && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-12 right-0 w-[260px] bg-card border border-border rounded-xl shadow-xl overflow-hidden py-2 z-50"
+                  className="absolute top-12 right-0 w-[280px] bg-card border border-border rounded-xl shadow-xl overflow-hidden py-2 z-50 max-h-[360px] overflow-y-auto"
                 >
-                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Series</div>
-                  <Link
-                    to="/series/1"
-                    onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
-                  >
-                    <img src="/media/poster-1.png" className="w-8 h-10 object-cover rounded" alt="Attack on Titan" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold truncate">Attack on Titan</span>
-                      <span className="text-xs text-muted-foreground">Anime</span>
+                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                    <span>Series</span>
+                    {isSearching && <span className="text-[10px] lowercase animate-pulse">searching...</span>}
+                  </div>
+                  {searchResults.length > 0 ? (
+                    searchResults.map((series) => (
+                      <Link
+                        key={series._id}
+                        to={`/series/${series._id}`}
+                        onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
+                        className="flex items-center gap-3 px-3 py-2 hover:bg-muted/80 transition-colors"
+                      >
+                        <img
+                          src={series.coverImage || series.posterImage || '/media/poster-1.png'}
+                          className="w-8 h-10 object-cover rounded bg-muted flex-shrink-0"
+                          alt={getSeriesTitle(series.title)}
+                        />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-sm font-semibold truncate text-foreground">{getSeriesTitle(series.title)}</span>
+                          <span className="text-xs text-muted-foreground capitalize">{series.type ? series.type.toLowerCase() : 'Series'}</span>
+                        </div>
+                      </Link>
+                    ))
+                  ) : !isSearching ? (
+                    <div className="px-4 py-3 text-xs text-muted-foreground text-center italic">
+                      No series found for "{searchQuery}"
                     </div>
-                  </Link>
-                  <div className="h-px bg-border my-1 mx-2" />
-                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Users</div>
-                  <Link
-                    to="/profile"
-                    onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
-                  >
-                    <img src="https://i.pravatar.cc/150?u=1" className="w-8 h-8 rounded-full object-cover" alt="User" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold truncate">Alex Chen</span>
-                      <span className="text-xs text-muted-foreground">@alexc</span>
-                    </div>
-                  </Link>
-                  <div className="h-px bg-border my-1 mx-2" />
-                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Creators</div>
-                  <Link
-                    to="/creator/1"
-                    onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
-                  >
-                    <img src="/blog/avatar-3.png" className="w-8 h-8 rounded-full object-cover" alt="Creator" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold truncate">Akira Toriyama</span>
-                      <span className="text-xs text-muted-foreground text-accent">Character Designer</span>
-                    </div>
-                  </Link>
+                  ) : null}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -235,7 +277,7 @@ export default function Navbar() {
               className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-all hover:scale-105 focus:outline-none flex-shrink-0"
               title="Go to Profile"
             >
-              <img src="/blog/avatar-3.png" alt="User avatar" className="w-full h-full object-cover" />
+              <img src={user?.avatar || "/blog/avatar-3.png"} alt="User avatar" className="w-full h-full object-cover" />
             </Link>
           ) : (
             <Button

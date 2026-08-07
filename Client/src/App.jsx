@@ -161,7 +161,11 @@ function App() {
           <Route path="/signup" element={<Login />} />
           <Route path="/creators" element={<Creators />} />
           <Route path="/creator/:id" element={<CreatorProfile />} />
-          <Route path="/timeline" element={<Timeline />} />
+          <Route path="/timeline" element={
+            <ProtectedRoute>
+              <Timeline />
+            </ProtectedRoute>
+          } />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/articles/new" element={
             <ProtectedRoute><ArticleEditor /></ProtectedRoute>

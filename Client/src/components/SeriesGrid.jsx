@@ -29,7 +29,7 @@ export default function SeriesGrid({ title, series, alternateBg = false }) {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-8">
           {displaySeries.map((item, idx) => (
-            <SeriesCard key={item.id} series={item} index={idx} />
+            <SeriesCard key={item._id || item.id || idx} series={item} index={idx} />
           ))}
         </div>
       </div>

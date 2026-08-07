@@ -9,8 +9,10 @@ import FilterBar from '../components/timeline/FilterBar'
 import TimelineRail from '../components/timeline/TimelineRail'
 import EmptyState from '../components/timeline/EmptyState'
 import TimelineSkeleton from '../components/timeline/TimelineSkeleton'
-import { ACTIVITY, getActivityStats, groupActivitiesByDate } from '../data/mockData'
-import { ActivityEntry, FilterState } from '../types/activity'
+import { getActivityStats, groupActivitiesByDate } from '../data/mockData'
+import { ActivityEntry, FilterState, ActionType, MediaType } from '../types/activity'
+import useAuthStore from '../store/authStore'
+import api from '../lib/api'
 
 export default function Timeline() {
   const navigate = useNavigate()
@@ -24,19 +26,63 @@ export default function Timeline() {
     dateRangeFilter: 'all',
   })
 
+  const token = useAuthStore((state: any) => state.token)
+
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  // Simulate loading
+  // Fetch real data
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setActivities(ACTIVITY)
+    const fetchTimeline = async () => {
+      try {
+        const response = await api.get('/timeline', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        
+        // Map backend data to frontend ActivityEntry format
+        const mappedData: ActivityEntry[] = response.data.map((item: any) => {
+          const series = item.seriesId || {}
+          const titleObj = series.title || {}
+          const seriesTitle = titleObj.english || titleObj.romaji || titleObj.native || 'Unknown'
+          const dateObj = new Date(item.createdAt)
+          
+          let actionLabel = 'Started watching'
+          if (item.actionType === 'completed') actionLabel = 'Completed'
+          else if (item.actionType === 'rated') actionLabel = 'Rated'
+          else if (item.actionType === 'reviewed') actionLabel = 'Wrote a review for'
+          else if (item.actionType === 'added_note') actionLabel = 'Added a note to'
+
+          return {
+            id: item._id,
+            seriesId: series._id,
+            seriesTitle,
+            coverUrl: series.coverImage || '',
+            mediaType: (series.type === 'NOVEL' ? 'light-novel' : (series.type ? series.type.toLowerCase() : 'anime')) as MediaType,
+            actionType: item.actionType as ActionType,
+            actionLabel,
+            progress: item.progress || { current: 0, total: series.episodeCount || series.chapterCount || 0 },
+            note: item.note,
+            date: dateObj,
+            time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        })
+        
+        setActivities(mappedData)
+      } catch (err) {
+        console.error('Failed to fetch timeline:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    if (token) {
+      fetchTimeline()
+    } else {
       setIsLoading(false)
-    }, 600)
-    return () => clearTimeout(timer)
-  }, [])
+    }
+  }, [token])
 
   // Scroll listener for back to top button
   useEffect(() => {
@@ -101,6 +147,40 @@ export default function Timeline() {
     setExpandedIds(newSet)
   }
 
+  const handleRemove = async (id: string) => {
+    try {
+      await api.delete(`/timeline/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setActivities((prev) => prev.filter((activity) => activity.id !== id))
+    } catch (err) {
+      console.error('Failed to remove from timeline:', err)
+      // Optionally show a toast error here
+    }
+  }
+
+  const handleUpdateActionType = async (id: string, actionType: string) => {
+    try {
+      await api.put(`/timeline/${id}`, { actionType }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setActivities((prev) => prev.map((activity) => {
+        if (activity.id === id) {
+          let actionLabel = 'Started watching'
+          if (actionType === 'completed') actionLabel = 'Completed'
+          else if (actionType === 'rated') actionLabel = 'Rated'
+          else if (actionType === 'reviewed') actionLabel = 'Wrote a review for'
+          else if (actionType === 'added_note') actionLabel = 'Added a note to'
+
+          return { ...activity, actionType: actionType as any, actionLabel }
+        }
+        return activity
+      }))
+    } catch (err) {
+      console.error('Failed to update timeline status:', err)
+    }
+  }
+
   const handleFilterChange = (field: keyof FilterState, value: any) => {
     setFilterState((prev) => ({ ...prev, [field]: value }))
   }
@@ -159,6 +239,8 @@ export default function Timeline() {
               groupedActivities={groupedActivities}
               expandedIds={expandedIds}
               onToggleExpand={handleToggleExpand}
+              onRemove={handleRemove}
+              onUpdateActionType={handleUpdateActionType}
             />
           )}
         </div>

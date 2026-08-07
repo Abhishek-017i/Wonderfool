@@ -6,6 +6,7 @@ import LoginForm from '@/components/auth/LoginForm'
 import SignUpForm from '@/components/auth/SignUpForm'
 import SuccessToast from '@/components/auth/SuccessToast'
 import { useAuth } from '@/contexts/AuthContext'
+import Toast from '@/components/profile/Toast'
 
 export default function AuthPage() {
   const location = useLocation()
@@ -15,6 +16,7 @@ export default function AuthPage() {
   )
   const [sharedEmail, setSharedEmail] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   useEffect(() => {
     // Update tab based on route
@@ -24,6 +26,14 @@ export default function AuthPage() {
       setActiveTab('login')
     }
   }, [location.pathname])
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setToastMessage(location.state.message)
+      const timer = setTimeout(() => setToastMessage(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [location.state])
 
   const navigate = useNavigate()
 
@@ -97,6 +107,8 @@ export default function AuthPage() {
 
       {/* Success Toast */}
       <SuccessToast show={showSuccess} />
+      
+      {toastMessage && <Toast message={toastMessage} />}
     </div>
   )
 }

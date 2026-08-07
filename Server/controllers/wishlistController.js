@@ -12,6 +12,15 @@ const getUserWishlist = async (req, res) => {
   }
 };
 
+const getWishlistByUser = async (req, res) => {
+  try {
+    const wishlist = await Wishlist.find({ userId: req.params.userId }).populate('seriesId', 'title coverImage type');
+    res.status(200).json(wishlist);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching user wishlist', error: err.message });
+  }
+};
+
 const getWishlistById = async (req, res) => {
   try {
     const item = await Wishlist.findById(req.params.id);
@@ -124,6 +133,7 @@ const updateWishlistStatus = async (req, res) => {
 module.exports = {
   getWishlistById,
   getUserWishlist,
+  getWishlistByUser,
   getWishlistByStatus,
   createWishlist,
   updateWishlist,
