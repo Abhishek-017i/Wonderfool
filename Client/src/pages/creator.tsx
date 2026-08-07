@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {Link} from 'react-router-dom'
 import {
   Search,
@@ -8,9 +8,11 @@ import {
   Palette,
   Clapperboard,
   Award,
-  ArrowLeft,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -60,6 +62,12 @@ const FILTERS: (Role | 'All')[] = [
 export default function CreatorsPage() {
   const [query, setQuery] = useState('')
   const [activeRole, setActiveRole] = useState<Role | 'All'>('All')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 9 // Fits nicely in a 3-column grid
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [query, activeRole])
 
   const { creators: apiCreators, isLoading, error } = useCreators()
 
@@ -87,6 +95,9 @@ export default function CreatorsPage() {
       return matchesRole && matchesQuery
     })
   }, [query, activeRole, mappedCreators])
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
+  const paginatedCreators = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
@@ -152,11 +163,50 @@ export default function CreatorsPage() {
             Failed to load creators. Please try again later.
           </p>
         ) : filtered.length > 0 ? (
-          <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((creator) => (
-              <CreatorCard key={creator.id} creator={creator} />
-            ))}
-          </div>
+          <>
+            <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {paginatedCreators.map((creator) => (
+                <CreatorCard key={creator.id} creator={creator} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center justify-center gap-4 mt-14"
+              >
+                <button
+                  disabled={currentPage <= 1}
+                  onClick={() => {
+                    setCurrentPage((p) => Math.max(1, p - 1))
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="flex items-center gap-1.5 border border-primary/30 px-4 py-2 rounded-md text-sm font-semibold hover:border-primary/60 hover:bg-primary/5 disabled:opacity-40 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Prev
+                </button>
+
+                <span className="text-sm font-serif text-muted-foreground">
+                  Page <span className="font-bold text-foreground">{currentPage}</span> of{' '}
+                  <span className="font-bold text-foreground">{totalPages}</span>
+                </span>
+
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => {
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="flex items-center gap-1.5 border border-primary/30 px-4 py-2 rounded-md text-sm font-semibold hover:border-primary/60 hover:bg-primary/5 disabled:opacity-40 transition-colors"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </motion.div>
+            )}
+          </>
         ) : (
           <p className="mt-20 text-center text-muted-foreground">
             No creators match your search.
@@ -206,17 +256,6 @@ function CreatorCard({ creator }: { creator: Creator }) {
         </p>
       </div>
 
-      {/* Tags */}
-      <div className="mt-auto flex flex-wrap items-center justify-center gap-2 pt-5">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
-          <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-          {creator.era}
-        </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
-          <Award className="h-3.5 w-3.5 text-accent" />
-          {creator.award}
-        </span>
-      </div>
     </Link>
   )
 }

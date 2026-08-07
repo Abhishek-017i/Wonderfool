@@ -40,14 +40,14 @@ export default function Timeline() {
         const response = await api.get('/timeline', {
           headers: { Authorization: `Bearer ${token}` }
         })
-        
+
         // Map backend data to frontend ActivityEntry format
         const mappedData: ActivityEntry[] = response.data.map((item: any) => {
           const series = item.seriesId || {}
           const titleObj = series.title || {}
           const seriesTitle = titleObj.english || titleObj.romaji || titleObj.native || 'Unknown'
           const dateObj = new Date(item.createdAt)
-          
+
           let actionLabel = 'Started watching'
           if (item.actionType === 'completed') actionLabel = 'Completed'
           else if (item.actionType === 'rated') actionLabel = 'Rated'
@@ -68,7 +68,7 @@ export default function Timeline() {
             time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         })
-        
+
         setActivities(mappedData)
       } catch (err) {
         console.error('Failed to fetch timeline:', err)
@@ -76,7 +76,7 @@ export default function Timeline() {
         setIsLoading(false)
       }
     }
-    
+
     if (token) {
       fetchTimeline()
     } else {
@@ -121,6 +121,12 @@ export default function Timeline() {
         const daysAgo = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24))
 
         switch (filterState.dateRangeFilter) {
+          case '1hr':
+            if (now.getTime() - activityDate.getTime() > 60 * 60 * 1000) return false
+            break
+          case '1day':
+            if (daysAgo > 1) return false
+            break
           case 'week':
             if (daysAgo > 7) return false
             break
@@ -211,8 +217,8 @@ export default function Timeline() {
             </p>
           </div>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => navigate(-1)}
             className="w-fit gap-1.5 border-border hover:bg-muted"

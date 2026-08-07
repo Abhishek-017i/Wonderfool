@@ -1,6 +1,8 @@
-import { Heart, Trash2, Tag } from 'lucide-react'
+import { Heart, Clock } from 'lucide-react'
 import type { WishlistItem } from '../../data/mockData'
-import { motion } from 'framer-motion'
+import { Card } from '../ui/card'
+import { Button } from '../ui/button'
+import { useNavigate } from 'react-router-dom'
 
 interface WishlistDisplayProps {
   items: WishlistItem[]
@@ -8,6 +10,8 @@ interface WishlistDisplayProps {
 }
 
 export default function WishlistDisplay({ items, onRemove }: WishlistDisplayProps) {
+  const navigate = useNavigate()
+
   if (items.length === 0) {
     return (
       <div className="glass-panel rounded-xl p-12 text-center">
@@ -19,35 +23,83 @@ export default function WishlistDisplay({ items, onRemove }: WishlistDisplayProp
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {items.map((item, idx) => (
-        <motion.div 
+    <div className="space-y-4">
+      {items.map((item) => (
+        <Card
           key={item.id}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: idx * 0.05 }}
-          whileHover={{ y: -4, scale: 1.02 }}
-          className="glass-panel rounded-2xl p-5 luxury-shadow transition-all duration-300 group relative border border-border hover:border-primary/50"
+          className="bg-card border border-border p-4 md:p-6 cursor-pointer hover:shadow-md transition-all w-full"
+          onClick={() => {
+            if (item.seriesId) navigate(`/series/${item.seriesId}`)
+          }}
         >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-lg font-bold font-serif text-foreground group-hover:text-primary transition-colors leading-tight mb-1 pr-6">{item.name}</h3>
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
-                <Tag size={12} />
-                <span className="uppercase tracking-wider">{item.category}</span>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex gap-4 flex-1">
+              {/* Thumbnail */}
+              <img
+                src={item.coverUrl || '/placeholder.svg?height=80&width=60'}
+                alt={item.name}
+                loading="lazy"
+                className="w-12 h-16 md:w-14 md:h-20 object-cover rounded-md flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (item.seriesId) navigate(`/series/${item.seriesId}`)
+                }}
+              />
+
+              {/* Main Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3
+                    className="text-sm md:text-base font-semibold text-foreground truncate hover:text-primary transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (item.seriesId) navigate(`/series/${item.seriesId}`)
+                    }}
+                  >
+                    {item.name}
+                  </h3>
+                </div>
+
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock size={12} className="text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">{item.addedDate}</span>
+                </div>
+
+                {/* Media Type Badge */}
+                <span className="text-xs text-muted-foreground capitalize block">
+                  {item.category === 'NOVEL' ? 'Light Novel' : item.category.toLowerCase()}
+                </span>
               </div>
             </div>
-            <button 
-              className="text-muted-foreground hover:text-destructive transition-colors p-1 absolute top-4 right-4 opacity-0 group-hover:opacity-100"
-              onClick={() => onRemove && onRemove(item.id)}
-            >
-              <Trash2 size={16} />
-            </button>
+
+            {/* Action Buttons */}
+            <div className="flex flex-row md:flex-col gap-2 justify-end md:justify-start pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-border md:pl-4">
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-border hover:bg-background text-xs h-8"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (item.seriesId) navigate(`/series/${item.seriesId}`)
+                }}
+              >
+                View Details
+              </Button>
+
+              <Button
+                size="sm"
+                variant="destructive"
+                className="border-border text-xs h-8"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove && onRemove(item.id as string)
+                }}
+              >
+                Remove
+              </Button>
+            </div>
           </div>
-          <div className="mt-auto pt-4 border-t border-border/50">
-            <p className="text-xs text-muted-foreground font-medium">{item.addedDate}</p>
-          </div>
-        </motion.div>
+        </Card>
       ))}
     </div>
   )

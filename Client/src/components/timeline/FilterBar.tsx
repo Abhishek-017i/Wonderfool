@@ -18,8 +18,6 @@ const quickFilters = [
   { id: 'all', label: 'All' },
   { id: 'completed', label: 'Completed' },
   { id: 'in-progress', label: 'In Progress' },
-  { id: 'rated', label: 'Rated' },
-  { id: 'reviewed', label: 'Reviewed' },
 ]
 
 const mediaTypes = [
@@ -31,6 +29,8 @@ const mediaTypes = [
 
 const dateRanges = [
   { id: 'all', label: 'All Time' },
+  { id: '1hr', label: '1 hr ago' },
+  { id: '1day', label: '1 day ago' },
   { id: 'week', label: 'This Week' },
   { id: 'month', label: 'This Month' },
   { id: '3months', label: 'Last 3 Months' },
@@ -50,11 +50,10 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
             <Badge
               key={filter.id}
               variant={filterState.activeFilter === filter.id ? 'default' : 'outline'}
-              className={`cursor-pointer transition-all ${
-                filterState.activeFilter === filter.id
+              className={`cursor-pointer transition-all ${filterState.activeFilter === filter.id
                   ? 'bg-primary text-background hover:bg-primary/90'
                   : 'hover:border-primary'
-              }`}
+                }`}
               onClick={() => onFilterChange('activeFilter', filter.id)}
             >
               {filter.label}

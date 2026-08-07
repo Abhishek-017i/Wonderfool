@@ -299,10 +299,12 @@ export const mockArticles: Article[] = [
 ];
 
 export type WishlistItem = {
-  id: number;
+  id: number | string;
   name: string;
   category: string;
   addedDate: string;
+  coverUrl?: string;
+  seriesId?: string;
 };
 
 export const mockWishlist: WishlistItem[] = [
