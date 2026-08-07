@@ -56,11 +56,9 @@ export default function SupportPage() {
   ]
 
   const CONTACT_INFO = [
-    { label: 'Email', value: 'xyz@gmail.com', icon: Mail },
-    { label: 'Phone Number', value: '+1 (555) 019-2834', icon: Phone },
-    { label: 'Discord', value: 'discord.gg/wonderfool', icon: MessageSquare },
-    { label: 'Instagram', value: '@wonderfool_official', icon: AtSign },
-    { label: 'Twitter (X)', value: '@wonderfool_app', icon: Globe },
+    { label: 'Email', value: 'teamwonderfool@gmail.com', icon: Mail, href: 'mailto:teamwonderfool@gmail.com' },
+    { label: 'Phone Number', value: '+91 9316532780', icon: Phone, href: 'tel:+919316532780' },
+    { label: 'Discord', value: 'discord.gg/wonderfool', icon: MessageSquare, href: 'https://discord.gg/wonderfool' },
   ]
 
   return (
@@ -122,15 +120,24 @@ export default function SupportPage() {
 
           {/* CONTACT US (Single vertical stacked list) */}
           {activeTab === 'contact' && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
               <div>
-                <h2 className="text-xl font-bold font-serif mb-1 text-foreground">Contact Us</h2>
-                <p className="text-xs text-muted-foreground">Reach out through any of our official communication channels below.</p>
+                <h2 className="text-xl font-bold font-serif mb-1 text-foreground">
+                  Contact Us
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Reach out through any of our official communication channels below.
+                </p>
               </div>
 
               <div className="flex flex-col gap-4">
                 {CONTACT_INFO.map((item, i) => {
                   const Icon = item.icon
+
                   return (
                     <div
                       key={i}
@@ -140,11 +147,22 @@ export default function SupportPage() {
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                           <Icon className="w-4 h-4" />
                         </div>
+
                         <span>{item.label}</span>
                       </div>
-                      <p className="text-sm font-semibold text-foreground font-mono bg-muted/60 px-4 py-2 rounded-lg border border-border/40 select-all sm:self-center w-full sm:w-auto text-left sm:text-right">
+
+                      <a
+                        href={item.href}
+                        target={item.label === 'Discord' ? '_blank' : undefined}
+                        rel={
+                          item.label === 'Discord'
+                            ? 'noopener noreferrer'
+                            : undefined
+                        }
+                        className="text-sm font-semibold text-foreground font-mono bg-muted/60 px-4 py-2 rounded-lg border border-border/40 select-all sm:self-center w-full sm:w-auto text-left sm:text-right hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 break-all"
+                      >
                         {item.value}
-                      </p>
+                      </a>
                     </div>
                   )
                 })}

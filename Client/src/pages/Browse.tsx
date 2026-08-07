@@ -14,7 +14,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import SearchBar from '@/components/browse/SearchBar'
 import QuickFilterBar from '@/components/browse/QuickFilterBar'
 import ActiveFilterChips from '@/components/browse/ActiveFilterChips'
 import type { FilterChip } from '@/components/browse/ActiveFilterChips'
@@ -81,7 +80,6 @@ export default function Browse() {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [hasSearched, setHasSearched] = useState(false)
-  const [mediaTypeScope, setMediaTypeScope] = useState('All')
 
   const location = useLocation()
 
@@ -262,21 +260,6 @@ export default function Browse() {
     fetchSeries()
   }, [fetchSeries])
 
-  // Search results for the dropdown (uses already-fetched data for fast typeahead)
-  const searchResults = useMemo(() => {
-    if (!debouncedQuery) return []
-    return seriesData.filter((series) => {
-      const q = debouncedQuery.toLowerCase()
-      const title = series.title
-      const matchesQuery =
-        (title.romaji?.toLowerCase().includes(q)) ||
-        (title.english?.toLowerCase().includes(q)) ||
-        (title.native?.toLowerCase().includes(q))
-      const matchesMediaType = mediaTypeScope === 'All' || series.type === MEDIA_TYPE_MAP[mediaTypeScope]
-      return matchesQuery && matchesMediaType
-    })
-  }, [debouncedQuery, seriesData, mediaTypeScope])
-
   // Build filter chips
   const activeFilterChips: FilterChip[] = useMemo(() => {
     const chips: FilterChip[] = []
@@ -333,7 +316,7 @@ export default function Browse() {
       if (filters.episodeRange[0] > 0 && filters.episodeRange[1] > 0) label += `${filters.episodeRange[0]} - ${filters.episodeRange[1]}`
       else if (filters.episodeRange[0] > 0) label += `≥ ${filters.episodeRange[0]}`
       else label += `≤ ${filters.episodeRange[1]}`
-      
+
       chips.push({
         id: 'episodes',
         label,
@@ -354,11 +337,6 @@ export default function Browse() {
     setViewMode('grid')
     setCurrentPage(1)
     setError(false)
-  }
-
-  const handleSearchResultClick = (series: { _id?: string; id?: string }) => {
-    // Navigate handled by Link in SearchBar, but can be used for analytics
-    console.log('Selected:', series)
   }
 
   const skeletonCount = viewMode === 'list' ? 5 : viewMode === 'compact' ? 20 : 15
@@ -389,24 +367,6 @@ export default function Browse() {
             <p className="text-sm text-muted-foreground font-serif italic">
               {totalCount.toLocaleString()} series in the library
             </p>
-          </motion.div>
-
-          {/* ── Search Bar ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-8"
-          >
-            <SearchBar
-              value={query}
-              onChange={setQuery}
-              mediaType={mediaTypeScope}
-              onMediaTypeChange={setMediaTypeScope}
-              results={searchResults}
-              onResultClick={handleSearchResultClick}
-              onViewAll={() => { }}
-            />
           </motion.div>
 
           {/* ── Quick Filters ── */}
