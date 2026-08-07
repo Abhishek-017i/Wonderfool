@@ -140,14 +140,6 @@ export default function HeroCarousel({ series = [] }) {
                       <Info size={16} className="sm:w-[18px] sm:h-[18px]" /> Details
                     </motion.button>
                   </Link>
-                  <motion.button
-                    className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-foreground text-background hover:bg-foreground/90 rounded-full font-bold uppercase tracking-wider text-xs sm:text-sm shadow-lg transition-all"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                  >
-                    <Heart size={16} className="fill-current sm:w-[18px] sm:h-[18px]" />
-                    <span>Wishlist</span>
-                  </motion.button>
                 </div>
 
               </motion.div>

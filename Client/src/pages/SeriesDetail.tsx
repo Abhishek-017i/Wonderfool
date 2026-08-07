@@ -125,6 +125,25 @@ export default function SeriesDetail() {
   const year = series?.startDate ? new Date(series.startDate).getFullYear() : null
   const endYear = series?.endDate ? new Date(series.endDate).getFullYear() : null
 
+  const MAIN_ROLES = ['original', 'director', 'story', 'art', 'editor', 'character design', 'mangaka', 'author', 'illustrator']
+  const validStaff = (series?.staff || []).filter(s => s.personId)
+  
+  let mainStaff = validStaff.filter(s => {
+    const role = (s.designation || '').toLowerCase()
+    return MAIN_ROLES.some(mr => role.includes(mr))
+  })
+  
+  let otherStaff = validStaff.filter(s => {
+    const role = (s.designation || '').toLowerCase()
+    return !MAIN_ROLES.some(mr => role.includes(mr))
+  })
+
+  // Fallback to first 3 if no main roles matched
+  if (mainStaff.length === 0 && validStaff.length > 0) {
+    mainStaff = validStaff.slice(0, 3)
+    otherStaff = validStaff.slice(3)
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -293,28 +312,27 @@ export default function SeriesDetail() {
                 </div>
               )}
 
-              {/* Staff / Creator */}
-              {series.staff && series.staff.length > 0 && (
-                <div className="mb-8 flex flex-wrap gap-3 justify-center md:justify-start">
-                  {series.staff.filter(s => s.personId).map((staffMember, idx) => (
+              {/* Main Staff / Creator */}
+              {mainStaff.length > 0 && (
+                <div className="mb-8 flex flex-wrap gap-2 justify-center md:justify-start">
+                  {mainStaff.map((staffMember, idx) => (
                     <Link
                       key={idx}
                       to={`/creator/${staffMember.personId?._id}`}
-                      className="inline-flex items-center gap-3 p-3 pr-6 rounded-full bg-card/40 border border-border/50 hover:border-primary/50 hover:bg-card/60 transition-all group"
+                      className="inline-flex items-center gap-2 p-1.5 pr-4 rounded-full bg-card/40 border border-border/50 hover:border-primary/50 hover:bg-card/60 transition-all group"
                     >
-                      <div className="w-10 h-10 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors bg-muted flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors bg-muted flex items-center justify-center shrink-0">
                         {staffMember.personId?.photo ? (
                           <img src={staffMember.personId.photo} alt={renderName(staffMember.personId.name)} className="w-full h-full object-cover" />
                         ) : (
-                          <PenTool size={16} className="text-muted-foreground" />
+                          <PenTool size={10} className="text-muted-foreground" />
                         )}
                       </div>
                       <div>
-                        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                          <PenTool size={12} className="text-accent" />
+                        <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">
                           {staffMember.designation || 'Staff'}
                         </div>
-                        <div className="text-sm font-bold font-cinzel text-foreground group-hover:text-primary transition-colors">
+                        <div className="text-xs font-bold font-cinzel text-foreground group-hover:text-primary transition-colors leading-none">
                           {renderName(staffMember.personId?.name)}
                         </div>
                       </div>
@@ -382,6 +400,38 @@ export default function SeriesDetail() {
                           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                             {adaptation.relationType || 'Adaptation'}
                           </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Other Staff */}
+              {otherStaff.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-bold font-serif mb-4">All Creators</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {otherStaff.map((staffMember, idx) => (
+                      <Link
+                        key={idx}
+                        to={`/creator/${staffMember.personId?._id}`}
+                        className="inline-flex items-center gap-2 p-1.5 pr-4 rounded-full bg-card/40 border border-border/50 hover:border-primary/50 hover:bg-card/60 transition-all group"
+                      >
+                        <div className="w-6 h-6 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors bg-muted flex items-center justify-center shrink-0">
+                          {staffMember.personId?.photo ? (
+                            <img src={staffMember.personId.photo} alt={renderName(staffMember.personId.name)} className="w-full h-full object-cover" />
+                          ) : (
+                            <PenTool size={10} className="text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">
+                            {staffMember.designation || 'Staff'}
+                          </div>
+                          <div className="text-xs font-bold font-cinzel text-foreground group-hover:text-primary transition-colors leading-none">
+                            {renderName(staffMember.personId?.name)}
+                          </div>
                         </div>
                       </Link>
                     ))}

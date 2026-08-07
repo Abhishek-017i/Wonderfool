@@ -103,7 +103,9 @@ export default function ProfilePage(props: ProfilePageProps) {
             id: item._id,
             name: seriesTitle,
             category: series.type || 'Unknown',
-            addedDate: new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            addedDate: new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            coverUrl: series.coverImage || '',
+            seriesId: series._id
           }
         });
 

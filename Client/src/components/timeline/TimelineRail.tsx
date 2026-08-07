@@ -25,19 +25,18 @@ export default function TimelineRail({
   return (
     <div className="relative">
       {/* Timeline vertical line */}
-      <div className="absolute left-0 top-0 bottom-0 w-px bg-border md:left-1/2 md:-translate-x-1/2" />
+      <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
 
       {/* Entries grouped by date */}
-      <div className="pl-8 md:pl-0">
+      <div className="pl-12 md:pl-20 md:pr-12">
         {dateGroups.map(([dateGroup, entries], groupIdx) => (
           <div key={dateGroup} className="mb-12">
             {/* Date Header */}
-            <div className="mb-8">
-              <div className="relative inline-block md:absolute md:left-1/2 md:-translate-x-1/2 md:w-auto">
-                <h2 className="text-lg font-bold text-foreground bg-background px-4 py-2 rounded-full border border-border inline-block">
-                  {dateGroup}
-                </h2>
-              </div>
+            <div className="mb-6 relative flex items-center">
+              <div className="absolute -left-8 md:-left-16 w-8 md:w-16 h-px bg-border" />
+              <h2 className="text-sm font-bold text-foreground bg-background px-4 py-1.5 rounded-full border border-border inline-block z-10 relative">
+                {dateGroup}
+              </h2>
             </div>
 
             {/* Entries for this date */}
