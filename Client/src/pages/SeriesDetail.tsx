@@ -5,8 +5,16 @@ import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { useAuth } from '@/contexts/AuthContext'
+import useAuthStore from '@/store/authStore'
+import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { Series } from '@/types/series'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
@@ -42,6 +50,7 @@ export default function SeriesDetail() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated } = useAuth()
+  const token = useAuthStore((state: any) => state.token)
   const [toast, setToast] = useState<string | null>(null)
   const [series, setSeries] = useState<Series | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -68,12 +77,25 @@ export default function SeriesDetail() {
     if (id) fetchSeries()
   }, [id])
 
-  const handleTimelineAction = () => {
+  const handleTimelineAction = async (actionType: 'started' | 'completed') => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: location.pathname } })
       return
     }
-    setToast('Added to Timeline')
+    
+    try {
+      await api.post('/timeline', { 
+        seriesId: series?._id,
+        actionType 
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setToast('Added to Timeline')
+    } catch (err) {
+      console.error('Failed to add to timeline', err)
+      setToast('Failed to add to timeline')
+    }
+    
     setTimeout(() => setToast(null), 2000)
   }
 
@@ -158,13 +180,26 @@ export default function SeriesDetail() {
               </div>
               
               <div className="mt-6 flex flex-col gap-3">
-                <Button 
-                  onClick={handleTimelineAction}
-                  className="w-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(244,216,69,0.4)]"
-                >
-                  <CheckCircle className="mr-2" size={18} />
-                  Add to Timeline
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      className="w-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(244,216,69,0.4)]"
+                    >
+                      <CheckCircle className="mr-2" size={18} />
+                      Add to Timeline
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-card border-border">
+                    <DropdownMenuItem onClick={() => handleTimelineAction('started')} className="cursor-pointer">
+                      <Clock className="mr-2" size={16} />
+                      Watching
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTimelineAction('completed')} className="cursor-pointer">
+                      <CheckCircle className="mr-2" size={16} />
+                      Completed
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button 
                   variant="outline"
                   onClick={handleWishlistAction}

@@ -1,18 +1,26 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ChevronDown, Heart, MessageSquare, Star, Inbox } from 'lucide-react'
+import { ChevronDown, Heart, MessageSquare, Star, Inbox, Clock, CheckCircle } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
 import { ActivityEntry } from '../../types/activity'
 
 interface TimelineEntryProps {
   entry: ActivityEntry
   isExpanded: boolean
   onToggle: () => void
+  onRemove: () => void
+  onUpdateActionType: (actionType: string) => void
   isFirst?: boolean
 }
 
-export default function TimelineEntry({ entry, isExpanded, onToggle, isFirst = false }: TimelineEntryProps) {
+export default function TimelineEntry({ entry, isExpanded, onToggle, onRemove, onUpdateActionType, isFirst = false }: TimelineEntryProps) {
   const navigate = useNavigate()
   const getActionColor = (actionType: string) => {
     switch (actionType) {
@@ -187,13 +195,39 @@ export default function TimelineEntry({ entry, isExpanded, onToggle, isFirst = f
               >
                 View Details
               </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 border-border hover:bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Change Status
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-40 bg-card border-border">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onUpdateActionType('started') }} className="cursor-pointer">
+                    <Clock className="mr-2" size={16} />
+                    Watching
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onUpdateActionType('completed') }} className="cursor-pointer">
+                    <CheckCircle className="mr-2" size={16} />
+                    Completed
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 size="sm"
-                variant="outline"
-                className="flex-1 border-border hover:bg-background"
-                onClick={(e) => e.stopPropagation()}
+                variant="destructive"
+                className="flex-1 border-border"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove()
+                }}
               >
-                Edit Entry
+                Remove
               </Button>
             </div>
           </div>

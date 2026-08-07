@@ -17,7 +17,7 @@ export default function EmptyState() {
           journey to see your activities here.
         </p>
         <Button
-          onClick={() => navigate('/series')}
+          onClick={() => navigate('/browse')}
           className="bg-primary hover:bg-primary/90 text-background"
         >
           Browse Series

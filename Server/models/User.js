@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const verifyToken = require('../middleware/verifyToken');
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
