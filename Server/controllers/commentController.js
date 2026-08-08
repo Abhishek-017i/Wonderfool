@@ -40,7 +40,6 @@ const getCommentById = async (req, res) => {
 
 const createComment = async (req, res) => {
   try {
-    req.body.userId = req.user.id;
     const comment = new Comment(req.body);
 
     const savedComment = await comment.save();

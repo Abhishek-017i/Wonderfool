@@ -211,8 +211,8 @@ export default function ProfilePage(props: ProfilePageProps) {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-32 pb-12">
         {isLoading || !displayUser ? (
-          <div className="flex justify-center items-center h-[60vh]">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div className="flex justify-center py-12">
+            <SpellLoader size={32} />
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-8">
@@ -226,43 +226,45 @@ export default function ProfilePage(props: ProfilePageProps) {
               <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
               <div className="min-h-[500px]">
-                {activeTab === 'overview' && (
-                  <div className="flex flex-col gap-10">
-                    <div>
-                      <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Recent Reviews</h2>
-                      <ReviewsList reviews={reviews.slice(0, 2)} onDelete={handleDeleteReview} />
+                <>
+                  {activeTab === 'overview' && (
+                    <div className="flex flex-col gap-10">
+                      <div>
+                        <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Recent Reviews</h2>
+                        <ReviewsList reviews={reviews.slice(0, 2)} onDelete={handleDeleteReview} />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Latest Articles</h2>
+                        <ArticlesList articles={articles.slice(0, 2)} />
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Latest Articles</h2>
-                      <ArticlesList articles={articles.slice(0, 2)} />
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {activeTab === 'reviews' && <ReviewsList reviews={reviews} onDelete={handleDeleteReview} />}
-                {activeTab === 'articles' && <ArticlesList articles={articles} />}
-                {activeTab === 'timeline' && (
-                  timeline.length > 0 ? (
-                    <TimelineRail
-                      groupedActivities={groupActivitiesByDate(timeline)}
-                      expandedIds={new Set()}
-                      onToggleExpand={() => { }}
-                      onRemove={async () => { }}
-                      onUpdateActionType={async () => { }}
-                    />
-                  ) : (
-                    <EmptyState />
-                  )
-                )}
-                {activeTab === 'wishlist' && <WishlistDisplay items={wishlist} onRemove={handleRemoveWishlist} />}
-                {activeTab === 'settings' && (
-                  <SettingsTab isDark={isDark} setIsDark={setIsDark} />
-                )}
+                  {activeTab === 'reviews' && <ReviewsList reviews={reviews} onDelete={handleDeleteReview} />}
+                  {activeTab === 'articles' && <ArticlesList articles={articles} />}
+                  {activeTab === 'timeline' && (
+                    timeline.length > 0 ? (
+                      <TimelineRail
+                        groupedActivities={groupActivitiesByDate(timeline)}
+                        expandedIds={new Set()}
+                        onToggleExpand={() => { }}
+                        onRemove={async () => { }}
+                        onUpdateActionType={async () => { }}
+                      />
+                    ) : (
+                      <EmptyState />
+                    )
+                  )}
+                  {activeTab === 'wishlist' && <WishlistDisplay items={wishlist} onRemove={handleRemoveWishlist} />}
+                  {activeTab === 'settings' && (
+                    <SettingsTab isDark={isDark} setIsDark={setIsDark} />
+                  )}
+                </>
               </div>
             </div>
           </div>
         )}
-          </div>
+      </div>
     </div>
-      )
+  )
 }
