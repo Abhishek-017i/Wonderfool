@@ -4,6 +4,7 @@ import HeroCarousel from '@/components/HeroCarousel'
 import SeriesGrid from '@/components/SeriesGrid'
 import StoriesSection from '@/components/StoriesSection'
 import Footer from '@/components/Footer'
+import SpellLoader from '@/components/ui/SpellLoader'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -48,7 +49,7 @@ export default function Home() {
       <div className="w-full min-h-screen bg-background flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <SpellLoader size={80} className="mx-auto" />
         </main>
         <Footer />
       </div>

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
+import SpellLoader from '../ui/SpellLoader'
 
 interface ReviewSectionProps {
   seriesId: string
@@ -133,7 +134,7 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <SpellLoader size={32} />
       </div>
     )
   }
@@ -195,7 +196,11 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
                   }
                 }}
               >
-                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (isAuthenticated ? 'Post Review' : 'Log In to Review')}
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <SpellLoader size={16} />
+                  </span>
+                ) : (isAuthenticated ? 'Post Review' : 'Log In to Review')}
               </Button>
             </div>
           </form>

@@ -137,6 +137,47 @@ import ArticleEditor from './pages/ArticleEditor';
 import ArticleDetail from './pages/ArticleDetail';
 import SupportPage from './pages/SupportPage';
 import BackToTopButton from './components/browse/BackToTopButton';
+import { AnimatePresence } from 'framer-motion';
+import PageTransition from './components/PageTransition';
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+        <Route path="/browse" element={<PageTransition><Browse /></PageTransition>} />
+        <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
+        <Route path="/series/:id" element={<PageTransition><SeriesDetail /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/signup" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/creators" element={<PageTransition><Creators /></PageTransition>} />
+        <Route path="/creator/:id" element={<PageTransition><CreatorProfile /></PageTransition>} />
+        <Route path="/timeline" element={
+          <ProtectedRoute>
+            <PageTransition><Timeline /></PageTransition>
+          </ProtectedRoute>
+        } />
+        <Route path="/support" element={<PageTransition><SupportPage /></PageTransition>} />
+        <Route path="/articles/new" element={
+          <ProtectedRoute><PageTransition><ArticleEditor /></PageTransition></ProtectedRoute>
+        } />
+        <Route path="/articles/:id" element={<PageTransition><ArticleDetail /></PageTransition>} />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <PageTransition><ProfilePage /></PageTransition>
+          </ProtectedRoute>
+        } />
+        <Route path="/wishlist" element={
+          <ProtectedRoute>
+            <PageTransition><Wishlist /></PageTransition>
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 function NonNavbarScrollToTop() {
   const location = useLocation()
@@ -152,38 +193,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <NonNavbarScrollToTop />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/series/:id" element={<SeriesDetail />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Login />} />
-          <Route path="/creators" element={<Creators />} />
-          <Route path="/creator/:id" element={<CreatorProfile />} />
-          <Route path="/timeline" element={
-            <ProtectedRoute>
-              <Timeline />
-            </ProtectedRoute>
-          } />
-          <Route path="/support" element={<SupportPage />} />
-          <Route path="/articles/new" element={
-            <ProtectedRoute><ArticleEditor /></ProtectedRoute>
-          } />
-          <Route path="/articles/:id" element={<ArticleDetail />} />
-          
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          } />
-          <Route path="/wishlist" element={
-            <ProtectedRoute>
-              <Wishlist />
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <AnimatedRoutes />
       </AuthProvider>
     </BrowserRouter>
   );
