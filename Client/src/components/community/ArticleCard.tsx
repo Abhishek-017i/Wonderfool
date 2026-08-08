@@ -30,18 +30,11 @@ export default function ArticleCard({ article, view = 'grid' }: ArticleCardProps
           <div className="flex flex-col flex-1 p-4 sm:p-6">
             <div className="flex items-start justify-between gap-4 mb-3">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {article.category}
-                  </Badge>
-                </div>
                 <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
                   {article.title}
                 </h3>
               </div>
             </div>
-
-            <p className="text-sm text-text/60 line-clamp-2 mb-4">{article.excerpt}</p>
 
             {hasTaggedContent && (
               <div className="flex flex-wrap gap-1 mb-4 text-xs">
@@ -107,15 +100,9 @@ export default function ArticleCard({ article, view = 'grid' }: ArticleCardProps
         </div>
 
         <div className="flex flex-col flex-1 p-4">
-          <Badge variant="secondary" className="w-fit mb-3 text-xs">
-            {article.category}
-          </Badge>
-
           <h3 className="font-semibold text-base line-clamp-2 mb-2 group-hover:text-primary transition-colors">
             {article.title}
           </h3>
-
-          <p className="text-sm text-text/60 line-clamp-2 mb-4 flex-1">{article.excerpt}</p>
 
           {hasTaggedContent && (
             <div className="flex flex-wrap gap-1 mb-4 text-xs">

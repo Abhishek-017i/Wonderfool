@@ -17,6 +17,7 @@ api.interceptors.request.use(async (config) => {
     }
   }
   
+  // Fallback to Zustand store token if Firebase isn't initialized yet
   if (!token) {
     token = useAuthStore.getState().token;
   }

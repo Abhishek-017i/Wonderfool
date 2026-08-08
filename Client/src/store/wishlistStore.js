@@ -16,8 +16,10 @@ const useWishlistStore = create((set, get) => ({
 
   toggleWishlist: async (seriesId, seriesData) => {
     const isCurrentlyIn = get().wishlistIds.has(seriesId);
+    // grab the actual wishlist doc _id before we mutate state, needed for delete
     const existingItem = get().items.find((item) => item.seriesId._id === seriesId);
 
+    // optimistic update
     set((state) => {
       const newIds = new Set(state.wishlistIds);
       let newItems = [...state.items];
@@ -27,8 +29,9 @@ const useWishlistStore = create((set, get) => ({
       } else {
         newIds.add(seriesId);
         if (seriesData) {
+          // keep shape consistent with fetched items: seriesId as nested object
           newItems.push({
-            _id: `temp-${seriesId}`, 
+            _id: `temp-${seriesId}`, // placeholder until server responds/refetch
             status: 'planning',
             seriesId: { _id: seriesId, ...seriesData },
           });

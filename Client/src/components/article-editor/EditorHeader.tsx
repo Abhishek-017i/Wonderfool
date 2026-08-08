@@ -24,19 +24,7 @@ export default function EditorHeader({ onPreviewToggle }: EditorHeaderProps) {
 
           {/* Right */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={onPreviewToggle}
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
-              title="Toggle preview"
-            >
-              <Eye className="w-5 h-5" />
-            </button>
-            <button
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
-              title="Editor settings"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+            {/* Action buttons removed */}
           </div>
         </div>
       </div>

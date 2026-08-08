@@ -157,10 +157,6 @@ function ArticleMeta({
           {article.author}
         </span>
       </span>
-      <span className="inline-flex items-center gap-1">
-        <Clock className="size-3" aria-hidden />
-        {article.readTime}
-      </span>
       <span>{article.date}</span>
       <span className="inline-flex items-center gap-1">
         <Heart className="size-3 text-accent/80" aria-hidden />
@@ -187,9 +183,6 @@ function FeaturedCard({ article }: { article: Article }) {
           alt={`Cover art for ${article.title}`}
           className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <span className="absolute top-4 left-4 rounded-full bg-card/90 px-3.5 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur border border-border/40">
-          {article.category}
-        </span>
       </div>
 
       <div className="flex flex-1 flex-col justify-between p-6 lg:p-8">
@@ -200,9 +193,6 @@ function FeaturedCard({ article }: { article: Article }) {
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground transition-colors group-hover:text-accent lg:text-3xl line-clamp-2">
             {article.title}
           </h2>
-          <p className="text-pretty text-muted-foreground leading-relaxed line-clamp-3">
-            {article.excerpt}
-          </p>
         </div>
 
         <div className="pt-4 mt-auto border-t border-border/40 flex flex-col gap-3">
@@ -230,23 +220,13 @@ function ArticleCard({ article }: { article: Article }) {
           alt={`Cover art for ${article.title}`}
           className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <span className="absolute top-3 left-3 rounded-full bg-card/90 px-3 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur border border-border/40">
-          {article.category}
-        </span>
       </div>
 
       <div className="flex flex-1 flex-col justify-between p-5 gap-4">
         <div className="space-y-2.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-accent">
-            <BookOpen className="size-3.5" aria-hidden />
-            {article.readTime}
-          </div>
           <h3 className="font-display text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-accent line-clamp-2 leading-snug">
             {article.title}
           </h3>
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-            {article.excerpt}
-          </p>
         </div>
 
         <ArticleMeta article={article} className="pt-3 border-t border-border/40 mt-auto" />
@@ -287,11 +267,10 @@ export default function CommunityPage() {
         const formattedArticles = response.data.map((item: any) => ({
           id: item._id,
           title: item.title,
-          excerpt: item.content?.substring(0, 150) + '...' || 'No excerpt available',
           category: item.tags?.[0] || 'Uncategorized',
           image: item.coverImage || '/placeholder.svg',
-          author: item.authorId?.username || 'Unknown Author',
-          avatar: item.authorId?.profilePicture || '/placeholder.svg',
+          author: item.authorId?.name?.full || item.authorId?.name?.native || item.authorId?.name || item.authorId?.username || 'Unknown Author',
+          avatar: item.authorId?.profilePicture || item.authorId?.avatar || '/placeholder.svg',
           date: new Date(item.createdAt).toLocaleDateString(),
           readTime: `${Math.ceil((item.content?.split(' ').length || 0) / 200) || 5} min read`,
           likes: item.likes?.length || 0,
@@ -316,7 +295,6 @@ export default function CommunityPage() {
     <main className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <Header />
-      <TrendingTags activeTag={activeTag} onSelectTag={setActiveTag} />
 
       {isLoading ? (
         <div className="flex justify-center items-center py-24">

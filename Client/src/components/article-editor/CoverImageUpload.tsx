@@ -1,5 +1,4 @@
-import { Upload, X } from 'lucide-react'
-import { useRef } from 'react'
+import { Link2, X } from 'lucide-react'
 
 interface CoverImageUploadProps {
   coverImage: string | null
@@ -7,23 +6,14 @@ interface CoverImageUploadProps {
 }
 
 export default function CoverImageUpload({ coverImage, onChange }: CoverImageUploadProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        onChange(event.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
   return (
-    <div className="relative">
+    <div className="space-y-3">
+      <label className="block text-sm font-semibold text-foreground">
+        Cover Image URL
+      </label>
+      
       {coverImage ? (
-        <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden group">
+        <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden group border border-border">
           <img
             src={coverImage}
             alt="Cover"
@@ -31,38 +21,34 @@ export default function CoverImageUpload({ coverImage, onChange }: CoverImageUpl
           />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
             <button
-              onClick={() => inputRef.current?.click()}
-              className="p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              <Upload className="w-5 h-5" />
-            </button>
-            <button
               onClick={() => onChange(null)}
-              className="p-2 bg-destructive text-destructive hover:bg-destructive/90 transition-colors rounded-lg"
+              className="p-2 bg-destructive text-destructive hover:bg-destructive/90 transition-colors rounded-lg flex items-center gap-2 text-white"
             >
               <X className="w-5 h-5" />
+              <span className="text-sm font-medium">Remove Image</span>
             </button>
           </div>
         </div>
       ) : (
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="w-full h-64 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-muted/50 transition-colors flex flex-col items-center justify-center gap-2"
-        >
-          <Upload className="w-8 h-8 text-muted-foreground" />
-          <span className="text-sm font-medium text-muted-foreground">
-            Click to upload cover image
-          </span>
-          <span className="text-xs text-muted-foreground">PNG, JPG, WebP up to 5MB</span>
-        </button>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Link2 className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <input
+              type="text"
+              placeholder="Paste an image URL here..."
+              onChange={(e) => {
+                // only trigger onChange if it looks like a url
+                if (e.target.value.trim() === '' || e.target.value.startsWith('http')) {
+                  onChange(e.target.value)
+                }
+              }}
+              className="w-full pl-10 pr-4 py-2 bg-card text-foreground border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
       )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-      />
     </div>
   )
 }

@@ -55,9 +55,6 @@ export function ArticleHero({ article }: ArticleHeroProps) {
         <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl leading-[1.18] text-balance">
           {article.title}
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground text-pretty leading-relaxed">
-          {article.subtitle}
-        </p>
       </div>
 
       {/* Writer Info & Creator Tags */}
@@ -73,9 +70,6 @@ export function ArticleHero({ article }: ArticleHeroProps) {
           <div>
             <p className="font-semibold text-foreground text-base">
               {article.author.name}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Article Writer
             </p>
           </div>
         </div>
