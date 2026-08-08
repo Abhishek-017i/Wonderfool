@@ -23,16 +23,6 @@ const groupActivitiesByDate = (activities: ActivityEntry[]) => {
   })
   return grouped
 }
-
-const groupActivitiesByDate = (activities: ActivityEntry[]) => {
-  const grouped: Record<string, ActivityEntry[]> = {}
-  activities.forEach(activity => {
-    const dateStr = activity.date.toISOString().split('T')[0]
-    if (!grouped[dateStr]) grouped[dateStr] = []
-    grouped[dateStr].push(activity)
-  })
-  return grouped
-}
 import { ActivityEntry, MediaType, ActionType } from '../types/activity'
 
 interface ProfilePageProps {
@@ -194,22 +184,9 @@ export default function ProfilePage(props: ProfilePageProps) {
     }
   }
 
-  const handleDeleteReview = async (id: string) => {
-    try {
-      await api.delete(`/reviews/${id}`, {
-        headers: { Authorization: `Bearer ${useAuthStore.getState().token}` }
-      })
-      setReviews((prev) => prev.filter((review) => review._id !== id && review.id !== id))
-    } catch (err) {
-      console.error('Failed to delete review:', err)
-    }
-  }
-
   const displayUser = useMemo(() => {
     if (!user && !dbUser) return null;
-    if (!user && !dbUser) return null;
     const baseUser = dbUser || user;
-    const joinedDate = baseUser.createdAt ? new Date(baseUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown Date';
     const joinedDate = baseUser.createdAt ? new Date(baseUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown Date';
 
     return {
@@ -247,53 +224,43 @@ export default function ProfilePage(props: ProfilePageProps) {
             {/* Right Column: Content */}
             <div className="w-full lg:w-2/3 flex-1 flex flex-col min-w-0">
               <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-              {/* Right Column: Content */}
-              <div className="w-full lg:w-2/3 flex-1 flex flex-col min-w-0">
-                <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-                <div className="min-h-[500px]">
-                  <div className="min-h-[500px]">
-                    <>
-                      {activeTab === 'overview' && (
-                        <div className="flex flex-col gap-10">
-                          <div>
-                            <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Recent Reviews</h2>
-                            <ReviewsList reviews={reviews.slice(0, 2)} onDelete={handleDeleteReview} />
-                            <ReviewsList reviews={reviews.slice(0, 2)} onDelete={handleDeleteReview} />
-                          </div>
-                          <div>
-                            <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Latest Articles</h2>
-                            <ArticlesList articles={articles.slice(0, 2)} />
-                          </div>
-                        </div>
-                      )}
-
-                      {activeTab === 'reviews' && <ReviewsList reviews={reviews} onDelete={handleDeleteReview} />}
-                      {activeTab === 'reviews' && <ReviewsList reviews={reviews} onDelete={handleDeleteReview} />}
-                      {activeTab === 'articles' && <ArticlesList articles={articles} />}
-                      {activeTab === 'timeline' && (
-                        timeline.length > 0 ? (
-                          <TimelineRail
-                            groupedActivities={groupActivitiesByDate(timeline)}
-                            expandedIds={new Set()}
-                            onToggleExpand={() => { }}
-                            onRemove={async () => { }}
-                            onUpdateActionType={async () => { }}
-                          />
-                        ) : (
-                          <EmptyState />
-                        )
-                      )}
-                      {activeTab === 'wishlist' && <WishlistDisplay items={wishlist} onRemove={handleRemoveWishlist} />}
-                      {activeTab === 'settings' && (
-                        <SettingsTab isDark={isDark} setIsDark={setIsDark} />
-                      )}
-                    </>
+              <div className="min-h-[500px]">
+                {activeTab === 'overview' && (
+                  <div className="flex flex-col gap-10">
+                    <div>
+                      <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Recent Reviews</h2>
+                      <ReviewsList reviews={reviews.slice(0, 2)} onDelete={handleDeleteReview} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Latest Articles</h2>
+                      <ArticlesList articles={articles.slice(0, 2)} />
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {activeTab === 'reviews' && <ReviewsList reviews={reviews} onDelete={handleDeleteReview} />}
+                {activeTab === 'articles' && <ArticlesList articles={articles} />}
+                {activeTab === 'timeline' && (
+                  timeline.length > 0 ? (
+                    <TimelineRail
+                      groupedActivities={groupActivitiesByDate(timeline)}
+                      expandedIds={new Set()}
+                      onToggleExpand={() => { }}
+                      onRemove={async () => { }}
+                      onUpdateActionType={async () => { }}
+                    />
+                  ) : (
+                    <EmptyState />
+                  )
+                )}
+                {activeTab === 'wishlist' && <WishlistDisplay items={wishlist} onRemove={handleRemoveWishlist} />}
+                {activeTab === 'settings' && (
+                  <SettingsTab isDark={isDark} setIsDark={setIsDark} />
+                )}
               </div>
             </div>
-        )}
+          </div>
         )}
           </div>
     </div>
