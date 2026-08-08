@@ -4,9 +4,10 @@ import { motion } from 'framer-motion'
 
 interface ReviewsListProps {
   reviews: any[]
+  onDelete?: (id: string) => void
 }
 
-export default function ReviewsList({ reviews }: ReviewsListProps) {
+export default function ReviewsList({ reviews, onDelete }: ReviewsListProps) {
   if (reviews.length === 0) {
     return (
       <div className="glass-panel rounded-xl p-12 text-center">
@@ -32,7 +33,7 @@ export default function ReviewsList({ reviews }: ReviewsListProps) {
             <div className="w-full sm:w-32 sm:min-w-[128px] h-48 sm:h-auto overflow-hidden relative">
               <img 
                 src={review.seriesId?.coverImage || review.seriesId?.posterImage || review.posterUrl || '/media/poster-1.png'} 
-                alt={review.seriesId?.english || review.seriesId?.title || review.animeTitle || 'Series Poster'} 
+                alt={review.seriesId?.title?.english || review.seriesId?.title?.romaji || review.seriesId?.title?.native || review.animeTitle || 'Series Poster'} 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
@@ -46,12 +47,17 @@ export default function ReviewsList({ reviews }: ReviewsListProps) {
                       {review.title || 'Review'}
                     </h3>
                     <p className="text-sm font-semibold text-primary/80 mb-2">
-                      {review.seriesId?.english || review.seriesId?.title || review.animeTitle || 'Unknown Series'}
+                      {review.seriesId?.title?.english || review.seriesId?.title?.romaji || review.seriesId?.title?.native || review.animeTitle || 'Unknown Series'}
                     </p>
                   </div>
-                  <button className="text-muted-foreground hover:text-destructive transition-colors p-1">
-                    <Trash2 size={18} />
-                  </button>
+                  {onDelete && (
+                    <button 
+                      onClick={() => onDelete(review._id || review.id)}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-4 mb-3">
