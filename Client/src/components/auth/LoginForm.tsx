@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import SpellLoader from '@/components/ui/SpellLoader'
 import { auth, googleProvider } from '../../firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import api from '../../lib/api';
@@ -14,14 +15,17 @@ interface LoginFormProps {
   sharedEmail: string
   onSharedEmailChange: (email: string) => void
   onSuccess: () => void
+  onSwitchToSignUp?: () => void
 }
 
 interface LoginErrors {
   emailOrUsername?: string
   password?: string
+  general?: string
+  notRegistered?: boolean
 }
 
-export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess }: LoginFormProps) {
+export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess, onSwitchToSignUp }: LoginFormProps) {
   const [emailOrUsername, setEmailOrUsername] = useState(sharedEmail)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -47,62 +51,104 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess 
   const handleEmailChange = (value: string) => {
     setEmailOrUsername(value)
     onSharedEmailChange(value)
-    if (errors.emailOrUsername) {
-      setErrors((prev) => ({ ...prev, emailOrUsername: undefined }))
+    if (errors.emailOrUsername || errors.general) {
+      setErrors((prev) => ({ ...prev, emailOrUsername: undefined, general: undefined, notRegistered: false }))
     }
   }
 
   const handlePasswordChange = (value: string) => {
     setPassword(value)
-    if (errors.password) {
-      setErrors((prev) => ({ ...prev, password: undefined }))
+    if (errors.password || errors.general) {
+      setErrors((prev) => ({ ...prev, password: undefined, general: undefined, notRegistered: false }))
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('1. Form submitted');
+    const validationErrors = validateLogin({ emailOrUsername, password })
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors)
+      return
+    }
+
+    setErrors({})
+    setIsSubmitting(true)
     try {
       const userCredential = await signInWithEmailAndPassword(auth, emailOrUsername, password);
-      console.log('2. Firebase login succeeded', userCredential.user.email);
-
       const token = await userCredential.user.getIdToken();
-      console.log('3. Got token', token.substring(0, 20));
-
       const res = await api.post('/auth/sync', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('4. Sync succeeded', res.data);
 
       setUser(res.data, token);
       onSuccess();
-      console.log('5. onSuccess called');
-    } catch (err) {
+    } catch (err: any) {
       console.error('LOGIN ERROR:', err);
+      const code = err?.code || '';
+      if (
+        code === 'auth/user-not-found' ||
+        code === 'auth/invalid-credential' ||
+        code === 'auth/invalid-email'
+      ) {
+        setErrors({
+          general: 'No account found with this email.',
+          notRegistered: true,
+        })
+      } else if (code === 'auth/wrong-password') {
+        setErrors({ password: 'Incorrect password. Please try again.' })
+      } else {
+        setErrors({
+          general: 'No account found with this email.',
+          notRegistered: true,
+        })
+      }
+    } finally {
+      setIsSubmitting(false)
     }
   };
 
   const handleGoogleSignIn = async () => {
-  console.log('Google sign-in clicked');
-  try {
-    const userCredential = await signInWithPopup(auth, googleProvider);
-    console.log('Google login succeeded', userCredential.user.email);
+    setIsSubmitting(true)
+    setErrors({})
+    try {
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const token = await userCredential.user.getIdToken();
+      const res = await api.post('/auth/sync', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    const token = await userCredential.user.getIdToken();
-    const res = await api.post('/auth/sync', {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    console.log('Sync succeeded', res.data);
-
-    setUser(res.data, token);
-    onSuccess();
-  } catch (err) {
-    console.error('GOOGLE LOGIN ERROR:', err);
+      setUser(res.data, token);
+      onSuccess();
+    } catch (err: any) {
+      console.error('GOOGLE LOGIN ERROR:', err);
+      setErrors({
+        general: 'Google sign-in failed. Please try again or sign up.',
+        notRegistered: true,
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {errors.general && (
+        <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{errors.general}</span>
+          </div>
+          {errors.notRegistered && onSwitchToSignUp && (
+            <button
+              type="button"
+              onClick={onSwitchToSignUp}
+              className="text-xs underline font-semibold hover:opacity-80 shrink-0 ml-2"
+            >
+              Sign Up
+            </button>
+          )}
+        </div>
+      )}
       {/* Email or Username */}
       <div className="space-y-2.5">
         <Label htmlFor="email-username" className="text-foreground font-semibold text-sm">
@@ -201,10 +247,10 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess 
         className="w-full h-11 font-semibold text-base mt-8"
       >
         {isSubmitting ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Authenticating…
-          </>
+          <span className="flex items-center gap-2">
+            <SpellLoader size={16} />
+            Authenticating...
+          </span>
         ) : (
           'Login'
         )}

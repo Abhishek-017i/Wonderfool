@@ -18,10 +18,10 @@ interface FilterSidebarProps {
 const MEDIA_TYPES = ['Anime', 'Manga', 'Light Novel']
 const STATUSES = ['Airing', 'Finished', 'Hiatus', 'Cancelled']
 const GENRES = [
-  'Action', 'Adventure', 'Comedy', 'Drama', 'School',
+  'Action', 'Adventure', 'Comedy', 'Drama', 'School', 'Romance',
   'Supernatural', 'Mystery', 'Psychological', 'Fantasy', 'Sci-Fi', 'Mecha', 'Dark',
 ]
-const DEMOGRAPHICS = ['Shounen', 'Seinen', 'Shojo', 'Josei', 'Kids']
+
 const COUNTRIES = [
   { code: 'JP', label: 'Japan' },
   { code: 'KR', label: 'Korea' },
@@ -167,30 +167,7 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        {/* Demographic */}
-        <AccordionItem value="demographic">
-          <AccordionTrigger>Demographic</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2.5">
-              {DEMOGRAPHICS.map((demo) => (
-                <FilterCheckbox
-                  key={demo}
-                  id={`demo-${demo}`}
-                  label={demo}
-                  checked={filters.demographic.includes(demo)}
-                  onCheckedChange={(checked) =>
-                    onFiltersChange({
-                      ...filters,
-                      demographic: checked
-                        ? [...filters.demographic, demo]
-                        : filters.demographic.filter((d) => d !== demo),
-                    })
-                  }
-                />
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+
 
         {/* Year Range */}
         <AccordionItem value="year">
@@ -234,38 +211,7 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        {/* Episode / Chapter Count */}
-        <AccordionItem value="episodes">
-          <AccordionTrigger>Episode / Chapter Count</AccordionTrigger>
-          <AccordionContent>
-            <div className="flex gap-2 pb-1">
-              <Input
-                type="number"
-                placeholder="Min"
-                value={filters.episodeRange[0] || ''}
-                onChange={(e) =>
-                  onFiltersChange({
-                    ...filters,
-                    episodeRange: [parseInt((e.target as HTMLInputElement).value) || 0, filters.episodeRange[1]],
-                  })
-                }
-                className="text-sm h-8"
-              />
-              <Input
-                type="number"
-                placeholder="Max"
-                value={filters.episodeRange[1] || ''}
-                onChange={(e) =>
-                  onFiltersChange({
-                    ...filters,
-                    episodeRange: [filters.episodeRange[0], parseInt((e.target as HTMLInputElement).value) || 0],
-                  })
-                }
-                className="text-sm h-8"
-              />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+
       </Accordion>
 
       {/* Actions */}

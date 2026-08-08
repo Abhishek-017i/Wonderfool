@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion'
-import { Flame, TrendingUp, CheckCircle2, Sparkles } from 'lucide-react'
+import { Flame, CheckCircle2, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type QuickFilterType = 'Popular' | 'Trending' | 'Completed' | 'Recently Added' | null
+type QuickFilterType = 'Popular' | 'Completed' | 'Recently Added' | null
 
 interface QuickFilterBarProps {
   activeFilter: QuickFilterType
@@ -11,7 +11,6 @@ interface QuickFilterBarProps {
 
 const QUICK_FILTERS: { label: string; value: QuickFilterType; icon: React.ComponentType<{ className?: string }> }[] = [
   { label: 'Popular', value: 'Popular', icon: Flame },
-  { label: 'Trending', value: 'Trending', icon: TrendingUp },
   { label: 'Completed', value: 'Completed', icon: CheckCircle2 },
   { label: 'Recently Added', value: 'Recently Added', icon: Sparkles },
 ]

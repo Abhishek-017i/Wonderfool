@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {Link} from 'react-router-dom'
 import {
   Search,
@@ -8,10 +8,18 @@ import {
   Palette,
   Clapperboard,
   Award,
-  ArrowLeft,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import CreatorCard from '../components/creator/CreatorCard'
+import SpellLoader from '../components/ui/SpellLoader'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { cn } from '@/lib/utils'
+import { useCreators } from '@/hooks/useCreator'
 
 /* -------------------------------------------------------------------------- */
 /*                                    Data                                     */
@@ -22,9 +30,10 @@ type Role =
   | 'Director'
   | 'Character Designer'
   | 'Animator'
+  | string
 
 type Creator = {
-  id: number
+  id: string | number
   name: string
   role: Role
   image: string
@@ -33,7 +42,7 @@ type Creator = {
   award: string
 }
 
-const ROLE_ICON: Record<Role, typeof PenTool> = {
+const ROLE_ICON: Record<string, any> = {
   Mangaka: PenTool,
   Director: Film,
   'Character Designer': Palette,
@@ -48,63 +57,6 @@ const FILTERS: (Role | 'All')[] = [
   'Animator',
 ]
 
-const CREATORS: Creator[] = [
-  {
-    id: 1,
-    name: 'Takehiko Inoue',
-    role: 'Mangaka',
-    image: '/creators/creator-1.png',
-    knownFor: ['Vagabond', 'Slam Dunk', 'Real'],
-    era: 'Active: 1988–Present',
-    award: 'Tezuka Osamu Cultural Prize',
-  },
-  {
-    id: 2,
-    name: 'Makoto Shinkai',
-    role: 'Director',
-    image: '/creators/creator-2.png',
-    knownFor: ['Your Name', 'Weathering With You', 'Suzume'],
-    era: 'Active: 2002–Present',
-    award: 'Japan Academy Prize',
-  },
-  {
-    id: 3,
-    name: 'Kentaro Miura',
-    role: 'Mangaka',
-    image: '/creators/creator-3.png',
-    knownFor: ['Berserk', 'Duranki', 'Japan'],
-    era: 'Active: 1985–2021',
-    award: 'Harvey Award Nominee',
-  },
-  {
-    id: 4,
-    name: 'Naoko Yamada',
-    role: 'Director',
-    image: '/creators/creator-4.png',
-    knownFor: ['A Silent Voice', 'K-On!', 'Liz and the Blue Bird'],
-    era: 'Active: 2009–Present',
-    award: 'Tokyo Anime Award',
-  },
-  {
-    id: 5,
-    name: 'Yoshiaki Kawajiri',
-    role: 'Animator',
-    image: '/creators/creator-5.png',
-    knownFor: ['Ninja Scroll', 'Vampire Hunter D', 'X'],
-    era: 'Active: 1972–Present',
-    award: 'Fantasia Lifetime Honor',
-  },
-  {
-    id: 6,
-    name: 'Yoshitoshi ABe',
-    role: 'Character Designer',
-    image: '/creators/creator-6.png',
-    knownFor: ['Serial Experiments Lain', 'Haibane Renmei', 'Texhnolyze'],
-    era: 'Active: 1998–Present',
-    award: 'Seiun Award Finalist',
-  },
-]
-
 /* -------------------------------------------------------------------------- */
 /*                                    Page                                     */
 /* -------------------------------------------------------------------------- */
@@ -112,34 +64,48 @@ const CREATORS: Creator[] = [
 export default function CreatorsPage() {
   const [query, setQuery] = useState('')
   const [activeRole, setActiveRole] = useState<Role | 'All'>('All')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 9 // Fits nicely in a 3-column grid
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [query, activeRole])
+
+  const { creators: apiCreators, isLoading, error } = useCreators()
+
+  const mappedCreators: Creator[] = useMemo(() => {
+    return (apiCreators || []).map((c) => ({
+      id: c._id,
+      name: c.name?.full || c.name?.native || 'Unknown',
+      role: c.designation?.[0] || 'Mangaka',
+      image: c.photo || '/placeholder.svg',
+      knownFor: c.knownWorks?.map(w => w.seriesId?.title?.english || w.seriesId?.title?.romaji || 'Unknown Work') || [],
+      era: c.yearsActive || 'Unknown',
+      award: 'Notable Creator',
+    }))
+  }, [apiCreators])
 
   const filtered = useMemo(() => {
-    return CREATORS.filter((c) => {
+    return mappedCreators.filter((c) => {
       const matchesRole = activeRole === 'All' || c.role === activeRole
       const q = query.trim().toLowerCase()
       const matchesQuery =
         q === '' ||
         c.name.toLowerCase().includes(q) ||
-        c.role.toLowerCase().includes(q) ||
+        (c.role && c.role.toLowerCase().includes(q)) ||
         c.knownFor.some((w) => w.toLowerCase().includes(q))
       return matchesRole && matchesQuery
     })
-  }, [query, activeRole])
+  }, [query, activeRole, mappedCreators])
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
+  const paginatedCreators = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-        {/* Back link + theme toggle */}
-        <div className="mb-10 flex items-center justify-between">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to home
-          </Link>
-          <ThemeToggle />
-        </div>
+    <main className="min-h-screen bg-background text-foreground flex flex-col">
+      <Navbar />
+      <div className="mx-auto max-w-6xl px-6 pt-24 pb-16 md:pb-24 flex-1 w-full">
+        {/* Header */}
 
         {/* Header */}
         <header className="mx-auto max-w-2xl text-center">
@@ -189,18 +155,66 @@ export default function CreatorsPage() {
         </div>
 
         {/* Gallery grid */}
-        {filtered.length > 0 ? (
-          <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((creator) => (
-              <CreatorCard key={creator.id} creator={creator} />
-            ))}
+        {isLoading && mappedCreators.length === 0 ? (
+          <div className="flex justify-center items-center py-20">
+            <SpellLoader size={32} />
           </div>
+        ) : error ? (
+          <p className="mt-20 text-center text-red-500">
+            Failed to load creators. Please try again later.
+          </p>
+        ) : filtered.length > 0 ? (
+          <>
+            <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {paginatedCreators.map((creator) => (
+                <CreatorCard key={creator.id} creator={creator} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center justify-center gap-4 mt-14"
+              >
+                <button
+                  disabled={currentPage <= 1}
+                  onClick={() => {
+                    setCurrentPage((p) => Math.max(1, p - 1))
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="flex items-center gap-1.5 border border-primary/30 px-4 py-2 rounded-md text-sm font-semibold hover:border-primary/60 hover:bg-primary/5 disabled:opacity-40 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Prev
+                </button>
+
+                <span className="text-sm font-serif text-muted-foreground">
+                  Page <span className="font-bold text-foreground">{currentPage}</span> of{' '}
+                  <span className="font-bold text-foreground">{totalPages}</span>
+                </span>
+
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => {
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="flex items-center gap-1.5 border border-primary/30 px-4 py-2 rounded-md text-sm font-semibold hover:border-primary/60 hover:bg-primary/5 disabled:opacity-40 transition-colors"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </motion.div>
+            )}
+          </>
         ) : (
           <p className="mt-20 text-center text-muted-foreground">
             No creators match your search.
           </p>
         )}
       </div>
+      <Footer />
     </main>
   )
 }
@@ -210,7 +224,7 @@ export default function CreatorsPage() {
 /* -------------------------------------------------------------------------- */
 
 function CreatorCard({ creator }: { creator: Creator }) {
-  const RoleIcon = ROLE_ICON[creator.role]
+  const RoleIcon = ROLE_ICON[creator.role] || PenTool
 
   return (
     <Link to={`/creator/${creator.id}`} className="group flex flex-col rounded-[18px] border border-border/70 bg-card p-6 shadow-[0_12px_32px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/25 hover:shadow-[0_20px_44px_rgba(0,0,0,0.09)]">
@@ -243,17 +257,6 @@ function CreatorCard({ creator }: { creator: Creator }) {
         </p>
       </div>
 
-      {/* Tags */}
-      <div className="mt-auto flex flex-wrap items-center justify-center gap-2 pt-5">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
-          <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-          {creator.era}
-        </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
-          <Award className="h-3.5 w-3.5 text-accent" />
-          {creator.award}
-        </span>
-      </div>
     </Link>
   )
 }

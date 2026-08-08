@@ -1,7 +1,5 @@
-import { Heart, Calendar } from 'lucide-react'
-import { Button } from '../ui/button'
+import { Calendar } from 'lucide-react'
 import { Badge } from '../ui/badge'
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 
 interface CreatorHeroProps {
@@ -20,7 +18,6 @@ export default function CreatorHero({
   designation,
   yearsActive,
 }: CreatorHeroProps) {
-  const [isFavorited, setIsFavorited] = useState(false)
 
   const renderName = () => {
     return name?.full || name?.native || 'Unknown Creator'
@@ -111,29 +108,6 @@ export default function CreatorHero({
                 <span className="text-sm font-medium">Active: {yearsActive}</span>
               </div>
             )}
-          </motion.div>
-
-          {/* Follow Button */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="flex gap-3 sm:pb-2"
-          >
-            <Button
-              className="flex-1 sm:flex-none border-primary/50 hover:border-primary hover:bg-primary/10 transition-colors"
-              onClick={() => setIsFavorited(!isFavorited)}
-              variant="outline"
-              size="sm"
-              aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
-            >
-              <Heart
-                className={`w-5 h-5 transition-colors ${isFavorited ? 'fill-primary text-primary' : 'text-foreground'}`}
-              />
-            </Button>
-            <Button className="flex-1 sm:flex-none bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(244,216,69,0.4)] transition-all border-0 font-semibold">
-              Follow
-            </Button>
           </motion.div>
         </div>
       </div>

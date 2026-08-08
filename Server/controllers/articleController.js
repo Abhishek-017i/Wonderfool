@@ -124,8 +124,20 @@ const getArticlesByCreator = async (req, res) => {
   }
 };
 
+const getArticlesByUser = async (req, res) => {
+  try {
+    const articles = await Article.find({ authorId: req.params.userId })
+      .populate('authorId', 'name avatar')
+      .sort({ createdAt: -1 });
+    res.status(200).json(articles);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getAllArticles,
+  getArticlesByUser,
   getArticleById,
   createArticle,
   updateArticle,

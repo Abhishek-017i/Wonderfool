@@ -1,21 +1,73 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Search, Moon, Sun, User, Settings, LogOut, Bookmark, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import useAuthStore from '@/store/authStore'
+
+const STORAGE_KEY = 'web-wonders-theme'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 export default function Navbar() {
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) return saved === 'dark'
+      return document.documentElement.classList.contains('dark') || true
+    }
+    return true
+  })
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const searchRef = useRef(null)
   const dropdownRef = useRef(null)
   const location = useLocation()
+  const navigate = useNavigate()
   const { isAuthenticated, logout } = useAuth()
+  const { user } = useAuthStore()
+
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setSearchResults([])
+      return
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const res = await fetch(`${API_URL}/series?search=${encodeURIComponent(searchQuery)}&limit=5`)
+        if (res.ok) {
+          const data = await res.json()
+          setSearchResults(data.series || [])
+        }
+      } catch (err) {
+        console.error('Navbar search error:', err)
+      } finally {
+        setIsSearching(false)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/browse?search=${encodeURIComponent(searchQuery.trim())}`)
+      setIsSearchExpanded(false)
+      setSearchQuery('')
+    }
+  }
+
+  const getSeriesTitle = (title) => {
+    if (!title) return 'Untitled'
+    if (typeof title === 'string') return title
+    return title.english || title.romaji || title.native || 'Untitled'
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +75,19 @@ export default function Navbar() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    const shouldBeDark = saved ? saved === 'dark' : true
+    setIsDark(shouldBeDark)
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
+    } else {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+    }
   }, [])
 
   useEffect(() => {
@@ -44,8 +109,12 @@ export default function Navbar() {
     setIsDark(newDarkMode)
     if (newDarkMode) {
       document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
+      localStorage.setItem(STORAGE_KEY, 'dark')
     } else {
       document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+      localStorage.setItem(STORAGE_KEY, 'light')
     }
   }
 
@@ -53,10 +122,22 @@ export default function Navbar() {
     { name: 'Home', path: '/' },
     { name: 'Browse', path: '/browse' },
     { name: 'Community', path: '/community' },
-    // { name: 'Genre', path: '#' },
+    { name: 'Creators', path: '/creators' },
     { name: 'Timeline', path: '/timeline' },
-    { name: 'Profile', path: '/profile' },
   ]
+
+  const handleNavClick = (linkPath, e) => {
+    if (linkPath === '#') {
+      e.preventDefault()
+      return
+    }
+    if (location.pathname === linkPath) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false)
+    }
+  }
 
   return (
     <motion.nav
@@ -88,7 +169,7 @@ export default function Navbar() {
                 key={link.name}
                 to={link.path}
                 title={link.path === '#' ? 'Coming Soon' : undefined}
-                onClick={link.path === '#' ? (e) => e.preventDefault() : undefined}
+                onClick={(e) => handleNavClick(link.path, e)}
                 className="relative group text-sm font-semibold text-foreground hover:text-primary transition-colors uppercase tracking-widest"
               >
                 {link.name}
@@ -109,73 +190,72 @@ export default function Navbar() {
         <div className="flex items-center gap-5">
           {/* Search */}
           <div className="relative flex items-center hidden sm:flex" ref={searchRef}>
-            <motion.div
-              className="flex items-center overflow-hidden bg-background/50 border border-border rounded-full backdrop-blur-sm relative z-50"
-              animate={{ width: isSearchExpanded ? 260 : 42 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            >
-              <button
-                onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-                className="p-2.5 text-foreground hover:text-primary transition-colors flex-shrink-0"
+            <form onSubmit={handleSearchSubmit}>
+              <motion.div
+                className="flex items-center overflow-hidden bg-background/50 border border-border rounded-full backdrop-blur-sm relative z-50"
+                animate={{ width: isSearchExpanded ? 260 : 42 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
               >
-                <Search size={18} />
-              </button>
-              <input
-                type="text"
-                placeholder="Search series or users..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-foreground/50 w-full pl-2 pr-4 font-serif italic"
-              />
-            </motion.div>
+                <button
+                  type="submit"
+                  onClick={(e) => {
+                    if (!isSearchExpanded) {
+                      e.preventDefault()
+                      setIsSearchExpanded(true)
+                    }
+                  }}
+                  className="p-2.5 text-foreground hover:text-primary transition-colors flex-shrink-0"
+                >
+                  <Search size={18} />
+                </button>
+                <input
+                  type="text"
+                  placeholder="Search series..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchExpanded(true)}
+                  className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-foreground/50 w-full pl-2 pr-4 font-serif italic"
+                />
+              </motion.div>
+            </form>
 
             {/* Search Results Dropdown */}
             <AnimatePresence>
-              {isSearchExpanded && searchQuery.length > 1 && (
+              {isSearchExpanded && searchQuery.trim().length > 1 && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-12 right-0 w-[260px] bg-card border border-border rounded-xl shadow-xl overflow-hidden py-2 z-50"
+                  className="absolute top-12 right-0 w-[280px] bg-card border border-border rounded-xl shadow-xl overflow-hidden py-2 z-50 max-h-[360px] overflow-y-auto"
                 >
-                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Series</div>
-                  <Link
-                    to="/series/1"
-                    onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
-                  >
-                    <img src="/media/poster-1.png" className="w-8 h-10 object-cover rounded" alt="Attack on Titan" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold truncate">Attack on Titan</span>
-                      <span className="text-xs text-muted-foreground">Anime</span>
+                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                    <span>Series</span>
+                    {isSearching && <span className="text-[10px] lowercase animate-pulse">searching...</span>}
+                  </div>
+                  {searchResults.length > 0 ? (
+                    searchResults.map((series) => (
+                      <Link
+                        key={series._id}
+                        to={`/series/${series._id}`}
+                        onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
+                        className="flex items-center gap-3 px-3 py-2 hover:bg-muted/80 transition-colors"
+                      >
+                        <img
+                          src={series.coverImage || series.posterImage || '/media/poster-1.png'}
+                          className="w-8 h-10 object-cover rounded bg-muted flex-shrink-0"
+                          alt={getSeriesTitle(series.title)}
+                        />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-sm font-semibold truncate text-foreground">{getSeriesTitle(series.title)}</span>
+                          <span className="text-xs text-muted-foreground capitalize">{series.type ? series.type.toLowerCase() : 'Series'}</span>
+                        </div>
+                      </Link>
+                    ))
+                  ) : !isSearching ? (
+                    <div className="px-4 py-3 text-xs text-muted-foreground text-center italic">
+                      No series found for "{searchQuery}"
                     </div>
-                  </Link>
-                  <div className="h-px bg-border my-1 mx-2" />
-                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Users</div>
-                  <Link
-                    to="/profile"
-                    onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
-                  >
-                    <img src="https://i.pravatar.cc/150?u=1" className="w-8 h-8 rounded-full object-cover" alt="User" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold truncate">Alex Chen</span>
-                      <span className="text-xs text-muted-foreground">@alexc</span>
-                    </div>
-                  </Link>
-                  <div className="h-px bg-border my-1 mx-2" />
-                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Creators</div>
-                  <Link
-                    to="/creator/1"
-                    onClick={() => { setIsSearchExpanded(false); setSearchQuery('') }}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-muted transition-colors"
-                  >
-                    <img src="/blog/avatar-3.png" className="w-8 h-8 rounded-full object-cover" alt="Creator" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold truncate">Akira Toriyama</span>
-                      <span className="text-xs text-muted-foreground text-accent">Character Designer</span>
-                    </div>
-                  </Link>
+                  ) : null}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -192,58 +272,13 @@ export default function Navbar() {
 
           {/* Auth Section */}
           {isAuthenticated ? (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-colors focus:outline-none"
-              >
-                <img src="/blog/avatar-3.png" alt="User avatar" className="w-full h-full object-cover" />
-              </button>
-
-              <AnimatePresence>
-                {isDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg overflow-hidden py-1 z-50"
-                  >
-                    <Link
-                      to="/profile"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                    >
-                      <User size={16} /> Profile
-                    </Link>
-                    <Link
-                      to="/profile?tab=settings"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                    >
-                      <Settings size={16} /> Settings
-                    </Link>
-                    <Link
-                      to="/wishlist"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                    >
-                      <Bookmark size={16} /> Wishlist
-                    </Link>
-                    <div className="h-px bg-border my-1" />
-                    <button
-                      onClick={() => {
-                        setIsDropdownOpen(false)
-                        logout()
-                      }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                    >
-                      <LogOut size={16} /> Logout
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <Link
+              to="/profile"
+              className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-all hover:scale-105 focus:outline-none flex-shrink-0"
+              title="Go to Profile"
+            >
+              <img src={user?.avatar || "/blog/avatar-3.png"} alt="User avatar" className="w-full h-full object-cover" />
+            </Link>
           ) : (
             <Button
               className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground border border-border hover:shadow-[0_0_20px_rgba(244,216,69,0.3)] transition-all font-bold px-7 uppercase tracking-wider text-xs"
@@ -272,7 +307,7 @@ export default function Navbar() {
                   <Link
                     key={link.name}
                     to={link.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={(e) => handleNavClick(link.path, e)}
                     className={`text-sm font-semibold uppercase tracking-widest ${isActive ? 'text-primary' : 'text-foreground hover:text-primary'} transition-colors`}
                   >
                     {link.name}

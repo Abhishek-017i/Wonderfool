@@ -12,6 +12,15 @@ const getUserWishlist = async (req, res) => {
   }
 };
 
+const getWishlistByUser = async (req, res) => {
+  try {
+    const wishlist = await Wishlist.find({ userId: req.params.userId }).populate('seriesId', 'title coverImage type');
+    res.status(200).json(wishlist);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching user wishlist', error: err.message });
+  }
+};
+
 const getWishlistById = async (req, res) => {
   try {
     const item = await Wishlist.findById(req.params.id);
@@ -39,6 +48,11 @@ const getWishlistByStatus = async (req, res) => {
 
 const createWishlist = async (req, res) => {
   try {
+    const existing = await Wishlist.findOne({ userId: req.mongoUser._id, seriesId: req.body.seriesId });
+    if (existing) {
+      return res.status(409).json({ message: "Series already exists in wishlist" });
+    }
+
     const wishlist = new Wishlist({
       ...req.body,
       userId: req.mongoUser._id,   
@@ -124,6 +138,7 @@ const updateWishlistStatus = async (req, res) => {
 module.exports = {
   getWishlistById,
   getUserWishlist,
+  getWishlistByUser,
   getWishlistByStatus,
   createWishlist,
   updateWishlist,

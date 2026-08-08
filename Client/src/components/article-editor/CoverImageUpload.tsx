@@ -25,10 +25,10 @@ export default function CoverImageUpload({ coverImage, onChange }: CoverImageUpl
       {coverImage ? (
         <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden group">
           <img
-    src={coverImage}
-    alt="Cover"
-    className="w-full h-full object-cover"
-  />
+            src={coverImage}
+            alt="Cover"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
             <button
               onClick={() => inputRef.current?.click()}

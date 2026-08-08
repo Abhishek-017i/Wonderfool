@@ -211,28 +211,31 @@ export const groupActivitiesByDate = (activities: ActivityEntry[]) => {
   
   return groups
 }
-export type UserProfile = {
-  name: string;
-  handle: string;
-  bio: string;
-  location: string;
-  joined: string;
-  joinDate: string;
-  avatar: string;
-  banner: string;
-  verified: boolean;
-  rank: string;
-  website: string;
-  followers: number;
-  following: number;
-  reviews: number;
-  articles: number;
-  isFollowing: boolean;
-};
+export interface UserProfile {
+  id: string
+  name: string
+  handle: string
+  email?: string
+  avatar: string
+  banner: string
+  bio: string
+  location: string
+  joinDate: string
+  verified: boolean
+  rank: string
+  website: string
+  reviews: number
+  articles: number
+  followers: number
+  following: number
+  isFollowing: boolean
+}
 
 export const mockUser: UserProfile = {
+  id: "1",
   name: "Aoi Tanaka",
   handle: "@aoi_reads",
+  email: "aoi@example.com",
   bio: "Chronicling every arc, panel, and page. Perpetual wanderer between fiction and reality.",
   location: "Kyoto, Japan",
   joined: "Joined March 2023",
@@ -296,10 +299,12 @@ export const mockArticles: Article[] = [
 ];
 
 export type WishlistItem = {
-  id: number;
+  id: number | string;
   name: string;
   category: string;
   addedDate: string;
+  coverUrl?: string;
+  seriesId?: string;
 };
 
 export const mockWishlist: WishlistItem[] = [

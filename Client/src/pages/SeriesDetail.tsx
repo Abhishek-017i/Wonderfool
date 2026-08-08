@@ -5,9 +5,20 @@ import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { useAuth } from '@/contexts/AuthContext'
+import useAuthStore from '@/store/authStore'
+import api from '@/lib/api'
+import useWishlistStore from '@/store/wishlistStore'
+import ReviewSection from '@/components/series/ReviewSection'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { Series } from '@/types/series'
+import SpellLoader from '@/components/ui/SpellLoader'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -42,10 +53,15 @@ export default function SeriesDetail() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated } = useAuth()
+  const token = useAuthStore((state: any) => state.token)
   const [toast, setToast] = useState<string | null>(null)
   const [series, setSeries] = useState<Series | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [timelineStatus, setTimelineStatus] = useState<string | null>(null)
+
+  const isWishlisted = useWishlistStore((state: any) => series ? state.isWishlisted(series._id) : false)
+  const toggleWishlist = useWishlistStore((state: any) => state.toggleWishlist)
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -68,21 +84,63 @@ export default function SeriesDetail() {
     if (id) fetchSeries()
   }, [id])
 
-  const handleTimelineAction = () => {
+  useEffect(() => {
+    const checkTimeline = async () => {
+      if (isAuthenticated && id) {
+        try {
+          const res = await api.get('/timeline', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const entry = res.data.find((e: any) => e.seriesId?._id === id || e.seriesId === id);
+          if (entry) {
+            setTimelineStatus(entry.actionType);
+          }
+        } catch (err) {
+          console.error('Failed to fetch timeline status', err);
+        }
+      }
+    };
+    checkTimeline();
+  }, [id, isAuthenticated, token]);
+
+  const handleTimelineAction = async (actionType: 'started' | 'completed') => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: location.pathname } })
       return
     }
-    setToast('Added to Timeline')
+
+    try {
+      await api.post('/timeline', {
+        seriesId: series?._id,
+        actionType
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setTimelineStatus(actionType)
+      setToast(`Marked as ${actionType === 'completed' ? 'Completed' : 'Watching'}`)
+    } catch (err) {
+      console.error('Failed to update timeline', err)
+      setToast('Failed to update timeline')
+    }
+
     setTimeout(() => setToast(null), 2000)
   }
 
-  const handleWishlistAction = () => {
+  const handleWishlistAction = async () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: location.pathname } })
       return
     }
-    setToast('Added to Wishlist')
+    if (!series) return;
+
+    try {
+      await toggleWishlist(series._id, series)
+      setToast(isWishlisted ? 'Removed from Wishlist' : 'Added to Wishlist')
+    } catch (err) {
+      console.error('Failed to toggle wishlist', err)
+      setToast('Failed to update wishlist')
+    }
+
     setTimeout(() => setToast(null), 2000)
   }
 
@@ -90,13 +148,34 @@ export default function SeriesDetail() {
   const year = series?.startDate ? new Date(series.startDate).getFullYear() : null
   const endYear = series?.endDate ? new Date(series.endDate).getFullYear() : null
 
+  const MAIN_ROLES = ['original', 'director', 'story', 'art', 'editor', 'character design', 'mangaka', 'author', 'illustrator']
+  const validStaff = (series?.staff || []).filter(s => s.personId)
+  
+  let mainStaff = validStaff.filter(s => {
+    const role = (s.designation || '').toLowerCase()
+    return MAIN_ROLES.some(mr => role.includes(mr))
+  })
+  
+  let otherStaff = validStaff.filter(s => {
+    const role = (s.designation || '').toLowerCase()
+    return !MAIN_ROLES.some(mr => role.includes(mr))
+  })
+
+  // Fallback to first 3 if no main roles matched
+  if (mainStaff.length === 0 && validStaff.length > 0) {
+    mainStaff = validStaff.slice(0, 3)
+    otherStaff = validStaff.slice(3)
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center pt-20">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+            <div className="mb-6">
+              <SpellLoader size={80} className="mx-auto" />
+            </div>
             <p className="text-muted-foreground font-serif italic">Loading series...</p>
           </div>
         </main>
@@ -124,15 +203,15 @@ export default function SeriesDetail() {
   return (
     <div className="min-h-screen bg-background flex flex-col transition-all duration-200">
       <Navbar />
-      
+
       <main className="flex-1 w-full pt-20">
         {/* Banner area */}
         <div className="relative w-full h-[40vh] min-h-[300px] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10" />
           <div className="absolute inset-0 bg-black/40 z-[5]" />
-          <img 
-            src={series.bannerImage || series.coverImage || ''} 
-            alt={title} 
+          <img
+            src={series.bannerImage || series.coverImage || ''}
+            alt={title}
             className="w-full h-full object-cover blur-md scale-110"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
@@ -144,9 +223,9 @@ export default function SeriesDetail() {
             <div className="w-48 sm:w-64 flex-shrink-0 mx-auto md:mx-0">
               <div className="rounded-2xl overflow-hidden luxury-shadow border-4 border-background bg-card aspect-[2/3]">
                 {series.coverImage ? (
-                  <img 
-                    src={series.coverImage} 
-                    alt={title} 
+                  <img
+                    src={series.coverImage}
+                    alt={title}
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).src = '' }}
                   />
@@ -156,22 +235,35 @@ export default function SeriesDetail() {
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-6 flex flex-col gap-3">
-                <Button 
-                  onClick={handleTimelineAction}
-                  className="w-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(244,216,69,0.4)]"
-                >
-                  <CheckCircle className="mr-2" size={18} />
-                  Add to Timeline
-                </Button>
-                <Button 
-                  variant="outline"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className="w-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(244,216,69,0.4)]"
+                    >
+                      <CheckCircle className="mr-2" size={18} />
+                      {timelineStatus === 'completed' ? 'Completed' : timelineStatus === 'started' ? 'Watching' : 'Add to Timeline'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-card border-border">
+                    <DropdownMenuItem onClick={() => handleTimelineAction('started')} className="cursor-pointer">
+                      <Clock className="mr-2" size={16} />
+                      Watching
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTimelineAction('completed')} className="cursor-pointer">
+                      <CheckCircle className="mr-2" size={16} />
+                      Completed
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button
+                  variant={isWishlisted ? "default" : "outline"}
                   onClick={handleWishlistAction}
                   className="w-full"
                 >
-                  <Bookmark className="mr-2" size={18} />
-                  Add to Wishlist
+                  <Bookmark className="mr-2" size={18} fill={isWishlisted ? "currentColor" : "none"} />
+                  {isWishlisted ? 'In Wishlist' : 'Add to Wishlist'}
                 </Button>
               </div>
             </div>
@@ -189,9 +281,15 @@ export default function SeriesDetail() {
                   {series.title?.native && ` · ${series.title.native}`}
                 </p>
               )}
-              
+
               {/* Meta badges row */}
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6 text-sm font-semibold">
+                {series.averageScore && (
+                  <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+                    <Star size={12} className="mr-1 fill-current" />
+                    {(series.averageScore / 10).toFixed(1)}
+                  </Badge>
+                )}
                 {series.type && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                     {TYPE_LABELS[series.type] || series.type}
@@ -233,7 +331,7 @@ export default function SeriesDetail() {
                   </span>
                 )}
               </div>
-              
+
               {/* Genres */}
               {series.genres && series.genres.length > 0 && (
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-8">
@@ -245,28 +343,27 @@ export default function SeriesDetail() {
                 </div>
               )}
 
-              {/* Staff / Creator */}
-              {series.staff && series.staff.length > 0 && (
-                <div className="mb-8 flex flex-wrap gap-3 justify-center md:justify-start">
-                  {series.staff.filter(s => s.personId).map((staffMember, idx) => (
-                    <Link 
+              {/* Main Staff / Creator */}
+              {mainStaff.length > 0 && (
+                <div className="mb-8 flex flex-wrap gap-2 justify-center md:justify-start">
+                  {mainStaff.map((staffMember, idx) => (
+                    <Link
                       key={idx}
-                      to={`/creator/${staffMember.personId?._id}`} 
-                      className="inline-flex items-center gap-3 p-3 pr-6 rounded-full bg-card/40 border border-border/50 hover:border-primary/50 hover:bg-card/60 transition-all group"
+                      to={`/creator/${staffMember.personId?._id}`}
+                      className="inline-flex items-center gap-2 p-1.5 pr-4 rounded-full bg-card/40 border border-border/50 hover:border-primary/50 hover:bg-card/60 transition-all group"
                     >
-                      <div className="w-10 h-10 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors bg-muted flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors bg-muted flex items-center justify-center shrink-0">
                         {staffMember.personId?.photo ? (
                           <img src={staffMember.personId.photo} alt={renderName(staffMember.personId.name)} className="w-full h-full object-cover" />
                         ) : (
-                          <PenTool size={16} className="text-muted-foreground" />
+                          <PenTool size={10} className="text-muted-foreground" />
                         )}
                       </div>
                       <div>
-                        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                          <PenTool size={12} className="text-accent" />
+                        <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">
                           {staffMember.designation || 'Staff'}
                         </div>
-                        <div className="text-sm font-bold font-cinzel text-foreground group-hover:text-primary transition-colors">
+                        <div className="text-xs font-bold font-cinzel text-foreground group-hover:text-primary transition-colors leading-none">
                           {renderName(staffMember.personId?.name)}
                         </div>
                       </div>
@@ -340,13 +437,45 @@ export default function SeriesDetail() {
                   </div>
                 </div>
               )}
+
+              {/* Other Staff */}
+              {otherStaff.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-bold font-serif mb-4">All Creators</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {otherStaff.map((staffMember, idx) => (
+                      <Link
+                        key={idx}
+                        to={`/creator/${staffMember.personId?._id}`}
+                        className="inline-flex items-center gap-2 p-1.5 pr-4 rounded-full bg-card/40 border border-border/50 hover:border-primary/50 hover:bg-card/60 transition-all group"
+                      >
+                        <div className="w-6 h-6 rounded-full overflow-hidden border border-border group-hover:border-primary transition-colors bg-muted flex items-center justify-center shrink-0">
+                          {staffMember.personId?.photo ? (
+                            <img src={staffMember.personId.photo} alt={renderName(staffMember.personId.name)} className="w-full h-full object-cover" />
+                          ) : (
+                            <PenTool size={10} className="text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">
+                            {staffMember.designation || 'Staff'}
+                          </div>
+                          <div className="text-xs font-bold font-cinzel text-foreground group-hover:text-primary transition-colors leading-none">
+                            {renderName(staffMember.personId?.name)}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </main>
 
       {toast && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
@@ -356,6 +485,9 @@ export default function SeriesDetail() {
           {toast}
         </motion.div>
       )}
+
+      {/* Review Section */}
+      <ReviewSection seriesId={series._id} />
 
       <Footer />
     </div>
