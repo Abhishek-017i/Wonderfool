@@ -14,6 +14,14 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'seriesId is required' });
     }
 
+    const existingEntry = await Timeline.findOne({ userId, seriesId });
+    if (existingEntry) {
+      existingEntry.actionType = actionType || existingEntry.actionType;
+      if (note !== undefined) existingEntry.note = note;
+      await existingEntry.save();
+      return res.status(200).json(existingEntry);
+    }
+
     const newTimelineEntry = new Timeline({
       userId,
       seriesId,

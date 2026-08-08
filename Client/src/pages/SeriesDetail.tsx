@@ -7,6 +7,7 @@ import Footer from '@/components/Footer'
 import { useAuth } from '@/contexts/AuthContext'
 import useAuthStore from '@/store/authStore'
 import api from '@/lib/api'
+import useWishlistStore from '@/store/wishlistStore'
 import ReviewSection from '@/components/series/ReviewSection'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -57,6 +58,10 @@ export default function SeriesDetail() {
   const [series, setSeries] = useState<Series | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [timelineStatus, setTimelineStatus] = useState<string | null>(null)
+
+  const isWishlisted = useWishlistStore((state: any) => series ? state.isWishlisted(series._id) : false)
+  const toggleWishlist = useWishlistStore((state: any) => state.toggleWishlist)
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -79,6 +84,25 @@ export default function SeriesDetail() {
     if (id) fetchSeries()
   }, [id])
 
+  useEffect(() => {
+    const checkTimeline = async () => {
+      if (isAuthenticated && id) {
+        try {
+          const res = await api.get('/timeline', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const entry = res.data.find((e: any) => e.seriesId?._id === id || e.seriesId === id);
+          if (entry) {
+            setTimelineStatus(entry.actionType);
+          }
+        } catch (err) {
+          console.error('Failed to fetch timeline status', err);
+        }
+      }
+    };
+    checkTimeline();
+  }, [id, isAuthenticated, token]);
+
   const handleTimelineAction = async (actionType: 'started' | 'completed') => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: location.pathname } })
@@ -92,10 +116,11 @@ export default function SeriesDetail() {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setToast('Added to Timeline')
+      setTimelineStatus(actionType)
+      setToast(`Marked as ${actionType === 'completed' ? 'Completed' : 'Watching'}`)
     } catch (err) {
-      console.error('Failed to add to timeline', err)
-      setToast('Failed to add to timeline')
+      console.error('Failed to update timeline', err)
+      setToast('Failed to update timeline')
     }
 
     setTimeout(() => setToast(null), 2000)
@@ -106,18 +131,14 @@ export default function SeriesDetail() {
       navigate('/login', { state: { from: location.pathname } })
       return
     }
+    if (!series) return;
 
     try {
-      await api.post('/wishlists', {
-        seriesId: series?._id,
-        status: 'planning'
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setToast('Added to Wishlist')
+      await toggleWishlist(series._id, series)
+      setToast(isWishlisted ? 'Removed from Wishlist' : 'Added to Wishlist')
     } catch (err) {
-      console.error('Failed to add to wishlist', err)
-      setToast('Failed to add to wishlist')
+      console.error('Failed to toggle wishlist', err)
+      setToast('Failed to update wishlist')
     }
 
     setTimeout(() => setToast(null), 2000)
@@ -222,7 +243,7 @@ export default function SeriesDetail() {
                       className="w-full bg-gradient-to-r from-accent via-secondary to-primary text-secondary-foreground hover:shadow-[0_0_20px_rgba(244,216,69,0.4)]"
                     >
                       <CheckCircle className="mr-2" size={18} />
-                      Add to Timeline
+                      {timelineStatus === 'completed' ? 'Completed' : timelineStatus === 'started' ? 'Watching' : 'Add to Timeline'}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56 bg-card border-border">
@@ -237,12 +258,12 @@ export default function SeriesDetail() {
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button
-                  variant="outline"
+                  variant={isWishlisted ? "default" : "outline"}
                   onClick={handleWishlistAction}
                   className="w-full"
                 >
-                  <Bookmark className="mr-2" size={18} />
-                  Add to Wishlist
+                  <Bookmark className="mr-2" size={18} fill={isWishlisted ? "currentColor" : "none"} />
+                  {isWishlisted ? 'In Wishlist' : 'Add to Wishlist'}
                 </Button>
               </div>
             </div>
@@ -263,6 +284,12 @@ export default function SeriesDetail() {
 
               {/* Meta badges row */}
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6 text-sm font-semibold">
+                {series.averageScore && (
+                  <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+                    <Star size={12} className="mr-1 fill-current" />
+                    {(series.averageScore / 10).toFixed(1)}
+                  </Badge>
+                )}
                 {series.type && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                     {TYPE_LABELS[series.type] || series.type}
