@@ -10,7 +10,6 @@ import { ArticleContent } from '../components/article/ArticleContent'
 import { ArticleActionBar } from '../components/article/ArticleActionBar'
 import { TaggedCreators } from '../components/article/TaggedCreators'
 import { TaggedSeries } from '../components/article/TaggedSeries'
-import { ArticleFooter } from '../components/article/ArticleFooter'
 import { RelatedArticles } from '../components/article/RelatedArticles'
 import { CommentSection } from '../components/article/CommentSection'
 import {
@@ -140,24 +139,6 @@ export default function ArticleDetail() {
             </div>
           ) : article ? (
             <TaggedSeries series={article.taggedSeries} />
-          ) : null}
-        </div>
-
-        {/* Article Footer */}
-        <div className="mb-12 border-t border-border pt-12">
-          {articleLoading ? (
-            <div className="space-y-4">
-              <div className="flex gap-6">
-                <div className="w-24 h-24 bg-card rounded-full flex-shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-6 bg-card rounded w-32" />
-                  <div className="h-4 bg-card rounded w-full" />
-                  <div className="h-4 bg-card rounded w-full" />
-                </div>
-              </div>
-            </div>
-          ) : article ? (
-            <ArticleFooter author={article.author} />
           ) : null}
         </div>
 

@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { X, Plus } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Plus, Loader2 } from 'lucide-react'
+import api from '@/lib/api'
 
 interface Series {
   id: string
@@ -12,19 +13,35 @@ interface SeriesTaggingProps {
   onChange: (series: Series | null) => void
 }
 
-// Mock series list
-const MOCK_SERIES: Series[] = [
-  { id: '1', name: 'Web Development', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30' },
-  { id: '2', name: 'Design Principles', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30' },
-  { id: '3', name: 'AI & Machine Learning', color: 'bg-green-100 text-green-700 dark:bg-green-900/30' },
-  { id: '4', name: 'Career Growth', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30' },
-]
-
 export default function SeriesTagging({ series, onChange }: SeriesTaggingProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [seriesList, setSeriesList] = useState<Series[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
-  const filtered = MOCK_SERIES.filter((s) =>
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchSeries = async () => {
+      setIsLoading(true)
+      try {
+        const res = await api.get('/series')
+        const data = (res.data.series || []).map((s: any) => ({
+          id: s._id,
+          name: s.title?.english || s.title?.romaji || s.title?.native || s.title || 'Unknown',
+          color: s.color || 'bg-blue-100 text-blue-700 dark:bg-blue-900/30'
+        }))
+        setSeriesList(data)
+      } catch (err) {
+        console.error('Failed to fetch series', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchSeries()
+  }, [isOpen])
+
+  const filtered = seriesList.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -64,7 +81,15 @@ export default function SeriesTagging({ series, onChange }: SeriesTaggingProps) 
                 className="w-full px-4 py-2 bg-card text-foreground border-b border-border focus:outline-none placeholder:text-muted-foreground"
               />
               <div className="max-h-48 overflow-y-auto">
-                {filtered.map((s) => (
+                {isLoading ? (
+                  <div className="px-4 py-6 flex justify-center items-center">
+                    <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                  </div>
+                ) : filtered.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-muted-foreground text-center">
+                    {`No series found matching "${search}".`}
+                  </div>
+                ) : filtered.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => {

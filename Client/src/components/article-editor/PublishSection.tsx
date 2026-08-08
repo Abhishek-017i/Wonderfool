@@ -4,42 +4,35 @@ interface Article {
   title: string
   body: string
   coverImage: string | null
-  description: string
-  tags: string[]
-  creator: any
-  series: any
+  creators: any[]
   isPublished: boolean
   createdAt: Date
 }
 
 interface PublishSectionProps {
   article: Article
+  onPublish: () => void
+  isLoading?: boolean
 }
 
-export default function PublishSection({ article }: PublishSectionProps) {
+export default function PublishSection({ article, onPublish, isLoading = false }: PublishSectionProps) {
   const isReadyToPublish =
     article.title.trim().length > 0 &&
     article.body.trim().length > 0 &&
-    article.description.trim().length > 0
+    article.coverImage !== null &&
+    article.creators.length > 0
 
   const validationErrors = []
   if (!article.title.trim()) validationErrors.push('Title is required')
   if (!article.body.trim()) validationErrors.push('Article body is required')
-  if (!article.description.trim()) validationErrors.push('Description is required')
+  if (!article.coverImage) validationErrors.push('Cover Image is required')
+  if (article.creators.length === 0) validationErrors.push('At least one creator must be tagged')
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 sticky top-8">
       <h3 className="text-sm font-semibold text-foreground mb-4">Publish</h3>
 
       <div className="space-y-3">
-        {/* Status Indicator */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg">
-          <Lock className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs font-medium text-foreground">
-            {article.isPublished ? 'Published' : 'Draft'}
-          </span>
-        </div>
-
         {/* Created Date */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Calendar className="w-4 h-4" />
@@ -64,19 +57,14 @@ export default function PublishSection({ article }: PublishSectionProps) {
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex pt-2">
           <button
-            className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!isReadyToPublish}
-            onClick={() => console.log('Publish article')}
+            className="w-full px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+            disabled={!isReadyToPublish || isLoading}
+            onClick={onPublish}
           >
-            {article.isPublished ? 'Update' : 'Publish'}
-          </button>
-          <button
-            className="flex-1 px-3 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors text-sm font-medium"
-            onClick={() => console.log('Save draft')}
-          >
-            Save Draft
+            {isLoading && <div className="w-4 h-4 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin"></div>}
+            {article.isPublished ? 'Update' : (isLoading ? 'Publishing...' : 'Publish')}
           </button>
         </div>
 

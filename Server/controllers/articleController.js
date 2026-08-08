@@ -40,7 +40,11 @@ const getArticleById = async (req, res) => {
 
 const createArticle = async (req, res) => {
   try {
-    const article = new Article(req.body);
+    const articleData = { ...req.body };
+    if (req.mongoUser) {
+      articleData.authorId = req.mongoUser._id;
+    }
+    const article = new Article(articleData);
 
     const savedArticle = await article.save();
 
