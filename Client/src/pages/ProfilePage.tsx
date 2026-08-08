@@ -7,13 +7,21 @@ import ReviewsList from '../components/profile/ReviewsList'
 import ArticlesList from '../components/profile/ArticlesList'
 import WishlistDisplay from '../components/profile/WishlistDisplay'
 import SettingsTab from '../components/profile/SettingsTab'
-import { mockUser, mockReviews, mockArticles, mockWishlist } from '../data/mockData'
 import useAuthStore from '../store/authStore'
 import api from '../lib/api'
 import { Loader2 } from 'lucide-react'
 import TimelineRail from '../components/timeline/TimelineRail'
 import EmptyState from '../components/timeline/EmptyState'
-import { groupActivitiesByDate } from '../data/mockData'
+
+const groupActivitiesByDate = (activities: ActivityEntry[]) => {
+  const grouped: Record<string, ActivityEntry[]> = {}
+  activities.forEach(activity => {
+    const dateStr = activity.date.toISOString().split('T')[0]
+    if (!grouped[dateStr]) grouped[dateStr] = []
+    grouped[dateStr].push(activity)
+  })
+  return grouped
+}
 import { ActivityEntry, MediaType, ActionType } from '../types/activity'
 
 interface ProfilePageProps {
@@ -141,15 +149,23 @@ export default function ProfilePage(props: ProfilePageProps) {
     }
   }
 
-  const displayUser = useMemo(() => {
-    if (!user && !dbUser) return mockUser;
-    const baseUser = dbUser || user;
-    const joinedDate = baseUser.createdAt ? new Date(baseUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : mockUser.joinDate;
+  const handleDeleteReview = async (id: string) => {
+    try {
+      await api.delete(`/reviews/${id}`, {
+        headers: { Authorization: `Bearer ${useAuthStore.getState().token}` }
+      })
+      setReviews((prev) => prev.filter((review) => review._id !== id && review.id !== id))
+    } catch (err) {
+      console.error('Failed to delete review:', err)
+    }
+  }
 
-    // We only use fallback for avatar if it's completely missing, 
-    // but we shouldn't fallback for bio/location if the user just hasn't set one!
+  const displayUser = useMemo(() => {
+    if (!user && !dbUser) return null;
+    const baseUser = dbUser || user;
+    const joinedDate = baseUser.createdAt ? new Date(baseUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown Date';
+
     return {
-      ...mockUser, // Keep this only for structural defaults if needed, but override with baseUser
       name: baseUser.name || 'Anonymous User',
       email: baseUser.email || '',
       handle: baseUser.name ? `@${baseUser.name.replace(/\s+/g, '').toLowerCase()}` : '@user',
@@ -170,29 +186,28 @@ export default function ProfilePage(props: ProfilePageProps) {
     <div className="min-h-screen bg-background text-foreground transition-all duration-200">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-32 pb-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-
-          {/* Left Column: Profile Header & Stats */}
-          <div className="w-full lg:w-1/3 flex-shrink-0 space-y-6">
-            <ProfileHeader user={displayUser} />
+        {isLoading || !displayUser ? (
+          <div className="flex justify-center items-center h-[60vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
+        ) : (
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Column: Profile Header & Stats */}
+            <div className="w-full lg:w-1/3 flex-shrink-0 space-y-6">
+              <ProfileHeader user={displayUser} />
+            </div>
 
-          {/* Right Column: Content */}
-          <div className="w-full lg:w-2/3 flex-1 flex flex-col min-w-0">
-            <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+            {/* Right Column: Content */}
+            <div className="w-full lg:w-2/3 flex-1 flex flex-col min-w-0">
+              <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <div className="min-h-[500px]">
-              {isLoading ? (
-                <div className="flex justify-center items-center h-64">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : (
+              <div className="min-h-[500px]">
                 <>
                   {activeTab === 'overview' && (
                     <div className="flex flex-col gap-10">
                       <div>
                         <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Recent Reviews</h2>
-                        <ReviewsList reviews={reviews.slice(0, 2)} />
+                        <ReviewsList reviews={reviews.slice(0, 2)} onDelete={handleDeleteReview} />
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold font-serif mb-6 tracking-tight">Latest Articles</h2>
@@ -201,7 +216,7 @@ export default function ProfilePage(props: ProfilePageProps) {
                     </div>
                   )}
 
-                  {activeTab === 'reviews' && <ReviewsList reviews={reviews} />}
+                  {activeTab === 'reviews' && <ReviewsList reviews={reviews} onDelete={handleDeleteReview} />}
                   {activeTab === 'articles' && <ArticlesList articles={articles} />}
                   {activeTab === 'timeline' && (
                     timeline.length > 0 ? (
@@ -221,10 +236,10 @@ export default function ProfilePage(props: ProfilePageProps) {
                     <SettingsTab isDark={isDark} setIsDark={setIsDark} />
                   )}
                 </>
-              )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
