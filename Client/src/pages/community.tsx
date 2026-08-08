@@ -1,5 +1,5 @@
-import {Link} from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useMemo, useState, useEffect } from 'react'
 import {
   Clock,
   User,
@@ -16,11 +16,8 @@ import Footer from '@/components/Footer'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { cn } from '@/lib/utils'
-import {
-  COMMUNITY_ARTICLES,
-  registerCommunityArticle,
-  type CommunityArticlePreview,
-} from '@/data/communityArticles'
+import api from '@/lib/api'
+
 
 /* -------------------------------------------------------------------------- */
 /*                                    Data                                     */
@@ -38,19 +35,24 @@ const TAGS = [
   'Interviews',
 ]
 
-type Article = CommunityArticlePreview
-
-const INITIAL_ARTICLES: Article[] = COMMUNITY_ARTICLES
+type Article = {
+  id: string | number
+  title: string
+  excerpt: string
+  category: string
+  image: string
+  author: string
+  avatar: string
+  date: string
+  readTime: string
+  likes: number
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                   Header                                    */
 /* -------------------------------------------------------------------------- */
 
-function Header({
-  onOpenComposer,
-}: {
-  onOpenComposer: () => void
-}) {
+function Header() {
   return (
     <header className="mx-auto max-w-7xl px-4 pt-24 sm:px-6 lg:px-8">
       <div className="flex flex-col items-start justify-between gap-6 border-b border-border/70 pb-8 sm:flex-row sm:items-end">
@@ -67,14 +69,15 @@ function Header({
           </p>
         </div>
 
-        <Button
-          size="lg"
-          className="h-12 shrink-0 bg-accent px-6 text-base text-accent-foreground shadow-[0_10px_24px_rgba(154,84,61,0.2)] hover:bg-accent/90"
-          onClick={onOpenComposer}
-        >
-          <PenLine className="size-4" aria-hidden />
-          Write an Article
-        </Button>
+        <Link to="/articles/new">
+          <Button
+            size="lg"
+            className="h-12 shrink-0 bg-accent px-6 text-base text-accent-foreground shadow-[0_10px_24px_rgba(154,84,61,0.2)] hover:bg-accent/90"
+          >
+            <PenLine className="size-4 mr-2" aria-hidden />
+            Write an Article
+          </Button>
+        </Link>
       </div>
     </header>
   )
@@ -273,134 +276,55 @@ function Feed({ articles }: { articles: Article[] }) {
 /* -------------------------------------------------------------------------- */
 
 export default function CommunityPage() {
-  const [articles, setArticles] = useState(INITIAL_ARTICLES)
+  const [articles, setArticles] = useState<Article[]>([])
   const [activeTag, setActiveTag] = useState('All')
-  const [composerOpen, setComposerOpen] = useState(false)
-  const [draftTitle, setDraftTitle] = useState('')
-  const [draftExcerpt, setDraftExcerpt] = useState('')
-  const [draftCategory, setDraftCategory] = useState('Essays')
-  const [statusMessage, setStatusMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const response = await api.get('/articles');
+        const formattedArticles = response.data.map((item: any) => ({
+          id: item._id,
+          title: item.title,
+          excerpt: item.content?.substring(0, 150) + '...' || 'No excerpt available',
+          category: item.tags?.[0] || 'Uncategorized',
+          image: item.coverImage || '/placeholder.svg',
+          author: item.authorId?.username || 'Unknown Author',
+          avatar: item.authorId?.profilePicture || '/placeholder.svg',
+          date: new Date(item.createdAt).toLocaleDateString(),
+          readTime: `${Math.ceil((item.content?.split(' ').length || 0) / 200) || 5} min read`,
+          likes: item.likes?.length || 0,
+        }));
+        setArticles(formattedArticles);
+      } catch (err) {
+        console.error("Failed to fetch community articles:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchArticles();
+  }, []);
 
   const filteredArticles = useMemo(() => {
     return articles.filter((article) => {
-      return activeTag === 'All' || article.category === activeTag
+      return activeTag === 'All' || article.category.toLowerCase() === activeTag.toLowerCase() || article.category === activeTag;
     })
   }, [activeTag, articles])
-
-  function handlePublishDraft(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (!draftTitle.trim() || !draftExcerpt.trim()) {
-      setStatusMessage('Add a title and a short excerpt before publishing your draft.')
-      return
-    }
-
-    const draftArticle: Article = {
-      id: Date.now(),
-      title: draftTitle.trim(),
-      excerpt: draftExcerpt.trim(),
-      category: draftCategory,
-      image: '/blog/panel-composition.png',
-      author: 'You',
-      avatar: '/blog/avatar-3.png',
-      date: 'Just now',
-      readTime: '4 min read',
-      likes: 42,
-    }
-
-    setArticles((current) => [draftArticle, ...current])
-    registerCommunityArticle(draftArticle)
-    setDraftTitle('')
-    setDraftExcerpt('')
-    setDraftCategory('Essays')
-    setComposerOpen(false)
-    setStatusMessage('Draft published to the feed.')
-  }
 
   return (
     <main className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <Header onOpenComposer={() => setComposerOpen(true)} />
+      <Header />
       <TrendingTags activeTag={activeTag} onSelectTag={setActiveTag} />
 
-      {composerOpen ? (
-        <section className="mx-auto mb-8 max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[20px] border border-border/70 bg-card p-6 shadow-[0_16px_36px_rgba(0,0,0,0.06)]">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-                  Compose a draft
-                </p>
-                <h2 className="mt-1 font-display text-2xl font-semibold text-foreground">
-                  Share your next thought with the community
-                </h2>
-              </div>
-              <Button variant="outline" onClick={() => setComposerOpen(false)} className="">
-                Close
-              </Button>
-            </div>
-
-            <form className="mt-6 grid gap-4 md:grid-cols-[1.2fr_0.8fr]" onSubmit={handlePublishDraft}>
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-foreground">
-                  Title
-                  <input
-                    value={draftTitle}
-                    onChange={(event) => setDraftTitle(event.target.value)}
-                    className="mt-2 w-full rounded-[12px] border border-border/70 bg-background px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    placeholder="What are you writing about?"
-                  />
-                </label>
-                <label className="block text-sm font-medium text-foreground">
-                  Excerpt
-                  <textarea
-                    value={draftExcerpt}
-                    onChange={(event) => setDraftExcerpt(event.target.value)}
-                    className="mt-2 min-h-32 w-full rounded-[12px] border border-border/70 bg-background px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    placeholder="Share a few lines that capture the idea."
-                  />
-                </label>
-              </div>
-
-              <div className="rounded-[16px] border border-border/70 bg-background/70 p-4">
-                <label className="block text-sm font-medium text-foreground">
-                  Topic
-                  <select
-                    value={draftCategory}
-                    onChange={(event) => setDraftCategory(event.target.value)}
-                    className="mt-2 w-full rounded-[12px] border border-border/70 bg-card px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  >
-                    {TAGS.filter((tag) => tag !== 'All').map((tag) => (
-                      <option key={tag} value={tag}>
-                        {tag}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <div className="mt-4 rounded-[14px] border border-dashed border-border/70 bg-card/70 p-4 text-sm text-muted-foreground">
-                  <p className="flex items-center gap-2 font-medium text-foreground">
-                    <CheckCircle2 className="size-4 text-accent" aria-hidden />
-                    Drafts publish instantly with a polished preview card.
-                  </p>
-                  <p className="mt-2">This keeps the page feeling like a working community journal rather than a static mockup.</p>
-                </div>
-                <Button className="mt-5 w-full" type="submit">
-                  Publish draft
-                </Button>
-              </div>
-            </form>
-          </div>
-        </section>
-      ) : null}
-
-      {statusMessage ? (
-        <div className="mx-auto mb-6 flex max-w-7xl items-center gap-2 rounded-[14px] border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent sm:px-6 lg:px-8">
-          <Sparkles className="size-4" aria-hidden />
-          {statusMessage}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-24">
+          <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
         </div>
-      ) : null}
-
-      <Feed articles={filteredArticles} />
+      ) : (
+        <Feed articles={filteredArticles} />
+      )}
       <Footer />
     </main>
   )

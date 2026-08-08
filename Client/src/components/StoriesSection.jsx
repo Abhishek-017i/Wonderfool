@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { storiesData } from '@/data/stories'
+import { useState, useEffect } from 'react'
+import api from '@/lib/api'
 
 function StoryCard({ story, index }) {
   return (
@@ -46,9 +47,7 @@ function StoryCard({ story, index }) {
 
         {/* Read Story Button */}
         <Link
-          to="#"
-          onClick={(e) => e.preventDefault()}
-          title="Coming Soon"
+          to={`/articles/${story.id}`}
           className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all uppercase tracking-widest text-xs border-b border-primary/30 pb-1 w-fit group-hover:border-primary"
         >
           Read Editorial
@@ -60,6 +59,30 @@ function StoryCard({ story, index }) {
 }
 
 export default function StoriesSection() {
+  const [articles, setArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const response = await api.get('/articles');
+        const formatted = response.data.slice(0, 3).map((item) => ({
+          id: item._id,
+          title: item.title,
+          excerpt: item.content?.substring(0, 100) + '...' || 'No excerpt available',
+          source: item.tags?.[0] || 'Community',
+          image: item.coverImage || '/placeholder.svg'
+        }));
+        setArticles(formatted);
+      } catch (err) {
+        console.error('Failed to fetch stories:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchArticles();
+  }, []);
+
   return (
     <div className="w-full py-24 px-6 lg:px-12 bg-card/30 relative">
       <div className="container mx-auto">
@@ -83,8 +106,12 @@ export default function StoriesSection() {
         </div>
 
         {/* Stories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-          {storiesData.map((story, idx) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 min-h-[300px]">
+          {isLoading ? (
+            <div className="col-span-full flex justify-center items-center">
+              <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+            </div>
+          ) : articles.map((story, idx) => (
             <StoryCard key={story.id} story={story} index={idx} />
           ))}
         </div>

@@ -52,7 +52,7 @@ export default function WritePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <EditorHeader onPreviewToggle={() => setShowPreview(!showPreview)} />
-      
+
       <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-8">
         {/* Main Editor */}
         <div className="flex-1 min-w-0">
