@@ -65,20 +65,26 @@ export default function CreatorTagging({ creator, onChange }: CreatorTaggingProp
                 className="w-full px-4 py-2 bg-card text-foreground border-b border-border focus:outline-none placeholder:text-muted-foreground"
               />
               <div className="max-h-48 overflow-y-auto">
-                {filtered.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => {
-                      onChange(c)
-                      setIsOpen(false)
-                      setSearch('')
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors text-left"
-                  >
-                    <span className="text-xl">{c.avatar}</span>
-                    <span className="text-sm font-medium text-foreground">{c.name}</span>
-                  </button>
-                ))}
+                {filtered.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-muted-foreground text-center">
+                    {`No creators found matching "${search}".`}
+                  </div>
+                ) : (
+                  filtered.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        onChange(c)
+                        setIsOpen(false)
+                        setSearch('')
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors text-left"
+                    >
+                      <span className="text-xl">{c.avatar}</span>
+                      <span className="text-sm font-medium text-foreground">{c.name}</span>
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           )}

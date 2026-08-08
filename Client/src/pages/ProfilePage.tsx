@@ -65,15 +65,19 @@ export default function ProfilePage(props: ProfilePageProps) {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (!user?._id) return;
+      const userId = user?._id || user?.id;
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const [userRes, reviewsRes, articlesRes, timelineRes, wishlistRes] = await Promise.all([
-          api.get(`/users/${user._id}`),
-          api.get(`/reviews/user/${user._id}`),
-          api.get(`/articles/user/${user._id}`),
-          api.get(`/timeline/user/${user._id}`),
-          api.get(`/wishlists/user/${user._id}`)
+          api.get(`/users/${userId}`),
+          api.get(`/reviews/user/${userId}`),
+          api.get(`/articles/user/${userId}`),
+          api.get(`/timeline/user/${userId}`),
+          api.get(`/wishlists/user/${userId}`)
         ]);
 
         // Map backend timeline data to frontend ActivityEntry format
