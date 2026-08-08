@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Star, Trash2, Heart, MessageSquare, Clock, Edit2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -8,27 +8,8 @@ import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
+import { Loader2 } from 'lucide-react'
 import SpellLoader from '../ui/SpellLoader'
-
-// Modular Luxury Components
-import LuxuryBackground from './luxury-reviews/LuxuryBackground'
-import LuxuryReviewStats from './luxury-reviews/LuxuryReviewStats'
-import LuxuryFilterToolbar from './luxury-reviews/LuxuryFilterToolbar'
-import LuxuryReviewCard from './luxury-reviews/LuxuryReviewCard'
-import LuxuryReviewSkeleton from './luxury-reviews/LuxuryReviewSkeleton'
-import UserReviewsSlider from './luxury-reviews/UserReviewsSlider'
-
-interface Review {
-  _id?: string
-  userId?: {
-    _id?: string
-    name?: string
-  }
-  text?: string
-  rating?: number
-  createdAt: string
-  likes?: unknown[]
-}
 
 interface ReviewSectionProps {
   seriesId: string
@@ -49,11 +30,6 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
   const [rating, setRating] = useState<number>(0)
   const [hoverRating, setHoverRating] = useState<number>(0)
   const [text, setText] = useState('')
-
-  // Filter/Sort State
-  const [activeTab, setActiveTab] = useState('Trending')
-  const [sortBy, setSortBy] = useState('Newest')
-  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchReviews()
@@ -131,12 +107,10 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
     // Optimistic Update
     setReviews(prev => prev.map(r => {
       if (r._id === reviewId) {
-        const currentLikes = r.likes || []
-        const userIdStr = user?._id?.toString()
-        const hasLiked = currentLikes.some((id: any) => id?.toString() === userIdStr)
-        let newLikes = [...currentLikes]
+        const hasLiked = r.likes.includes(user?._id)
+        let newLikes = [...r.likes]
         if (hasLiked) {
-          newLikes = newLikes.filter((id: any) => id?.toString() !== userIdStr)
+          newLikes = newLikes.filter((id: string) => id !== user?._id)
         } else {
           newLikes.push(user?._id)
         }
@@ -157,71 +131,62 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
   const myReview = user ? reviews.find(r => r.userId?._id === user._id) : null
   const otherReviews = reviews.filter(r => r.userId?._id !== user?._id)
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <SpellLoader size={32} />
+      </div>
+    )
+  }
+
   return (
-    <div className="relative w-full overflow-hidden">
-      <LuxuryBackground />
-      
-      <div className="relative w-full max-w-[1000px] mx-auto px-4 sm:px-6 py-10 z-10">
-
-        {/* Header Title */}
-        <div className="flex flex-col items-center justify-center text-center mb-8 relative">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-12 h-12 bg-gradient-to-br from-[#f9db79] to-[#d4af37] rounded-[18px] rotate-12 flex items-center justify-center shadow-[0_0_30px_rgba(212,175,55,0.4)] mb-4"
-          >
-            <MessageSquare size={24} className="text-[#14110f] -rotate-12" />
-          </motion.div>
-          <h2 className="text-3xl sm:text-4xl font-bold font-serif text-white tracking-tight drop-shadow-md">Community Reviews</h2>
-          <p className="text-white/50 mt-2 text-base font-light max-w-lg mx-auto">Discover what others are saying about this series, or share your own thoughts.</p>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 mb-8">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="p-2 bg-primary/20 text-primary rounded-xl">
+          <MessageSquare size={24} />
         </div>
+        <h2 className="text-2xl font-bold font-serif">Reviews & Community</h2>
+      </div>
 
-        {error && (
-          <div className="bg-red-500/10 text-red-400 p-4 rounded-[20px] mb-8 flex justify-between items-center border border-red-500/20 backdrop-blur-md">
-            <span className="font-medium">{error}</span>
-            <Button variant="ghost" size="sm" onClick={() => setError(null)} className="hover:bg-red-500/20 rounded-full">Dismiss</Button>
-          </div>
-        )}
+      {error && (
+        <div className="bg-destructive/10 text-destructive p-4 rounded-xl mb-6 flex justify-between items-center">
+          <span>{error}</span>
+          <Button variant="ghost" size="sm" onClick={() => setError(null)}>Dismiss</Button>
+        </div>
+      )}
 
-        {/* Review Form */}
-        {!myReview && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white/[0.02] backdrop-blur-[40px] border border-white/[0.08] px-4 py-4 sm:px-6 sm:py-5 rounded-[20px] mb-8 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] relative overflow-hidden group"
-          >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#d4af37]/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none transition-opacity opacity-50 group-hover:opacity-100"></div>
-          
-          <h3 className="text-xl font-bold mb-4 font-serif relative text-white">Write your review</h3>
-          
-          <form onSubmit={handleSubmit} className="space-y-4 relative">
+      {/* Review Form - Only show if logged in user has NOT written a review */}
+      {!myReview && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-card/50 backdrop-blur-md border border-border p-6 sm:p-8 rounded-2xl mb-12 shadow-xl"
+        >
+          <h3 className="text-xl font-bold mb-4 font-serif">Write a Review</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <div className="flex items-center gap-4 mb-2 cursor-pointer w-fit" onMouseLeave={() => setHoverRating(0)}>
-                <div className="flex gap-1.5">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
-                    <Star
-                      key={star}
-                      size={28}
-                      onClick={() => setRating(star)}
-                      onMouseEnter={() => setHoverRating(star)}
-                      className={`transition-all duration-300 ${(hoverRating || rating) >= star ? 'fill-[#d4af37] text-[#d4af37] drop-shadow-[0_0_12px_rgba(212,175,55,0.6)] scale-110' : 'text-white/20 hover:scale-110'}`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm font-bold font-mono bg-white/10 text-[#d4af37] px-3 py-1.5 rounded-lg border border-white/5 shadow-inner">{rating > 0 ? rating : '-'} / 10</span>
+              <p className="text-sm font-semibold text-muted-foreground mb-2">Your Rating</p>
+              <div className="flex gap-1 mb-4 cursor-pointer" onMouseLeave={() => setHoverRating(0)}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                  <Star
+                    key={star}
+                    size={24}
+                    onClick={() => setRating(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    className={`transition-colors ${(hoverRating || rating) >= star ? 'fill-primary text-primary' : 'text-muted-foreground/30'} hover:scale-110 duration-200`}
+                  />
+                ))}
               </div>
             </div>
-
             <Textarea
-              placeholder={isAuthenticated ? "What did you think of this series?" : "Log in to share your thoughts..."}
+              placeholder={isAuthenticated ? "Share your thoughts about this series..." : "Log in to write a review..."}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[60px] bg-black/40 border-white/10 focus-visible:ring-[#d4af37]/50 text-[15px] text-white/90 rounded-[16px] leading-relaxed resize-y p-3 placeholder:text-white/30"
+              className="min-h-[120px] bg-background/50 border-border/50 focus-visible:ring-primary/50 text-base"
             />
-
-            <div className="flex justify-end pt-1">
-              <Button
-                type="submit"
+            <div className="flex justify-end pt-2">
+              <Button 
+                type="submit" 
                 disabled={isSubmitting || (isAuthenticated && (!rating || text.trim() === ''))}
                 className="min-w-[120px]"
                 onClick={(e) => {
@@ -259,37 +224,32 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
           </div>
         )}
 
-        {/* Reviews List */}
-        <div className="space-y-6 mt-8 flex flex-col gap-6">
-
-          {/* Loading State */}
-          {isLoading ? (
-            <div className="flex flex-col gap-6">
-              {[1, 2, 3].map((i) => (
-                <LuxuryReviewSkeleton key={i} />
+        {/* Other Users' Reviews */}
+        {otherReviews.length > 0 ? (
+          <div>
+            {myReview && <h3 className="text-lg font-bold font-serif mb-4">Community Reviews</h3>}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+              {otherReviews.map((review) => (
+                <ReviewCard 
+                  key={review._id} 
+                  review={review} 
+                  isMine={false} 
+                  onLike={() => handleLike(review._id)}
+                  currentUserId={user?._id}
+                />
               ))}
             </div>
-          ) : otherReviews.length > 0 ? (
-            otherReviews.map((r, i) => (
-              <ReviewCard
-                key={r._id || i}
-                review={r}
-                isMine={false}
-                onDelete={() => handleDelete(r._id)}
-                onLike={() => handleLike(r._id)}
-                currentUserId={user?._id}
-              />
-            ))
-          ) : !myReview && (
+          </div>
+        ) : (
+          !myReview && (
             <div className="text-center py-12 bg-card/30 rounded-2xl border border-border/50 border-dashed">
               <MessageSquare className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground font-medium">No reviews yet.</p>
               <p className="text-sm text-muted-foreground/70">Be the first to share your thoughts!</p>
             </div>
-          )}
-        </div>
+          )
+        )}
       </div>
-    </div>
     </div>
   )
 }
@@ -316,43 +276,38 @@ function ReviewCard({ review, isMine, onDelete, onLike, currentUserId }: any) {
             )}
           </div>
           <div>
-            <h4 className="font-bold text-foreground">{review.userId?.name || 'Anonymous User'}</h4>
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock size={12} /> {new Date(review.createdAt).toLocaleDateString()}
-            </span>
+            <p className="font-semibold text-sm leading-tight text-foreground">{review.userId?.name || 'Anonymous'}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {new Date(review.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+            </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 bg-background/50 px-3 py-1.5 rounded-full border border-border/50">
-            <Star size={14} className="fill-primary text-primary" />
-            <span className="text-sm font-bold">{ratingValue}/10</span>
-          </div>
-        </div>
+        {isMine && onDelete && (
+          <Button variant="ghost" size="icon" onClick={onDelete} className="text-muted-foreground hover:text-destructive h-8 w-8 -mr-2 -mt-2">
+            <Trash2 size={16} />
+          </Button>
+        )}
       </div>
 
-      <p className="text-muted-foreground text-[15px] leading-relaxed mb-4">
+      <div className="flex items-center gap-1.5 mb-4 bg-background/50 w-fit px-3 py-1.5 rounded-full border border-border/30">
+        <Star size={14} className="fill-primary text-primary" />
+        <span className="text-sm font-bold text-foreground">{ratingValue} <span className="text-muted-foreground/60 text-xs font-medium">/ 10</span></span>
+      </div>
+
+      <p className="text-foreground/90 text-sm leading-relaxed mb-6 whitespace-pre-wrap">
         {review.text}
       </p>
 
-      <div className="flex items-center gap-4 border-t border-border/50 pt-4">
-        <button 
+      <div className="flex items-center gap-2 pt-4 border-t border-border/40">
+        <Button 
+          variant="ghost" 
+          size="sm" 
           onClick={onLike}
-          className={`flex items-center gap-2 text-sm font-medium transition-colors ${isLiked ? 'text-red-500' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`flex items-center gap-2 h-8 px-2.5 rounded-lg transition-all ${isLiked ? 'text-red-500 hover:text-red-600 hover:bg-red-500/10' : 'text-muted-foreground hover:text-foreground'}`}
         >
-          <Heart size={16} className={isLiked ? 'fill-red-500' : ''} />
-          <span>{review.likes?.length || 0}</span>
-        </button>
-        
-        {isMine && (
-          <button 
-            onClick={onDelete}
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-red-500 transition-colors ml-auto"
-          >
-            <Trash2 size={16} />
-            <span>Delete</span>
-          </button>
-        )}
+          <Heart size={16} className={isLiked ? "fill-current" : ""} />
+          <span className="text-xs font-semibold">{review.likes?.length || 0}</span>
+        </Button>
       </div>
     </motion.div>
   )
