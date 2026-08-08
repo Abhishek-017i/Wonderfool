@@ -7,6 +7,7 @@ import Footer from '@/components/Footer'
 import { useAuth } from '@/contexts/AuthContext'
 import useAuthStore from '@/store/authStore'
 import api from '@/lib/api'
+import ReviewSection from '@/components/series/ReviewSection'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -454,6 +455,9 @@ export default function SeriesDetail() {
           {toast}
         </motion.div>
       )}
+
+      {/* Review Section */}
+      <ReviewSection seriesId={series._id} />
 
       <Footer />
     </div>
