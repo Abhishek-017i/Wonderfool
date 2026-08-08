@@ -11,6 +11,7 @@ import Biography from '../components/creator/Biography'
 import KnownWorks from '../components/creator/KnownWorks'
 import SeriesCardSkeleton from '../components/browse/SeriesCardSkeleton'
 import ErrorState from '../components/browse/ErrorState'
+import SpellLoader from '../components/ui/SpellLoader'
 import { Globe, Link as LinkIcon } from 'lucide-react'
 
 export default function CreatorProfile() {
@@ -41,27 +42,12 @@ export default function CreatorProfile() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <main className="flex-1 w-full max-w-[1400px] mx-auto pb-12 pt-16">
-          <CreatorHeroSkeleton />
-          <div className="mt-12 space-y-16 px-4 sm:px-8 lg:px-12 max-w-6xl mx-auto">
-            <div className="space-y-4">
-              <div className="h-10 w-40 bg-muted rounded animate-pulse" />
-              <div className="space-y-3">
-                <div className="h-5 bg-muted rounded animate-pulse w-full" />
-                <div className="h-5 bg-muted rounded animate-pulse w-full" />
-                <div className="h-5 bg-muted rounded animate-pulse w-3/4" />
-              </div>
+        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 flex items-center justify-center">
+          <div className="text-center">
+            <div className="mb-6">
+              <SpellLoader size={80} className="mx-auto" />
             </div>
-            <div className="space-y-6">
-              <div className="h-10 w-48 bg-muted rounded animate-pulse" />
-              <div className="flex gap-4 pb-4 overflow-hidden">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="w-[160px] sm:w-[200px] flex-shrink-0">
-                    <SeriesCardSkeleton viewMode="grid" />
-                  </div>
-                ))}
-              </div>
-            </div>
+            <p className="text-muted-foreground font-serif italic">Loading creator profile...</p>
           </div>
         </main>
         <Footer />

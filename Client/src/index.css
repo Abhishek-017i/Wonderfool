@@ -27,6 +27,7 @@
   --ring: rgba(171, 142, 44, 0.5);
   --radius: 1rem;
   --charcoal: #1A1A1A;
+  --grid-color: rgba(152, 127, 35, 0.20);
 }
 
 .dark {
@@ -51,6 +52,7 @@
   --input: rgba(200, 173, 57, 0.12);
   --ring: rgba(200, 173, 57, 0.4);
   --charcoal: #1A1A1A;
+  --grid-color: rgba(200, 173, 57, 0.20);
 }
 
 @layer base {

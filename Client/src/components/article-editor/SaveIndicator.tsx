@@ -1,4 +1,5 @@
-import { Check, Loader2 } from 'lucide-react'
+import { Check } from 'lucide-react'
+import SpellLoader from '../ui/SpellLoader'
 
 interface SaveIndicatorProps {
   status: 'idle' | 'saving' | 'saved'
@@ -10,10 +11,10 @@ export default function SaveIndicator({ status }: SaveIndicatorProps) {
   return (
     <div className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-lg">
       {status === 'saving' && (
-        <>
-          <Loader2 className="w-4 h-4 text-primary animate-spin" />
-          <span className="text-sm text-foreground font-medium">Saving...</span>
-        </>
+        <div className="flex items-center gap-2">
+          <SpellLoader size={16} />
+          <span className="text-sm text-muted-foreground">Saving...</span>
+        </div>
       )}
       {status === 'saved' && (
         <>

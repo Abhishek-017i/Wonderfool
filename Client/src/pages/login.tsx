@@ -4,6 +4,8 @@ import { ArrowLeft } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import LoginForm from '@/components/auth/LoginForm'
 import SignUpForm from '@/components/auth/SignUpForm'
+import BrandingPanel from '@/components/auth/BrandingPanel'
+import PerspectiveGrid from '@/components/ui/perspective-grid'
 import SuccessToast from '@/components/auth/SuccessToast'
 import { useAuth } from '@/contexts/AuthContext'
 import Toast from '@/components/profile/Toast'
@@ -47,12 +49,19 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+    <div className="relative flex min-h-screen items-center justify-center bg-background overflow-hidden">
+      {/* Full-page Background Grid */}
+      <div className="absolute inset-0 z-0 pointer-events-auto">
+        <PerspectiveGrid gridSize={40} fadeRadius={90} />
+      </div>
+
+      <BrandingPanel />
+      
       {/* Back Button */}
-      <div className="absolute top-6 left-6">
+      <div className="absolute top-6 left-6 z-20">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-2.5 rounded-full hover:bg-muted border border-border/40"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-2.5 rounded-full hover:bg-muted border border-border/40 bg-background/50 backdrop-blur-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="hidden sm:inline">Back to Home</span>
@@ -60,7 +69,7 @@ export default function AuthPage() {
       </div>
 
       {/* Form Container */}
-      <div className="w-full max-w-md bg-card rounded-2xl p-8 sm:p-10 shadow-lg border border-border mt-10 sm:mt-0">
+      <div className="w-full max-w-md bg-card rounded-2xl p-8 sm:p-10 shadow-lg border border-border relative z-10 mx-4">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'login' | 'signup')} className="w-full flex flex-col">
           <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted p-0 rounded-lg h-10">

@@ -13,6 +13,8 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import CreatorCard from '../components/creator/CreatorCard'
+import SpellLoader from '../components/ui/SpellLoader'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -153,10 +155,9 @@ export default function CreatorsPage() {
         </div>
 
         {/* Gallery grid */}
-        {isLoading ? (
-          <div className="mt-20 flex flex-col items-center justify-center text-muted-foreground">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4">Loading creators...</p>
+        {isLoading && mappedCreators.length === 0 ? (
+          <div className="flex justify-center items-center py-20">
+            <SpellLoader size={32} />
           </div>
         ) : error ? (
           <p className="mt-20 text-center text-red-500">

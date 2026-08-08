@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Series } from '@/types/series'
+import SpellLoader from '@/components/ui/SpellLoader'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -151,7 +152,9 @@ export default function SeriesDetail() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center pt-20">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+            <div className="mb-6">
+              <SpellLoader size={80} className="mx-auto" />
+            </div>
             <p className="text-muted-foreground font-serif italic">Loading series...</p>
           </div>
         </main>
