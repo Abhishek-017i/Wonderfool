@@ -65,7 +65,26 @@ export default function ProfilePage(props: ProfilePageProps) {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      const userId = user?._id || user?.id;
+      let userId = user?._id || user?.id;
+
+      // Fallback: if authStore user is stale/missing, try re-syncing from Firebase
+      if (!userId) {
+        try {
+          const { auth } = await import('../firebase');
+          const firebaseUser = auth.currentUser;
+          if (firebaseUser) {
+            const token = await firebaseUser.getIdToken();
+            const syncRes = await api.post('/auth/sync', {}, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            useAuthStore.getState().setUser(syncRes.data, token);
+            userId = syncRes.data._id;
+          }
+        } catch (syncErr) {
+          console.error("Profile: auth re-sync failed:", syncErr);
+        }
+      }
+
       if (!userId) {
         setIsLoading(false);
         return;

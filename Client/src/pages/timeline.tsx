@@ -11,7 +11,6 @@ import EmptyState from '../components/timeline/EmptyState'
 import TimelineSkeleton from '../components/timeline/TimelineSkeleton'
 import { getActivityStats, groupActivitiesByDate } from '../data/mockData'
 import { ActivityEntry, FilterState, ActionType, MediaType } from '../types/activity'
-import useAuthStore from '../store/authStore'
 import api from '../lib/api'
 
 export default function Timeline() {
@@ -26,20 +25,18 @@ export default function Timeline() {
     dateRangeFilter: 'all',
   })
 
-  const token = useAuthStore((state: any) => state.token)
+
 
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  // Fetch real data
+  // Fetch real data — api interceptor handles token injection from Firebase automatically
   useEffect(() => {
     const fetchTimeline = async () => {
       try {
-        const response = await api.get('/timeline', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const response = await api.get('/timeline')
 
         // Map backend data to frontend ActivityEntry format
         const mappedData: ActivityEntry[] = response.data.map((item: any) => {
@@ -77,12 +74,8 @@ export default function Timeline() {
       }
     }
 
-    if (token) {
-      fetchTimeline()
-    } else {
-      setIsLoading(false)
-    }
-  }, [token])
+    fetchTimeline()
+  }, [])
 
   // Scroll listener for back to top button
   useEffect(() => {
@@ -155,21 +148,16 @@ export default function Timeline() {
 
   const handleRemove = async (id: string) => {
     try {
-      await api.delete(`/timeline/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.delete(`/timeline/${id}`)
       setActivities((prev) => prev.filter((activity) => activity.id !== id))
     } catch (err) {
       console.error('Failed to remove from timeline:', err)
-      // Optionally show a toast error here
     }
   }
 
   const handleUpdateActionType = async (id: string, actionType: string) => {
     try {
-      await api.put(`/timeline/${id}`, { actionType }, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/timeline/${id}`, { actionType })
       setActivities((prev) => prev.map((activity) => {
         if (activity.id === id) {
           let actionLabel = 'Started watching'
