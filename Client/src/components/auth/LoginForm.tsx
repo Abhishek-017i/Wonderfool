@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import SpellLoader from '@/components/ui/SpellLoader'
 import { auth, googleProvider } from '../../firebase';
 import { signInWithEmailAndPassword, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import api from '../../lib/api';
@@ -296,10 +297,10 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess,
         className="w-full h-11 font-semibold text-base mt-8"
       >
         {isSubmitting ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            {isForgotPassword ? 'Sending…' : 'Authenticating…'}
-          </>
+          <span className="flex items-center gap-2">
+            <SpellLoader size={16} />
+            {isForgotPassword ? 'Sending...' : 'Authenticating...'}
+          </span>
         ) : (
           isForgotPassword ? 'Send Reset Link' : 'Login'
         )}

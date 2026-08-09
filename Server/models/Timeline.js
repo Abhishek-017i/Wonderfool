@@ -15,4 +15,6 @@ const timelineSchema = new mongoose.Schema({
   note: { type: String, default: '' },
 }, { timestamps: true });
 
+timelineSchema.index({ userId: 1, seriesId: 1 }, { unique: true });
+
 module.exports = mongoose.model('Timeline', timelineSchema);

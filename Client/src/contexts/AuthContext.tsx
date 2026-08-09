@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { auth } from '../firebase';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
+import api from '../lib/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isEmailVerified: boolean;
   firebaseUser: User | null;
+  isAuthLoading: boolean;
   login: (redirectUrl?: string) => void;
   logout: () => Promise<void>;
   reloadAuth: () => Promise<void>;
@@ -19,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,7 +31,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
     }
     
-    // Listen to Firebase auth state
+    // Listen for Firebase auth state changes — this fires on initial load
+    // AND on login/logout, ensuring both auth systems stay in sync.
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
       if (user) {
@@ -41,15 +45,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
         setIsEmailVerified(auth.currentUser?.emailVerified || false);
+
+        // Firebase has a valid session
+        const storeUser = useAuthStore.getState().user;
+
+        if (!storeUser || !storeUser._id) {
+          // authStore is stale/empty — rehydrate from backend
+          try {
+            const token = await user.getIdToken();
+            const res = await api.post('/auth/sync', {}, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            useAuthStore.getState().setUser(res.data, token);
+          } catch (err) {
+            console.error('Auth rehydration failed:', err);
+            // If sync fails, clean up both systems to prevent half-auth state
+            useAuthStore.getState().logout();
+            localStorage.removeItem('isAuthenticated');
+            setIsAuthenticated(false);
+            setIsAuthLoading(false);
+            return;
+          }
+        }
+
+        localStorage.setItem('isAuthenticated', 'true');
+        setIsAuthenticated(true);
       } else {
+        // No Firebase session — clean up everything
         setIsEmailVerified(false);
+        useAuthStore.getState().logout();
+        localStorage.removeItem('isAuthenticated');
+        setIsAuthenticated(false);
       }
+      setIsAuthLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
   const login = (redirectUrl?: string) => {
+    // The onAuthStateChanged listener above will handle syncing auth state.
+    // This just handles the navigation redirect after LoginForm/SignUpForm
+    // have already called setUser() and Firebase sign-in is complete.
     localStorage.setItem('isAuthenticated', 'true');
     setIsAuthenticated(true);
     // Refresh Firebase user to pick up email verification status if needed
@@ -87,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isEmailVerified, firebaseUser, login, logout, reloadAuth }}>
+    <AuthContext.Provider value={{ isAuthenticated, isEmailVerified, firebaseUser, isAuthLoading, login, logout, reloadAuth }}>
       {children}
     </AuthContext.Provider>
   );
@@ -100,4 +137,3 @@ export function useAuth() {
   }
   return context;
 }
-

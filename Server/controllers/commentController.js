@@ -3,6 +3,7 @@ const Comment = require("../models/Comment");
 require("../models/User");
 require("../models/Article");
 require("../models/Review");
+require("../models/Series");
 
 const getAllComments = async (req, res) => {
   try {
@@ -40,12 +41,27 @@ const getCommentById = async (req, res) => {
 
 const createComment = async (req, res) => {
   try {
-    const comment = new Comment(req.body);
+    const { parentType, parentId, text, parentCommentId } = req.body;
+
+    const commentData = {
+      parentType,
+      parentId,
+      text,
+      userId: req.mongoUser._id,
+    };
+
+    if (parentCommentId) {
+      commentData.parentCommentId = parentCommentId;
+    }
+
+    const comment = new Comment(commentData);
 
     const savedComment = await comment.save();
+    const populated = await savedComment.populate("userId");
 
-    res.status(201).json(savedComment);
+    res.status(201).json(populated);
   } catch (error) {
+    console.error("CREATE COMMENT ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -98,8 +114,7 @@ const getCommentsByArticle = async (req, res) => {
       parentId: req.params.articleId,
     })
       .populate("userId")
-      .populate("likes")
-      .populate("parentCommentId");
+      .sort({ createdAt: -1 });
 
     res.status(200).json(comments);
   } catch (error) {
@@ -116,8 +131,7 @@ const getCommentsByReview = async (req, res) => {
       parentId: req.params.reviewId,
     })
       .populate("userId")
-      .populate("likes")
-      .populate("parentCommentId");
+      .sort({ createdAt: -1 });
 
     res.status(200).json(comments);
   } catch (error) {
@@ -133,13 +147,37 @@ const getReplies = async (req, res) => {
       parentCommentId: req.params.id,
     })
       .populate("userId")
-      .populate("likes");
+      .sort({ createdAt: 1 });
 
     res.status(200).json(replies);
   } catch (error) {
     res.status(500).json({
       message: error.message,
     });
+  }
+};
+
+const likeComment = async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.id);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const userId = req.mongoUser._id;
+    const index = comment.likes.indexOf(userId);
+
+    if (index === -1) {
+      comment.likes.push(userId);
+    } else {
+      comment.likes.splice(index, 1);
+    }
+
+    await comment.save();
+    res.status(200).json(comment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -152,4 +190,5 @@ module.exports = {
   getCommentsByArticle,
   getCommentsByReview,
   getReplies,
+  likeComment,
 };

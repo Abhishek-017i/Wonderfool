@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useLocation, useNavigationType } from 'react-router-dom'
 import { SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
@@ -24,6 +24,8 @@ import SeriesCardSkeleton from '@/components/browse/SeriesCardSkeleton'
 import EmptyState from '@/components/browse/EmptyState'
 import ErrorState from '@/components/browse/ErrorState'
 import BackToTopButton from '@/components/browse/BackToTopButton'
+import ParallaxResultsGrid from '@/components/browse/ParallaxResultsGrid'
+import Lenis from 'lenis'
 import { cn } from '@/lib/utils'
 import type { Series, PaginatedSeriesResponse } from '@/types/series'
 
@@ -82,6 +84,40 @@ export default function Browse() {
   const [hasSearched, setHasSearched] = useState(false)
 
   const location = useLocation()
+  const navType = useNavigationType()
+
+  // Scroll Restoration State
+  const [isRestoring, setIsRestoring] = useState(() => navType === 'POP' && sessionStorage.getItem('browsePage') !== null)
+  const isRestoringRef = useRef(isRestoring)
+
+  useEffect(() => {
+    if (navType !== 'POP') {
+      sessionStorage.removeItem('browseScroll')
+      sessionStorage.removeItem('browsePage')
+    }
+  }, [navType])
+
+  // Initialize Lenis scoped to Browse page
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    })
+
+    ;(window as any).lenis = lenis
+
+    function raf(time: number) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+    const rafId = requestAnimationFrame(raf)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      lenis.destroy()
+      delete (window as any).lenis
+    }
+  }, [])
 
   // Parse filters from URL on mount or URL change
   useEffect(() => {
@@ -113,8 +149,22 @@ export default function Browse() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
 
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(() => navType === 'POP' ? parseInt(sessionStorage.getItem('browsePage') || '1', 10) : 1)
   const ITEMS_PER_PAGE = 20
+  const observerTarget = useRef<HTMLDivElement>(null)
+
+  // Store page & scroll position continuously
+  useEffect(() => {
+    sessionStorage.setItem('browsePage', String(currentPage))
+  }, [currentPage])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      sessionStorage.setItem('browseScroll', String(window.scrollY))
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // API state
   const [seriesData, setSeriesData] = useState<Series[]>([])
@@ -136,7 +186,10 @@ export default function Browse() {
 
   // Reset page on filter/sort/search change
   useEffect(() => {
-    setCurrentPage(1)
+    // Only reset if we are not actively restoring from a POP
+    if (!isRestoringRef.current) {
+      setCurrentPage(1)
+    }
   }, [debouncedQuery, filters, activeQuickFilter, sortBy])
 
   // Synchronize Quick Filters with Sort
@@ -235,8 +288,11 @@ export default function Browse() {
       params.set('sortBy', SORT_MAP[sortBy] || 'popularity')
 
       // Pagination
-      params.set('page', String(currentPage))
-      params.set('limit', String(ITEMS_PER_PAGE))
+      const currentlyRestoring = isRestoringRef.current
+      const limit = currentlyRestoring ? ITEMS_PER_PAGE * currentPage : ITEMS_PER_PAGE
+      const pageToFetch = currentlyRestoring ? 1 : currentPage
+      params.set('page', String(pageToFetch))
+      params.set('limit', String(limit))
 
       const response = await fetch(`${API_URL}/series?${params.toString()}`)
 
@@ -245,9 +301,30 @@ export default function Browse() {
       }
 
       const data: PaginatedSeriesResponse = await response.json()
-      setSeriesData(data.series)
+      
+      setSeriesData(prev => {
+        if (currentPage === 1 || currentlyRestoring) return data.series
+        const existingIds = new Set(prev.map(s => s._id))
+        return [...prev, ...data.series.filter(s => !existingIds.has(s._id))]
+      })
+
       setTotalCount(data.total)
       setTotalPages(data.totalPages)
+
+      if (currentlyRestoring) {
+        isRestoringRef.current = false
+        setIsRestoring(false)
+        const savedScroll = parseFloat(sessionStorage.getItem('browseScroll') || '0')
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            if ((window as any).lenis) {
+              (window as any).lenis.scrollTo(savedScroll, { immediate: true })
+            } else {
+              window.scrollTo({ top: savedScroll, behavior: 'instant' })
+            }
+          }, 150)
+        })
+      }
     } catch (err) {
       console.error('Failed to fetch series:', err)
       setError(true)
@@ -259,6 +336,27 @@ export default function Browse() {
   useEffect(() => {
     fetchSeries()
   }, [fetchSeries])
+
+  // Infinite Scroll Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading && !error && currentPage < totalPages) {
+          setCurrentPage(prev => prev + 1)
+        }
+      },
+      // rootMargin 600px bottom triggers the fetch roughly half a page early
+      { threshold: 0.1, rootMargin: '0px 0px 600px 0px' }
+    )
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current)
+    }
+
+    return () => {
+      if (observerTarget.current) observer.unobserve(observerTarget.current)
+    }
+  }, [isLoading, error, currentPage, totalPages])
 
   // Build filter chips
   const activeFilterChips: FilterChip[] = useMemo(() => {
@@ -336,10 +434,13 @@ export default function Browse() {
     setSortBy('Popular')
     setViewMode('grid')
     setCurrentPage(1)
+    sessionStorage.removeItem('browseScroll')
+    sessionStorage.removeItem('browsePage')
     setError(false)
   }
 
   const skeletonCount = viewMode === 'list' ? 5 : viewMode === 'compact' ? 20 : 15
+  const bottomSkeletonCount = viewMode === 'list' ? 3 : viewMode === 'compact' ? 6 : 5
 
   return (
     <div className="min-h-screen bg-background">
@@ -452,8 +553,8 @@ export default function Browse() {
                 />
               </div>
 
-              {/* ── Loading Skeletons ── */}
-              {isLoading && (
+              {/* ── Loading Skeletons (Initial Load) ── */}
+              {isLoading && currentPage === 1 && (
                 <div>
                   <p className="text-sm text-muted-foreground font-serif italic mb-6 text-center">
                     One moment. Quality takes time.
@@ -473,7 +574,7 @@ export default function Browse() {
               )}
 
               {/* ── Error State ── */}
-              {error && !isLoading && <ErrorState onRetry={fetchSeries} />}
+              {error && !isLoading && currentPage === 1 && <ErrorState onRetry={fetchSeries} />}
 
               {/* ── Empty State ── */}
               {!isLoading && !error && seriesData.length === 0 && (
@@ -481,65 +582,55 @@ export default function Browse() {
               )}
 
               {/* ── Results Grid ── */}
-              {!isLoading && !error && seriesData.length > 0 && (
+              {(!isLoading || currentPage > 1) && (!error || currentPage > 1) && seriesData.length > 0 && (
                 <>
-                  <div
-                    className={cn(
-                      viewMode === 'list' ? 'space-y-3' : 'grid gap-4',
-                      viewMode === 'grid' && 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
-                      viewMode === 'compact' && 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
-                    )}
-                  >
-                    {seriesData.map((series, i) => (
-                      <SeriesCard
-                        key={series._id}
-                        series={series}
-                        variant={viewMode === 'list' ? 'list' : viewMode}
-                        index={i}
-                      />
-                    ))}
-                  </div>
+                  {viewMode === 'list' ? (
+                    <div className="space-y-3">
+                      {seriesData.map((series, i) => (
+                        <SeriesCard
+                          key={series._id}
+                          series={series}
+                          variant="list"
+                          index={i}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <ParallaxResultsGrid seriesData={seriesData} viewMode={viewMode} />
+                  )}
 
-                  {/* ── Pagination Controls ── */}
-                  {totalPages > 1 && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex items-center justify-center gap-4 mt-10"
+                  {/* ── Infinite Scroll Sentinel & Bottom Loading ── */}
+                  <div ref={observerTarget} className="w-full h-10 mt-10" />
+
+                  {isLoading && currentPage > 1 && (
+                    <div
+                      className={cn(
+                        viewMode === 'list' ? 'space-y-3' : 'grid gap-4 mt-6',
+                        viewMode === 'grid' && 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
+                        viewMode === 'compact' && 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
+                      )}
                     >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={currentPage <= 1}
-                        onClick={() => {
-                          setCurrentPage((p) => Math.max(1, p - 1))
-                          window.scrollTo({ top: 0, behavior: 'smooth' })
-                        }}
-                        className="gap-1.5 border-primary/30 hover:border-primary/60 hover:bg-primary/5 font-semibold disabled:opacity-40"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        Prev
-                      </Button>
+                      {Array.from({ length: bottomSkeletonCount }).map((_, i) => (
+                        <SeriesCardSkeleton key={`bottom-skel-${i}`} variant={viewMode === 'list' ? 'list' : 'grid'} />
+                      ))}
+                    </div>
+                  )}
 
-                      <span className="text-sm font-serif text-muted-foreground">
-                        Page <span className="font-bold text-foreground">{currentPage}</span> of{' '}
-                        <span className="font-bold text-foreground">{totalPages}</span>
-                      </span>
+                  {!isLoading && currentPage >= totalPages && totalPages > 1 && !error && (
+                    <p className="text-sm text-muted-foreground font-serif italic mt-12 mb-8 text-center">
+                      You've reached the end of the library.
+                    </p>
+                  )}
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={currentPage >= totalPages}
-                        onClick={() => {
-                          setCurrentPage((p) => Math.min(totalPages, p + 1))
-                          window.scrollTo({ top: 0, behavior: 'smooth' })
-                        }}
-                        className="gap-1.5 border-primary/30 hover:border-primary/60 hover:bg-primary/5 font-semibold disabled:opacity-40"
-                      >
-                        Next
-                        <ChevronRight className="w-4 h-4" />
+                  {!isLoading && error && currentPage > 1 && (
+                    <div className="mt-12 mb-8 flex flex-col items-center justify-center text-center">
+                      <p className="text-sm text-destructive font-serif italic mb-4">
+                        Failed to load the next page.
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => fetchSeries()}>
+                        Try Again
                       </Button>
-                    </motion.div>
+                    </div>
                   )}
                 </>
               )}
