@@ -48,6 +48,11 @@ const getWishlistByStatus = async (req, res) => {
 
 const createWishlist = async (req, res) => {
   try {
+    const existing = await Wishlist.findOne({ userId: req.mongoUser._id, seriesId: req.body.seriesId });
+    if (existing) {
+      return res.status(409).json({ message: "Series already exists in wishlist" });
+    }
+
     const wishlist = new Wishlist({
       ...req.body,
       userId: req.mongoUser._id,   

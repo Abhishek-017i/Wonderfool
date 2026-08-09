@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { ChevronRight, ChevronLeft, Heart, Info } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import SpellLoader from './ui/SpellLoader'
 
 export default function HeroCarousel({ series = [] }) {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -17,7 +18,7 @@ export default function HeroCarousel({ series = [] }) {
   if (!series || series.length === 0) {
     return (
       <div className="relative w-full overflow-hidden bg-background flex items-center justify-center" style={{ height: '75vh', minHeight: '600px', maxHeight: '800px' }}>
-        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+        <SpellLoader size={80} className="mx-auto" />
       </div>
     )
   }

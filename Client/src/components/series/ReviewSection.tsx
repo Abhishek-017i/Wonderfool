@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Star, Trash2, Heart, MessageSquare, Clock, Edit2 } from 'lucide-react'
+import { Star, Trash2, MessageSquare, ThumbsUp, Reply as ReplyIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -9,6 +9,32 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
+import SpellLoader from '../ui/SpellLoader'
+import CommentSection from '../shared/CommentSection'
+
+function relativeTime(dateStr: string): string {
+  const now = Date.now()
+  const then = new Date(dateStr).getTime()
+  const diff = Math.max(0, now - then)
+
+  const seconds = Math.floor(diff / 1000)
+  if (seconds < 60) return 'just now'
+
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`
+
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`
+
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days} day${days !== 1 ? 's' : ''} ago`
+
+  const months = Math.floor(days / 30)
+  if (months < 12) return `${months} month${months !== 1 ? 's' : ''} ago`
+
+  const years = Math.floor(months / 12)
+  return `${years} year${years !== 1 ? 's' : ''} ago`
+}
 
 interface ReviewSectionProps {
   seriesId: string
@@ -133,7 +159,7 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <SpellLoader size={32} />
       </div>
     )
   }
@@ -159,43 +185,53 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card/50 backdrop-blur-md border border-border p-6 sm:p-8 rounded-2xl mb-12 shadow-xl"
+          className="bg-card border border-border p-6 sm:p-8 rounded-2xl mb-12 luxury-shadow"
         >
-          <h3 className="text-xl font-bold mb-4 font-serif">Write a Review</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-muted-foreground mb-2">Your Rating</p>
-              <div className="flex gap-1 mb-4 cursor-pointer" onMouseLeave={() => setHoverRating(0)}>
+          <h3 className="text-xl font-bold mb-6 font-serif">Write a Review</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-muted p-5 rounded-xl border border-border">
+              <p className="text-sm font-semibold text-foreground mb-3">Your Rating</p>
+              <div className="flex gap-1.5 cursor-pointer" onMouseLeave={() => setHoverRating(0)}>
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
                   <Star
                     key={star}
-                    size={24}
+                    size={28}
                     onClick={() => setRating(star)}
                     onMouseEnter={() => setHoverRating(star)}
-                    className={`transition-colors ${(hoverRating || rating) >= star ? 'fill-primary text-primary' : 'text-muted-foreground/30'} hover:scale-110 duration-200`}
+                    className={`transition-all duration-300 ${
+                      (hoverRating || rating) >= star 
+                        ? 'fill-primary text-primary drop-shadow-[0_0_8px_rgba(200,173,57,0.4)]' 
+                        : 'text-muted-foreground/40 hover:text-primary/70'
+                    } hover:scale-110 hover:-translate-y-1`}
                   />
                 ))}
               </div>
             </div>
+            
             <Textarea
               placeholder={isAuthenticated ? "Share your thoughts about this series..." : "Log in to write a review..."}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[120px] bg-background/50 border-border/50 focus-visible:ring-primary/50 text-base"
+              className="min-h-[140px] bg-background border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-base rounded-xl transition-all shadow-inner p-4 placeholder:text-muted-foreground"
             />
+            
             <div className="flex justify-end pt-2">
               <Button 
                 type="submit" 
                 disabled={isSubmitting || (isAuthenticated && (!rating || text.trim() === ''))}
-                className="min-w-[120px]"
-                onClick={(e) => {
+                className="min-w-[140px] h-11 rounded-xl bg-primary text-primary-foreground font-semibold luxury-shadow hover:opacity-90 hover:scale-[1.02] transition-all disabled:hover:scale-100 disabled:opacity-50"
+                onClick={(e: React.MouseEvent) => {
                   if (!isAuthenticated) {
                     e.preventDefault();
                     navigate('/login', { state: { from: location.pathname } })
                   }
                 }}
               >
-                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (isAuthenticated ? 'Post Review' : 'Log In to Review')}
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <SpellLoader size={16} />
+                  </span>
+                ) : (isAuthenticated ? 'Post Review' : 'Log In to Review')}
               </Button>
             </div>
           </form>
@@ -223,7 +259,7 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
         {otherReviews.length > 0 ? (
           <div>
             {myReview && <h3 className="text-lg font-bold font-serif mb-4">Community Reviews</h3>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            <div className="flex flex-col space-y-8">
               {otherReviews.map((review) => (
                 <ReviewCard 
                   key={review._id} 
@@ -250,60 +286,85 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
 }
 
 function ReviewCard({ review, isMine, onDelete, onLike, currentUserId }: any) {
+  const [showReplies, setShowReplies] = useState(false)
   const isLiked = currentUserId && review.likes?.includes(currentUserId);
   const ratingValue = review.rating || 0;
   
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`bg-card/50 backdrop-blur-sm border ${isMine ? 'border-primary/40 shadow-[0_0_15px_rgba(244,216,69,0.1)]' : 'border-border/50'} rounded-2xl p-6 transition-all hover:bg-card hover:border-border`}
-    >
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-muted">
-            {review.userId?.avatar ? (
-              <img src={review.userId.avatar} alt={review.userId.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center font-bold text-muted-foreground uppercase text-sm">
-                {review.userId?.name?.charAt(0) || 'U'}
-              </div>
-            )}
+    <div className="flex gap-3">
+      {/* Avatar */}
+      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-muted">
+        {review.userId?.avatar ? (
+          <img src={review.userId.avatar} alt={review.userId.name} className="w-full h-full object-cover" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-sm font-bold text-muted-foreground uppercase">
+            {review.userId?.name?.charAt(0) || 'U'}
           </div>
-          <div>
-            <p className="font-semibold text-sm leading-tight text-foreground">{review.userId?.name || 'Anonymous'}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              {new Date(review.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-            </p>
-          </div>
-        </div>
-        {isMine && onDelete && (
-          <Button variant="ghost" size="icon" onClick={onDelete} className="text-muted-foreground hover:text-destructive h-8 w-8 -mr-2 -mt-2">
-            <Trash2 size={16} />
-          </Button>
         )}
       </div>
 
-      <div className="flex items-center gap-1.5 mb-4 bg-background/50 w-fit px-3 py-1.5 rounded-full border border-border/30">
-        <Star size={14} className="fill-primary text-primary" />
-        <span className="text-sm font-bold text-foreground">{ratingValue} <span className="text-muted-foreground/60 text-xs font-medium">/ 10</span></span>
-      </div>
+      {/* Content column */}
+      <div className="flex-1 min-w-0">
+        {/* Row 1: Name + timestamp, inline */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-sm text-foreground leading-tight">
+            {review.userId?.name || 'Anonymous'}
+          </span>
+          <span className="text-xs leading-tight" style={{ color: '#c9a94e' }}>
+            {relativeTime(review.createdAt)}
+          </span>
+          {isMine && onDelete && (
+            <button 
+              onClick={onDelete} 
+              className="ml-auto text-muted-foreground hover:text-destructive transition-colors cursor-pointer bg-transparent border-none p-0"
+              title="Delete Review"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+        </div>
 
-      <p className="text-foreground/90 text-sm leading-relaxed mb-6 whitespace-pre-wrap">
-        {review.text}
-      </p>
+        {/* Row 1.5: Star Rating (under name, aligned) */}
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <Star size={12} className="fill-primary text-primary" />
+          <span className="text-xs font-bold text-foreground">{ratingValue} <span className="text-muted-foreground/60 font-medium">/ 10</span></span>
+        </div>
 
-      <div className="flex items-center gap-2 pt-4 border-t border-border/40">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onLike}
-          className={`flex items-center gap-2 h-8 px-2.5 rounded-lg transition-all ${isLiked ? 'text-red-500 hover:text-red-600 hover:bg-red-500/10' : 'text-muted-foreground hover:text-foreground'}`}
-        >
-          <Heart size={16} className={isLiked ? "fill-current" : ""} />
-          <span className="text-xs font-semibold">{review.likes?.length || 0}</span>
-        </Button>
+        {/* Row 2: Review body */}
+        <p className="text-sm text-foreground/85 mt-2 leading-relaxed break-words whitespace-pre-wrap">
+          {review.text}
+        </p>
+
+        {/* Row 3: Action row */}
+        <div className="flex items-center gap-4 mt-2">
+          <button
+            onClick={onLike}
+            className={`inline-flex items-center gap-1 text-xs transition-colors cursor-pointer bg-transparent border-none p-0 ${
+              isLiked
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <ThumbsUp className="w-3.5 h-3.5" />
+            <span>{review.likes?.length || 0}</span>
+          </button>
+
+          <button
+            onClick={() => setShowReplies(!showReplies)}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-none p-0"
+          >
+            <ReplyIcon className="w-3.5 h-3.5" />
+            <span>Reply</span>
+          </button>
+        </div>
+
+        {/* Nested threaded comments (scoped to this review) */}
+        {showReplies && (
+          <div className="mt-4 pt-4 border-t border-border/40">
+            <CommentSection parentType="Review" parentId={review._id} />
+          </div>
+        )}
       </div>
-    </motion.div>
+    </div>
   )
 }

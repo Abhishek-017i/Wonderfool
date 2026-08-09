@@ -9,7 +9,8 @@ import WishlistDisplay from '../components/profile/WishlistDisplay'
 import SettingsTab from '../components/profile/SettingsTab'
 import useAuthStore from '../store/authStore'
 import api from '../lib/api'
-import { Loader2 } from 'lucide-react'
+import { LogOut, Edit2, Settings, MessageSquare, Newspaper, Loader2 } from 'lucide-react'
+import SpellLoader from '../components/ui/SpellLoader'
 import TimelineRail from '../components/timeline/TimelineRail'
 import EmptyState from '../components/timeline/EmptyState'
 
@@ -64,7 +65,26 @@ export default function ProfilePage(props: ProfilePageProps) {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      const userId = user?._id || user?.id;
+      let userId = user?._id || user?.id;
+
+      // Fallback: if authStore user is stale/missing, try re-syncing from Firebase
+      if (!userId) {
+        try {
+          const { auth } = await import('../firebase');
+          const firebaseUser = auth.currentUser;
+          if (firebaseUser) {
+            const token = await firebaseUser.getIdToken();
+            const syncRes = await api.post('/auth/sync', {}, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            useAuthStore.getState().setUser(syncRes.data, token);
+            userId = syncRes.data._id;
+          }
+        } catch (syncErr) {
+          console.error("Profile: auth re-sync failed:", syncErr);
+        }
+      }
+
       if (!userId) {
         setIsLoading(false);
         return;
@@ -191,8 +211,8 @@ export default function ProfilePage(props: ProfilePageProps) {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-32 pb-12">
         {isLoading || !displayUser ? (
-          <div className="flex justify-center items-center h-[60vh]">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div className="flex justify-center py-12">
+            <SpellLoader size={32} />
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-8">

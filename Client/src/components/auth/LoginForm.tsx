@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import SpellLoader from '@/components/ui/SpellLoader'
 import { auth, googleProvider } from '../../firebase';
 import { signInWithEmailAndPassword, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import api from '../../lib/api';
@@ -253,7 +254,7 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess,
 
           {/* Forgot password */}
           <div className="flex justify-end pt-1">
-            <a
+            
               href="#"
               className="text-sm text-primary font-medium hover:text-accent transition-colors"
               onClick={(e) => {
@@ -272,7 +273,7 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess,
 
       {isForgotPassword && (
         <div className="flex items-center justify-between pt-1">
-          <a
+          
             href="#"
             className="text-sm text-primary font-medium hover:text-accent transition-colors"
             onClick={(e) => {
@@ -296,10 +297,10 @@ export default function LoginForm({ sharedEmail, onSharedEmailChange, onSuccess,
         className="w-full h-11 font-semibold text-base mt-8"
       >
         {isSubmitting ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          <span className="flex items-center gap-2">
+            <SpellLoader size={16} />
             {isForgotPassword ? 'Sending…' : 'Authenticating…'}
-          </>
+          </span>
         ) : (
           isForgotPassword ? 'Send Reset Link' : 'Login'
         )}

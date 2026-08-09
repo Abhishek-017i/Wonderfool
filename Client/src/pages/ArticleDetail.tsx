@@ -4,20 +4,18 @@ import { ArrowLeft } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { useArticle } from '../hooks/useArticle'
-import { useArticleComments } from '../hooks/useArticleComments'
 import { ArticleHero } from '../components/article/ArticleHero'
 import { ArticleContent } from '../components/article/ArticleContent'
 import { ArticleActionBar } from '../components/article/ArticleActionBar'
 import { TaggedCreators } from '../components/article/TaggedCreators'
 import { TaggedSeries } from '../components/article/TaggedSeries'
 import { RelatedArticles } from '../components/article/RelatedArticles'
-import { CommentSection } from '../components/article/CommentSection'
+import CommentSection from '../components/shared/CommentSection'
 import {
   ArticleHeroSkeleton,
   ArticleContentSkeleton,
   SeriesCardSkeleton,
   ArticleCardSkeleton,
-  CommentSkeleton,
 } from '../components/Skeletons'
 import { ErrorState } from '../components/StateComponents'
 
@@ -39,7 +37,6 @@ export default function ArticleDetail() {
   }
 
   const { article, isLoading: articleLoading, error: articleError } = useArticle(id)
-  const { comments, isLoading: commentsLoading, error: commentsError } = useArticleComments(id)
 
   const handleJumpToComments = () => {
     commentSectionRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -159,26 +156,15 @@ export default function ArticleDetail() {
         </div>
 
         {/* Comments Section */}
-        <div ref={commentSectionRef} className="border-t border-border pt-12">
-          {commentsLoading ? (
-            <div className="space-y-4">
-              <div className="h-8 bg-card rounded w-32" />
-              {[...Array(3)].map((_, i) => (
-                <CommentSkeleton key={i} />
-              ))}
-            </div>
-          ) : (
-            <CommentSection comments={comments} isLoading={false} />
-          )}
-          {commentsError && (
-            <ErrorState
-              message={commentsError}
-              onRetry={() => window.location.reload()}
-            />
-          )}
-        </div>
+        {article && !articleLoading && (
+          <div ref={commentSectionRef} className="border-t border-border pt-12">
+            <h2 className="text-2xl font-bold font-serif mb-8">Discussion</h2>
+            <CommentSection parentType="Article" parentId={article.id} />
+          </div>
+        )}
       </div>
       <Footer />
     </div>
   )
 }
+
