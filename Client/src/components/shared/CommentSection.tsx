@@ -122,7 +122,6 @@ function getRouteSegment(parentType: string): string {
 
 interface CommentItemProps {
   comment: CommentNode
-  depth: number
   currentUserId?: string
   onLike: (commentId: string) => void
   onReply: (parentCommentId: string, text: string) => Promise<void>
@@ -132,7 +131,6 @@ interface CommentItemProps {
 
 function CommentItem({
   comment,
-  depth,
   currentUserId,
   onLike,
   onReply,
@@ -142,6 +140,7 @@ function CommentItem({
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [replyText, setReplyText] = useState('')
   const [isSubmittingReply, setIsSubmittingReply] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const isLiked = currentUserId ? comment.likes.includes(currentUserId) : false
 
@@ -169,6 +168,7 @@ function CommentItem({
       await onReply(comment._id, replyText.trim())
       setReplyText('')
       setShowReplyForm(false)
+      setIsCollapsed(false)
     } finally {
       setIsSubmittingReply(false)
     }
@@ -176,124 +176,166 @@ function CommentItem({
 
   const avatarInitial = comment.userId?.name?.charAt(0)?.toUpperCase() || 'U'
 
+  if (isCollapsed) {
+    return (
+      <div className="flex items-center gap-2 mt-3 mb-1">
+        <div className="w-7 flex justify-center shrink-0">
+          <button 
+            onClick={() => setIsCollapsed(false)}
+            className="w-4 h-4 rounded-full border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center transition-colors cursor-pointer z-10 shadow-sm"
+            title="Expand thread"
+          >
+            <span className="text-[12px] font-bold leading-none">+</span>
+          </button>
+        </div>
+        <span className="font-semibold text-sm text-foreground">
+          {comment.userId?.name || 'Anonymous'}
+        </span>
+        <span className="text-muted-foreground text-xs font-bold">·</span>
+        <span className="text-xs" style={{ color: '#c9a94e' }}>
+          {relativeTime(comment.createdAt)}
+        </span>
+      </div>
+    )
+  }
+
   return (
-    <div
-      className="comment-item"
-      style={{ paddingLeft: depth > 0 ? `${Math.min(depth, 4) * 48}px` : '0' }}
-    >
-      {/* Main comment block */}
-      <div className="flex gap-3">
-        {/* Avatar */}
-        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-[hsl(var(--muted))]">
+    <div className="relative mt-3">
+      {/* ROW 1: Header */}
+      <div className="flex items-center gap-2">
+        <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-muted border border-border/30 z-10 relative">
           {comment.userId?.avatar ? (
-            <img
-              src={comment.userId.avatar}
-              alt={comment.userId.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+            <img src={comment.userId.avatar} alt={comment.userId.name} className="w-full h-full object-cover" loading="lazy" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-sm font-bold text-[hsl(var(--muted-foreground))] uppercase">
+            <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-muted-foreground uppercase">
               {avatarInitial}
             </div>
           )}
         </div>
+        <span className="font-semibold text-sm text-foreground">
+          {comment.userId?.name || 'Anonymous'}
+        </span>
+        <span className="text-muted-foreground text-xs font-bold">·</span>
+        <span className="text-xs" style={{ color: '#c9a94e' }}>
+          {relativeTime(comment.createdAt)}
+        </span>
+      </div>
 
-        {/* Content column */}
-        <div className="flex-1 min-w-0">
-          {/* Row 1: Name + timestamp, inline */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-sm text-white leading-tight">
-              {comment.userId?.name || 'Anonymous'}
-            </span>
-            <span className="text-xs leading-tight" style={{ color: '#c9a94e' }}>
-              {relativeTime(comment.createdAt)}
-            </span>
-          </div>
-
-          {/* Row 2: Comment body */}
-          <p className="text-sm text-[hsl(var(--foreground))]/85 mt-1.5 leading-relaxed break-words">
+      {/* ROW 2: Body */}
+      <div className="flex gap-2">
+        <div className="w-7 flex justify-center shrink-0 cursor-pointer group" onClick={() => setIsCollapsed(true)}>
+          <div className="w-[2px] h-full bg-muted-foreground opacity-40 group-hover:opacity-100 group-hover:bg-primary transition-all" />
+        </div>
+        <div className="flex-1 min-w-0 py-1">
+          <p className="text-sm text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
             {comment.text}
           </p>
-
-          {/* Row 3: Action row — flat icons, no button chrome */}
-          <div className="flex items-center gap-4 mt-2">
-            <button
-              onClick={handleLike}
-              className={`inline-flex items-center gap-1 text-xs transition-colors cursor-pointer bg-transparent border-none p-0 ${
-                isLiked
-                  ? 'text-[hsl(var(--primary))]'
-                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
-              }`}
-            >
-              <ThumbsUp className="w-3.5 h-3.5" />
-              <span>{comment.likes.length}</span>
-            </button>
-
-            <button
-              onClick={handleReplyToggle}
-              className="inline-flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer bg-transparent border-none p-0"
-            >
-              <ReplyIcon className="w-3.5 h-3.5" />
-              <span>Reply</span>
-            </button>
-          </div>
-
-          {/* Inline reply form */}
-          {showReplyForm && (
-            <div className="mt-3 flex gap-2 items-start">
-              <textarea
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Write a reply..."
-                rows={2}
-                className="flex-1 bg-[hsl(var(--background))] text-[hsl(var(--foreground))] text-sm p-2.5 rounded-lg border border-[hsl(var(--border))] focus:outline-none focus:border-[hsl(var(--primary))] resize-none placeholder:text-[hsl(var(--muted-foreground))]"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmitReply()
-                  }
-                }}
-              />
-              <div className="flex flex-col gap-1.5">
-                <button
-                  onClick={handleSubmitReply}
-                  disabled={!replyText.trim() || isSubmittingReply}
-                  className="p-2 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-40 transition-opacity cursor-pointer border-none"
-                >
-                  {isSubmittingReply ? (
-                    <SpellLoader size={14} />
-                  ) : (
-                    <Send className="w-3.5 h-3.5" />
-                  )}
-                </button>
-                <button
-                  onClick={() => { setShowReplyForm(false); setReplyText('') }}
-                  className="text-[10px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer bg-transparent border-none p-0"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Nested replies */}
-      {comment.children.length > 0 && (
-        <div className="mt-3 space-y-3">
-          {comment.children.map((child) => (
-            <CommentItem
-              key={child._id}
-              comment={child}
-              depth={depth + 1}
-              currentUserId={currentUserId}
-              onLike={onLike}
-              onReply={onReply}
-              isAuthenticated={isAuthenticated}
-              onAuthRedirect={onAuthRedirect}
+      {/* ROW 3: Actions */}
+      <div className="flex items-center gap-2 mt-0.5">
+        <div className="w-7 flex justify-center shrink-0">
+          <button 
+            onClick={() => setIsCollapsed(true)} 
+            className="w-4 h-4 rounded-full border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer bg-background z-10"
+            title="Collapse thread"
+          >
+            <span className="text-[12px] font-bold leading-none">−</span>
+          </button>
+        </div>
+        <div className="flex-1 flex items-center gap-4">
+          <button
+            onClick={handleLike}
+            className={`inline-flex items-center gap-1.5 text-xs transition-colors cursor-pointer bg-transparent border-none p-0 font-medium ${
+              isLiked
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <ThumbsUp className="w-3.5 h-3.5" />
+            <span>{comment.likes.length}</span>
+          </button>
+
+          <button
+            onClick={handleReplyToggle}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-none p-0 font-medium"
+          >
+            <ReplyIcon className="w-3.5 h-3.5" />
+            <span>Reply</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Inline reply form */}
+      {showReplyForm && (
+        <div className="flex gap-2 mt-2">
+          <div className="w-7 flex justify-center shrink-0 cursor-pointer group" onClick={() => setIsCollapsed(true)}>
+             <div className="w-[2px] h-full bg-muted-foreground opacity-40 group-hover:opacity-100 group-hover:bg-primary transition-all" />
+          </div>
+          <div className="flex-1 flex gap-3 items-start pr-2">
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Write a reply..."
+              rows={2}
+              className="flex-1 bg-background text-foreground text-sm p-3 rounded-xl border border-border focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none placeholder:text-muted-foreground/70 shadow-inner"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSubmitReply()
+                }
+              }}
             />
-          ))}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleSubmitReply}
+                disabled={!replyText.trim() || isSubmittingReply}
+                className="w-10 h-10 rounded-xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer border-none flex items-center justify-center shadow-md hover:scale-[1.02]"
+              >
+                {isSubmittingReply ? (
+                  <SpellLoader size={16} />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </button>
+              <button
+                onClick={() => { setShowReplyForm(false); setReplyText('') }}
+                className="text-[11px] font-medium text-muted-foreground hover:text-destructive transition-colors cursor-pointer bg-transparent border-none p-0"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ROW 4: Children */}
+      {comment.children.length > 0 && (
+        <div className="relative">
+          {comment.children.map((child, index) => {
+            const isLast = index === comment.children.length - 1;
+            return (
+              <div key={child._id} className="relative pl-8 group/thread">
+                {/* Curved branch to this child */}
+                <div className="absolute left-[13px] top-0 w-[19px] h-[26px] border-l-[2px] border-b-[2px] border-muted-foreground opacity-40 rounded-bl-xl group-hover/thread:opacity-100 group-hover/thread:border-primary transition-all" />
+                
+                {/* Vertical line connecting to parent (starts after the curve to prevent overlap blending) */}
+                {!isLast && (
+                  <div className="absolute left-[13px] top-[26px] bottom-0 w-[2px] bg-muted-foreground opacity-40 group-hover/thread:opacity-100 group-hover/thread:bg-primary transition-all" />
+                )}
+                
+                <CommentItem
+                  comment={child}
+                  currentUserId={currentUserId}
+                  onLike={onLike}
+                  onReply={onReply}
+                  isAuthenticated={isAuthenticated}
+                  onAuthRedirect={onAuthRedirect}
+                />
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
@@ -411,11 +453,11 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
       {/* Comment input */}
       <div className="flex gap-3 items-start">
         {/* Current user avatar */}
-        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-[hsl(var(--muted))]">
+        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-muted">
           {user?.avatar ? (
             <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-sm font-bold text-[hsl(var(--muted-foreground))] uppercase">
+            <div className="w-full h-full flex items-center justify-center text-sm font-bold text-muted-foreground uppercase">
               {user?.name?.charAt(0)?.toUpperCase() || '?'}
             </div>
           )}
@@ -426,7 +468,7 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
             onChange={(e) => setNewCommentText(e.target.value)}
             placeholder={isAuthenticated ? 'Share your thoughts...' : 'Log in to join the discussion...'}
             rows={3}
-            className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))] text-sm p-3 rounded-lg border border-[hsl(var(--border))] focus:outline-none focus:border-[hsl(var(--primary))] resize-none placeholder:text-[hsl(var(--muted-foreground))] transition-colors"
+            className="w-full bg-background text-foreground text-sm p-3 rounded-lg border border-border focus:outline-none focus:border-primary resize-none placeholder:text-muted-foreground transition-colors"
             onClick={() => {
               if (!isAuthenticated) authRedirect()
             }}
@@ -447,7 +489,7 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
                 handlePostComment()
               }}
               disabled={isSubmitting || (!isAuthenticated ? false : !newCommentText.trim())}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm font-semibold hover:opacity-90 disabled:opacity-40 transition-opacity cursor-pointer border-none"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 disabled:opacity-40 transition-opacity cursor-pointer border-none"
             >
               {isSubmitting ? (
                 <SpellLoader size={14} />
@@ -464,7 +506,7 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
 
       {/* Error */}
       {error && (
-        <div className="text-sm text-[hsl(var(--destructive))] bg-[hsl(var(--destructive))]/10 px-4 py-3 rounded-lg">
+        <div className="text-sm text-destructive bg-destructive/10 px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
@@ -479,8 +521,8 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
       {/* Empty state */}
       {!isLoading && tree.length === 0 && (
         <div className="text-center py-10">
-          <MessageSquare className="w-10 h-10 text-[hsl(var(--muted-foreground))]/30 mx-auto mb-3" />
-          <p className="text-[hsl(var(--muted-foreground))] text-sm">
+          <MessageSquare className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">
             No comments yet. Start the discussion!
           </p>
         </div>
@@ -493,7 +535,6 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
             <CommentItem
               key={comment._id}
               comment={comment}
-              depth={0}
               currentUserId={user?._id}
               onLike={handleLike}
               onReply={handleReply}
