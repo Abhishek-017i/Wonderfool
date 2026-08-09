@@ -5,7 +5,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/your_username/Wonderfool">
-    <img src="./Assets/logo.png" alt="Wonderfool Logo" width="120" height="120" />
+    <img src="./Assets/LOGO.jpeg" alt="Wonderfool Logo" width="120" height="120" />
   </a>
 
   <p align="center">
@@ -14,7 +14,7 @@
     <em>Netflix/Apple TV-style browsing, meets Letterboxd-style community tracking.</em>
     <br />
     <div align="center">
-    <img src="Making-Game\Assets\Project\Player\Sprites\FERN ATK 1 PROJECTILE FINAL.png" width="800"/>
+    <img src="./Assets/SHORT INTRO OF WEBSITE.gif" width="900"/>
     </div>
     <br />
     
