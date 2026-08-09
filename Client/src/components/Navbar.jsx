@@ -277,7 +277,7 @@ export default function Navbar() {
               className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-all hover:scale-105 focus:outline-none flex-shrink-0"
               title="Go to Profile"
             >
-              <img src={user?.avatar || "/blog/avatar-3.png"} alt="User avatar" className="w-full h-full object-cover" />
+              <img src={user?.avatar} alt="User avatar" className="w-full h-full object-cover" />
             </Link>
           ) : (
             <Button

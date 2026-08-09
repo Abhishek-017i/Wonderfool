@@ -1,11 +1,10 @@
 import { Heart, Clock } from 'lucide-react'
-import type { WishlistItem } from '../../data/mockData'
 import { Card } from '../ui/card'
 import { Button } from '../ui/button'
 import { useNavigate } from 'react-router-dom'
 
 interface WishlistDisplayProps {
-  items: WishlistItem[]
+  items: any[]
   onRemove?: (id: string) => void
 }
 

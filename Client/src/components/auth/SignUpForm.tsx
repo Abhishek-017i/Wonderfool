@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { auth, googleProvider } from '../../firebase';
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, sendEmailVerification } from 'firebase/auth';
 import api from '../../lib/api';
 import useAuthStore from '../../store/authStore';
 
@@ -124,9 +124,10 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: username });
+      await sendEmailVerification(userCredential.user);
 
       const token = await userCredential.user.getIdToken(true);
-      const res = await api.post('/auth/sync', {}, {
+      const res = await api.post('/auth/sync', { name: username }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -136,7 +137,7 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
       console.error('SIGNUP ERROR:', err);
       let message = 'Failed to create account. Please try again.'
       if (err?.code === 'auth/email-already-in-use') {
-        message = 'This email address is already in use.'
+        message = 'This email is already registered with Google — please use \'Continue with Google\' instead.'
       } else if (err?.code === 'auth/weak-password') {
         message = 'Password should be at least 8 characters.'
       } else if (err?.code === 'auth/invalid-email') {
@@ -179,7 +180,7 @@ export default function SignUpForm({ sharedEmail, onSharedEmailChange, onSuccess
       {/* Username */}
       <div className="space-y-2.5">
         <Label htmlFor="username" className="text-foreground font-semibold text-sm">
-          Username
+          Name
         </Label>
         <Input
           id="username"

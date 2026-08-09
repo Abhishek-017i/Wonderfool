@@ -6,13 +6,21 @@ const syncUser = async (req, res) => {
 
     let user = await User.findOne({ firebaseUid: uid });
 
+    const nameToSave = req.body.name || name || (user ? user.name : 'Wonderfool User');
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(nameToSave)}&background=random`;
+    const avatarToSave = picture || defaultAvatar;
+
     if (!user) {
       user = await User.create({
         firebaseUid: uid,
-        name: name || 'Wonderfool User',
+        name: nameToSave,
         email,
-        avatar: picture || '',
+        avatar: avatarToSave,
       });
+    } else {
+      user.name = nameToSave;
+      user.avatar = avatarToSave;
+      await user.save();
     }
 
     res.status(200).json(user);
