@@ -125,6 +125,37 @@ const getArticlesByUser = async (req, res) => {
   }
 };
 
+const toggleLikeArticle = async (req, res) => {
+  try {
+    const article = await Article.findById(req.params.id);
+
+    if (!article) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+
+    const userId = req.mongoUser._id.toString();
+    const isLiked = article.likes.some(id => id.toString() === userId);
+
+    if (isLiked) {
+      article.likes = article.likes.filter(
+        (id) => id.toString() !== userId
+      );
+    } else {
+      article.likes.push(req.mongoUser._id);
+    }
+
+    await article.save();
+
+    res.status(200).json({
+      message: isLiked ? "Article unliked" : "Article liked",
+      likes: article.likes.length,
+      isLiked: !isLiked
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getAllArticles,
   getArticlesByUser,
@@ -133,4 +164,5 @@ module.exports = {
   updateArticle,
   deleteArticle,
   getArticlesByCreator,
+  toggleLikeArticle,
 };

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
 import SpellLoader from '../ui/SpellLoader'
 import CommentSection from '../shared/CommentSection'
+import InstagramReveal from '@/components/easter-eggs/InstagramReveal'
 
 function relativeTime(dateStr: string): string {
   const now = Date.now()
@@ -50,6 +51,7 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [easterEggData, setEasterEggData] = useState<{ handle: string, url: string } | null>(null)
 
   // Form State
   const [rating, setRating] = useState<number>(0)
@@ -127,6 +129,26 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: location.pathname } })
       return
+    }
+
+    // Trigger easter egg if liking Divit's review
+    const reviewToLike = reviews.find(r => r._id === reviewId)
+    const authorId = typeof reviewToLike?.userId === 'object' ? reviewToLike?.userId?._id : reviewToLike?.userId
+    const hasLikedPreviously = reviewToLike?.likes?.includes(user?._id)
+
+    console.log('[Easter Egg Check - Review]', {
+      actualAuthorId: authorId,
+      hardcodedId: '6a735f01d61158e8157356b2',
+      hasLikedPreviously,
+      isMatch: String(authorId) === '6a735f01d61158e8157356b2'
+    })
+
+    if (!hasLikedPreviously) {
+      if (String(authorId) === '6a735f01d61158e8157356b2') {
+        setEasterEggData({ handle: '@real._._human', url: 'https://www.instagram.com/real._._human' })
+      } else if (String(authorId) === '6a760897902d4ca02ef12995') {
+        setEasterEggData({ handle: '@soomethh', url: 'https://www.instagram.com/soomethh' })
+      }
     }
 
     // Optimistic Update
@@ -281,6 +303,15 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
           )
         )}
       </div>
+
+      {/* Easter Egg Modal */}
+      {easterEggData && (
+        <InstagramReveal 
+          onClose={() => setEasterEggData(null)} 
+          handle={easterEggData.handle}
+          url={easterEggData.url}
+        />
+      )}
     </div>
   )
 }

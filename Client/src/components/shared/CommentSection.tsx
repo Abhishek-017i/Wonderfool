@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import useAuthStore from '@/store/authStore'
 import api from '@/lib/api'
 import SpellLoader from '@/components/ui/SpellLoader'
-
+import InstagramReveal from '@/components/easter-eggs/InstagramReveal'
 // ────────────────────────────────────────────────
 // Types
 // ────────────────────────────────────────────────
@@ -357,6 +357,7 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
   const [error, setError] = useState<string | null>(null)
   const [newCommentText, setNewCommentText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [easterEggData, setEasterEggData] = useState<{ handle: string, url: string } | null>(null)
 
   const authRedirect = useCallback(() => {
     navigate('/login', { state: { from: location.pathname } })
@@ -422,6 +423,29 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
   // Like/unlike a comment — optimistic
   const handleLike = (commentId: string) => {
     if (!user?._id) return
+
+    // Find the comment first
+    const commentToLike = rawComments.find(c => c._id === commentId)
+    const hasLikedPreviously = commentToLike?.likes.includes(user._id)
+
+    // Trigger easter egg if liking Divit's comment
+    const authorId = typeof commentToLike?.userId === 'object' ? commentToLike?.userId?._id : commentToLike?.userId
+    console.log('[Easter Egg Check]', {
+      actualAuthorId: authorId,
+      actualAuthorIdType: typeof authorId,
+      hardcodedId: '6a735f01d61158e8157356b2',
+      hasLikedPreviously,
+      isMatch: String(authorId) === '6a735f01d61158e8157356b2',
+      rawUserIdField: commentToLike?.userId
+    })
+    
+    if (!hasLikedPreviously) {
+      if (String(authorId) === '6a735f01d61158e8157356b2') {
+        setEasterEggData({ handle: '@real._._human', url: 'https://www.instagram.com/real._._human' })
+      } else if (String(authorId) === '6a760897902d4ca02ef12995') {
+        setEasterEggData({ handle: '@soomethh', url: 'https://www.instagram.com/soomethh' })
+      }
+    }
 
     // Optimistic update
     setRawComments(prev =>
@@ -543,6 +567,15 @@ export default function CommentSection({ parentType, parentId }: CommentSectionP
             />
           ))}
         </div>
+      )}
+
+      {/* Easter Egg Modal */}
+      {easterEggData && (
+        <InstagramReveal 
+          onClose={() => setEasterEggData(null)} 
+          handle={easterEggData.handle}
+          url={easterEggData.url}
+        />
       )}
     </section>
   )

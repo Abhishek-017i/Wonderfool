@@ -128,7 +128,7 @@ export default function CreatorsPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name, role, or work…"
               aria-label="Search creators"
-              className="w-full rounded-[14px] border border-border/70 bg-card/80 py-4 pl-14 pr-6 text-base text-foreground shadow-[0_8px_24px_rgba(0,0,0,0.04)] outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary focus:ring-4 focus:ring-primary/30"
+              className="w-full rounded-[14px] border border-border/70 bg-transparent py-4 pl-14 pr-6 text-base text-foreground shadow-[0_8px_24px_rgba(0,0,0,0.04)] outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary focus:ring-4 focus:ring-primary/30"
             />
           </div>
         </header>

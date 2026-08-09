@@ -10,6 +10,7 @@ const {
   deleteArticle,
   getArticlesByUser,
   getArticlesByCreator,
+  toggleLikeArticle,
 } = require("../controllers/articleController");
 
 router.get("/", getAllArticles);
@@ -19,5 +20,6 @@ router.get("/:id", getArticleById);
 router.post("/",verifyToken, createArticle);
 router.put("/:id",verifyToken, updateArticle);
 router.delete("/:id",verifyToken, deleteArticle);
+router.post("/:id/like", verifyToken, toggleLikeArticle);
 
 module.exports = router;
