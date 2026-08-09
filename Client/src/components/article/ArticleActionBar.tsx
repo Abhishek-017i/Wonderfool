@@ -21,26 +21,19 @@ export function ArticleActionBar({
   onShare,
   onJumpToComments,
 }: ArticleActionBarProps) {
-  const [liked, setLiked] = useState(isLiked)
-
-  const handleLike = () => {
-    setLiked(!liked)
-    onLike()
-  }
-
   return (
     <div className="flex gap-3 md:flex-col md:fixed md:right-8 md:top-1/2 md:-translate-y-1/2">
       <Button
         variant="ghost"
         size="sm"
-        onClick={handleLike}
+        onClick={onLike}
         aria-label="Like this article"
         className="gap-2"
       >
         <Heart
           className="w-5 h-5"
-          fill={liked ? 'currentColor' : 'none'}
-          color={liked ? '#d4a574' : 'currentColor'}
+          fill={isLiked ? 'currentColor' : 'none'}
+          color={isLiked ? '#d4a574' : 'currentColor'}
         />
         <span className="text-xs hidden md:inline">{likeCount}</span>
       </Button>

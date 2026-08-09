@@ -53,10 +53,14 @@ export interface RelatedArticle {
   category: string
 }
 
+import useAuthStore from '@/store/authStore'
+
 export function useArticle(id: string) {
   const [article, setArticle] = useState<Article | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const { user } = useAuthStore()
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -82,7 +86,9 @@ export function useArticle(id: string) {
           readTimeMinutes: Math.max(1, Math.ceil((raw.body?.length || 0) / 1000)),
           likeCount: raw.likes?.length || 0,
           bookmarkCount: 0,
-          isLiked: false,
+          isLiked: user ? raw.likes?.some((like: any) => 
+            (typeof like === 'string' ? like : like._id) === user._id
+          ) : false,
           isBookmarked: false,
           body: raw.body || '',
           taggedCreators: raw.taggedCreators?.map((c: any) => ({
@@ -115,7 +121,37 @@ export function useArticle(id: string) {
     if (id) {
       fetchArticle()
     }
-  }, [id])
+  }, [id, user?._id])
 
-  return { article, isLoading, error }
+  const toggleLike = async () => {
+    if (!article || !user) return;
+    
+    // Optimistic update
+    const wasLiked = article.isLiked;
+    setArticle(prev => prev ? {
+      ...prev,
+      isLiked: !wasLiked,
+      likeCount: wasLiked ? prev.likeCount - 1 : prev.likeCount + 1
+    } : prev);
+
+    try {
+      const response = await api.post(`/articles/${id}/like`);
+      // Update with actual data from server just in case
+      setArticle(prev => prev ? {
+        ...prev,
+        isLiked: response.data.isLiked,
+        likeCount: response.data.likes
+      } : prev);
+    } catch (err) {
+      console.error("Failed to toggle like", err);
+      // Revert on error
+      setArticle(prev => prev ? {
+        ...prev,
+        isLiked: wasLiked,
+        likeCount: wasLiked ? prev.likeCount + 1 : prev.likeCount - 1
+      } : prev);
+    }
+  }
+
+  return { article, isLoading, error, toggleLike }
 }

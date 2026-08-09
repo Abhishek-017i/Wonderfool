@@ -36,7 +36,7 @@ export default function ArticleDetail() {
     )
   }
 
-  const { article, isLoading: articleLoading, error: articleError } = useArticle(id)
+  const { article, isLoading: articleLoading, error: articleError, toggleLike } = useArticle(id)
 
   const handleJumpToComments = () => {
     commentSectionRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -91,7 +91,7 @@ export default function ArticleDetail() {
             bookmarkCount={article.bookmarkCount}
             isLiked={article.isLiked}
             isBookmarked={article.isBookmarked}
-            onLike={() => console.log('Liked')}
+            onLike={toggleLike}
             onBookmark={() => console.log('Bookmarked')}
             onShare={handleShare}
             onJumpToComments={handleJumpToComments}
