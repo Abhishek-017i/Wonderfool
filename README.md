@@ -14,7 +14,7 @@
     <em>Netflix/Apple TV style browsing, meets Letterboxd style community tracking.</em>
     <br />
     <div align="center">
-      <img src="./Assets/SHORT INTRO OF WEBSITE.gif" width="900"/>
+    <img src="./Assets/SHORT INTRO OF WEBSITE.gif" width="900"/>
     </div>
     <br />
   </p>
