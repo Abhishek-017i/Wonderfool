@@ -190,10 +190,10 @@ export default function ProfilePage(props: ProfilePageProps) {
     const joinedDate = baseUser.createdAt ? new Date(baseUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown Date';
 
     return {
-      name: baseUser.name || 'Anonymous User',
+      name: baseUser.name || 'User',
       email: baseUser.email || '',
       handle: baseUser.name ? `@${baseUser.name.replace(/\s+/g, '').toLowerCase()}` : '@user',
-      avatar: baseUser.avatar || '/media/poster-5.png', // A generic default avatar
+      avatar: baseUser.avatar,
       bio: baseUser.bio || 'No bio provided.',
       location: baseUser.location || '',
       verified: baseUser.verified || false,

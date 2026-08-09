@@ -1,7 +1,22 @@
 import { CheckCircle, Calendar } from 'lucide-react'
-import type { UserProfile } from '../../data/mockData'
 import { formatNumber } from '../../lib/utils'
 import { motion } from 'framer-motion'
+
+interface UserProfile {
+  name: string
+  email?: string
+  handle: string
+  avatar: string
+  bio: string
+  location: string
+  verified: boolean
+  rank: string
+  website: string
+  joinDate: string
+  joined: string
+  reviews: number
+  articles: number
+}
 
 interface ProfileHeaderProps {
   user: UserProfile

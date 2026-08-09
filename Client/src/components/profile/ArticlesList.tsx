@@ -1,5 +1,4 @@
 import { ArrowRight, Trash2 } from 'lucide-react'
-import type { Article } from '../../data/mockData'
 import { motion } from 'framer-motion'
 
 interface ArticlesListProps {

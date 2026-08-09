@@ -1,5 +1,4 @@
 import { Star, Trash2, Heart, MessageSquare, Clock } from 'lucide-react'
-import type { Review } from '../../data/mockData'
 import { motion } from 'framer-motion'
 
 interface ReviewsListProps {
