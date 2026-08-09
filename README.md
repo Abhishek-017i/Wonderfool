@@ -5,22 +5,19 @@
 <br />
 <div align="center">
   <a href="https://github.com/your_username/Wonderfool">
-    <img src="./Assets/logo.png" alt="Wonderfool Logo" width="120" height="120" />
+    <img src="./Assets/LOGO.jpeg" alt="Wonderfool Logo" width="120" height="120" />
   </a>
 
   <p align="center">
     A premium, cinematic database and community platform for Anime, Manga, and Light Novels.
     <br />
-    <em>Netflix/Apple TV-style browsing, meets Letterboxd-style community tracking.</em>
+    <em>Netflix/Apple TV style browsing, meets Letterboxd style community tracking.</em>
     <br />
     <div align="center">
-    <img src="Making-Game\Assets\Project\Player\Sprites\FERN ATK 1 PROJECTILE FINAL.png" width="800"/>
+      <img src="./Assets/SHORT INTRO OF WEBSITE.gif" width="900"/>
     </div>
     <br />
-    
   </p>
-  <div align="center">
-</div>
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -29,9 +26,7 @@
   <ol>
     <li><a href="#about-the-project">About The Project</a></li>
     <li><a href="#built-with">Built With</a></li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-    </li>
+    <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#core-features--pages">Core Features & Pages</a></li>
     <li><a href="#design-language--aesthetics">Design Language & Aesthetics</a></li>
     <li><a href="#database-schema">Database Schema</a></li>
@@ -45,9 +40,9 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-**Wonderfool** is a full-stack database and community platform for Anime, Manga, and Light Novels, built to feel like a premium streaming service rather than a typical wiki or tracker.Our main goal is to bring authors, artists, creators, and other contributors into the limelight by highlighting their work and achievements. It allows users to discover, track, review, and appreciate both the content and the people behind it. The experience is designed around cinematic hero carousels, smooth micro-interactions, and rich imagery — prioritizing a beautiful browsing experience as much as a functional one.
+**Wonderfool** is a full-stack database and community platform for Anime, Manga, and Light Novels, built to feel like a premium interaction forum rather than a typical wiki or tracker. Our main goal is to bring authors, artists, creators, and other contributors into the limelight by highlighting their work and achievements. It allows users to discover, track, review, and appreciate both the content and the people behind it. The experience is designed around cinematic hero carousels, smooth micro-interactions, and rich imagery, prioritizing a beautiful browsing experience as much as a functional one.
 
-Real content data is seeded directly from the **AniList GraphQL API**, giving the platform genuine, up-to-date anime and manga metadata rather than placeholder content — supplemented with manually curated entries for pure web novels, which AniList doesn't cover.
+Real content data is seeded directly from the **AniList GraphQL API**, giving the platform genuine, up to date anime and manga metadata rather than placeholder content, supplemented with manually curated entries for pure web novels, which AniList doesn't cover.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -68,38 +63,111 @@ Real content data is seeded directly from the **AniList GraphQL API**, giving th
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- GETTING STARTED -->
+## Getting Started
+
+To get a local copy up and running, follow these simple steps.
+
+### Prerequisites
+
+Ensure you have the following installed on your local machine:
+* [Node.js](https://nodejs.org/) (v18 or higher recommended)
+* [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+* A [MongoDB](https://www.mongodb.com/) database (Atlas or local)
+
+### Installation
+
+1. **Clone the repo**
+   ```sh
+   git clone https://github.com/Abhishek-017i/Wonderfool.git
+   cd Wonderfool
+   ```
+
+2. **Install Server Dependencies**
+   ```sh
+   cd Server
+   npm install
+   ```
+
+3. **Install Client Dependencies**
+   ```sh
+   cd ../Client
+   npm install
+   ```
+
+### Environment Variables
+
+You need to create two `.env` files, one for the backend and one for the frontend.
+
+**1. Server (`Server/.env`)**
+Create a `.env` file in the `Server/` directory and add:
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+
+
+```
+
+**2. Client (`Client/.env`)**
+Create a `.env` file in the `Client/` directory and add:
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+*(Note: Firebase client configuration should be set up inside `src/lib/firebase.ts` if not using env variables).*
+
+### Running the App
+
+Once dependencies are installed and environment variables are set, you can run both the server and client simultaneously.
+
+1. **Start the Backend Server**
+   ```sh
+   cd Server
+   node Server.js
+   ```
+   *(The server will typically run on `http://localhost:5000`)*
+
+2. **Start the Frontend Client**
+   Open a new terminal window:
+   ```sh
+   cd Client
+   npm run dev
+   ```
+   *(The client will typically run on `http://localhost:5173`)*
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 <!-- CORE FEATURES -->
 ## Core Features & Pages
 
 ### 🏠 Home Page (`/`)
-* **Cinematic Hero Carousel** — auto-rotating showcase of popular anime with dark gradients, slow-zooming background art, and Cinzel-font typography
-* **Curated Collections** — horizontal scrolling grids for Top Anime, Top Manga, Top Light Novels, and New Releases
-* Dynamic fetching, sorted by `averageScore`, `popularity`, and `startDate`
+* **Cinematic Hero Carousel**: auto-rotating showcase of popular anime with dark gradients, slow zooming background art, and Cinzel font typography.
+* **Curated Collections**: horizontal scrolling grids for Top Anime, Top Manga, Top Light Novels, and New Releases.
+* Dynamic fetching, sorted by `averageScore`, `popularity`, and `startDate`.
 
 ### 🔍 Browse Page (`/browse`)
-* **Filter Engine** — Media Type, Status, Genre, Year, and Country of Origin
-* **Sorting** — Most Popular, Highest Rated, Newest, Oldest
-* **URL Syncing** — filters sync to query params (e.g. `?type=ANIME`), so links from Home carry filters straight into Browse
+* **Filter Engine**: Media Type, Status, Genre, Year, and Country of Origin.
+* **Sorting**: Most Popular, Highest Rated, Newest, Oldest.
+* **URL Syncing**: filters sync to query params (e.g., `?type=ANIME`), so links from Home carry filters straight into Browse.
 
 ### 📖 Series Detail Page (`/series/:id`)
-* Full metadata: synopsis, characters, staff, and related adaptations
+* Full metadata: synopsis, characters, staff, and related adaptations.
 
 ### ✍️ Article System (`/articles`)
-* Full authoring flow — title, rich body, cover image (Cloudinary-backed upload), creator/series tagging
-* Real publish flow backed by MongoDB, with author-only edit/delete permissions
-* Article detail pages with tagged creators/series, comments, and likes
+* Full authoring flow: title, rich body, cover image (Cloudinary backed upload), creator/series tagging.
+* Real publish flow backed by MongoDB, with author only edit/delete permissions.
+* Article detail pages with tagged creators/series, comments, and likes.
 
 ### 👤 Community & Profile
-* Real Firebase authentication (email/password + Google OAuth)
-* User profiles with Reviews, Articles, Timeline, and Wishlist tabs
-* Wishlist tracking with status (Plan to Watch / In Progress / Completed / etc.)
+* Real Firebase authentication (email/password + Google OAuth).
+* User profiles with Reviews, Articles, Timeline, and Wishlist tabs.
+* Wishlist tracking with status (Plan to Watch / In Progress / Completed / etc.).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- DESIGN LANGUAGE -->
 ## Design Language & Aesthetics
 
-The core identity of Wonderfool relies on a warm, editorial character. The whole palette reads as warm and gallery-like—closer to a museum catalog or a premium print magazine than a typical tech-blue SaaS product. Every custom component (Perspective Grid, Animated Footer, parallax galleries) is deliberately themed to preserve this warm gold identity.
+The core identity of Wonderfool relies on a warm, editorial character. The whole palette reads as warm and gallery like closer to a museum catalog or a premium print magazine than a typical tech-blue SaaS product. Every custom component (Perspective Grid, Animated Footer, parallax galleries) is deliberately themed to preserve this warm gold identity.
 
 ### 🎨 Core Color Palette
 
@@ -107,7 +175,7 @@ The core identity of Wonderfool relies on a warm, editorial character. The whole
 | :--- | :--- | :--- | :--- |
 | **Primary (Gold)** | `#987F23` | `#f3bf5f` | The signature hue. Darkened in light mode for crisp legibility; warm and saturated in dark mode. |
 | **Background** | `#F8F5E3` | `Near-Black` | Warm cream/ivory (not pure white) for light mode; deep canvas black for the "gallery at night" feel. |
-| **Muted Text** | `#594B30` | `Warm Gray` | A warm brown-gray tone for timestamps and labels, keeping it in the gold family rather than a default Tailwind neutral. |
+| **Muted Text** | `#594B30` | `Warm Gray` | A warm brown gray tone for timestamps and labels, keeping it in the gold family rather than a default Tailwind neutral. |
 | **Borders** | `rgba(171,142,44,0.45)`| `Gold-Tinted` | Semi-transparent dividers that carry a hint of the signature gold hue rather than a flat gray line. |
 
 ### ✨ Supporting Tones & Gradients
@@ -120,10 +188,10 @@ The `--accent` and `--secondary` tokens sit in the same warm gold/amber family a
 * **Body (Inter):** Clean, modern, and highly legible, providing a sharp contrast against the decorative heading font for UI data.
 
 ### 🖱️ Motion & Material
-* **Micro-interactions** — Subtle 3D card lift on hover (`scale: 1.03`), glowing borders, and delayed text reveals.
-* **Glassmorphism** — Backdrop blurs, semi-transparent overlays, and glossy reflections for depth.
-* **Oliver Parallax** — each column moves up/down at a different speed relative to how far the user has scrolled
-* **Perspective Grid** — 3D tilted background that reacts to cursor movement
+* **Micro-interactions** : Subtle 3D card lift on hover (`scale: 1.03`), glowing borders, and delayed text reveals.
+* **Glassmorphism** : Backdrop blurs, semi-transparent overlays, and glossy reflections for depth.
+* **Oliver Parallax** : each column moves up/down at a different speed relative to how far the user has scrolled.
+* **Perspective Grid** : 3D tilted background that reacts to cursor movement.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -159,7 +227,7 @@ Wonderfool/
 └── Server/                 # Node + Express backend
     ├── config/             # DB, Firebase
     ├── controllers/        # Route handlers
-    ├── middleware/          # Auth verification, file upload
+    ├── middleware/         # Auth verification, file upload
     ├── models/             # Mongoose schemas
     ├── routes/             # Express route definitions
     └── scripts/            # AniList/Anime/Manga seed scripts
@@ -170,21 +238,19 @@ Wonderfool/
 <!-- ROADMAP -->
 ## Roadmap
 
-- [x] Series database with AniList-seeded data
+- [x] Series database with AniList seeded data
 - [x] Home page with cinematic hero carousel
 - [x] Browse page with full filter engine
 - [x] Real Firebase authentication (email + Google OAuth)
 - [x] Cloudinary image upload pipeline
 - [x] Real Article creation, backed by MongoDB
-- [x] Article Detail page wired to real API data (currently mock)
-- [x] Real creator/series tagging in Article Editor (currently mock picklists)
-- [x] Community feed with real sorting (most liked / most recent)
-- [x] Timeline page real API integration
-- [x] Article like/comment system
-- [ ] Integration of Larp Meter
-- [ ] Integration of Algorithm to prevent Review Bombing
-- [ ] Anime Episodes Details in series detail page
+- [x] Article Detail page wired to real API data
+- [x] Real creator/series tagging in Article Editor
+## Future Goals
 
+- [ ] **LARP Meter integration** : a weighted ratio formula comparing claimed activity (completed series) against verified engagement (review count, review depth, rating variance), computed server-side — not a trained model, no labeled data required. Future upgrade path: an unsupervised anomaly-detection algorithm to flag accounts whose engagement pattern statistically deviates from the norm, once enough real user data exists to make outlier detection meaningful.
+
+- [ ] **Review-bombing mitigation** : a two-layer approach: (1) rolling-window rate monitoring to detect abnormal spikes in review volume on a series, flagging sudden bursts that deviate from historical norms.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
@@ -196,10 +262,5 @@ Wonderfool/
 <a href="https://github.com/divitsambodhi"><img src="https://images.weserv.nl/?url=github.com/divitsambodhi.png&h=60&w=60&fit=cover&mask=circle" width="60px" alt="divitsambodhi"/></a>
 <a href="https://github.com/Abhishek-017i"><img src="https://images.weserv.nl/?url=github.com/Abhishek-017i.png&h=60&w=60&fit=cover&mask=circle" width="60px" alt="Abhishek-017i"/></a>
 <a href="https://github.com/sumitkarkhede"><img src="https://images.weserv.nl/?url=github.com/sumitkarkhede.png&h=60&w=60&fit=cover&mask=circle" width="60px" alt="sumitkarkhede"/></a>
-<!-- CONTACT -->
-## Contact
-Abhishek : [IG Handle 📸](https://www.instagram.com/abhishek_017i?igsh=a25wNGJ4a3NjazJu)
-</br>
-Project Link: [https://github.com/Abhishek-017i/Wonderfool](https://github.com/your_username/Wonderfool)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

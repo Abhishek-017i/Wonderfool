@@ -148,6 +148,10 @@ export default function ReviewSection({ seriesId }: ReviewSectionProps) {
         setEasterEggData({ handle: '@real._._human', url: 'https://www.instagram.com/real._._human' })
       } else if (String(authorId) === '6a760897902d4ca02ef12995') {
         setEasterEggData({ handle: '@soomethh', url: 'https://www.instagram.com/soomethh' })
+      } else if (String(authorId) === '6a735a5ed61158e815734995') {
+        setEasterEggData({ handle: '@preetpatel3375', url: 'https://www.instagram.com/preetpatel3375?igsh=MTRodzcxcnVtcmNyeQ==' })
+      } else if (String(authorId) === '6a73552dd61158e815733839') {
+        setEasterEggData({ handle: '@abhishek_017i', url: 'https://www.instagram.com/abhishek_017i?igsh=cmJramR2cm4yOXlu' })
       }
     }
 
